@@ -1,0 +1,302 @@
+<html lang="en">
+<head>
+<title>Argp Helper Functions - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Argp-Parser-Functions.html#Argp-Parser-Functions" title="Argp Parser Functions">
+<link rel="prev" href="Argp-Parsing-State.html#Argp-Parsing-State" title="Argp Parsing State">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Argp-Helper-Functions"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Argp-Parsing-State.html#Argp-Parsing-State">Argp Parsing State</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Argp-Parser-Functions.html#Argp-Parser-Functions">Argp Parser Functions</a>
+<hr>
+</div>
+
+<h5 class="subsubsection">25.3.5.3 Functions For Use in Argp Parsers</h5>
+
+<p>Argp provides a number of functions available to the user of argp
+(see <a href="Argp-Parser-Functions.html#Argp-Parser-Functions">Argp Parser Functions</a>), mostly for producing error messages. 
+These take as their first argument the <var>state</var> argument to the
+parser function.  See <a href="Argp-Parsing-State.html#Argp-Parsing-State">Argp Parsing State</a>.
+
+   <p><a name="index-usage-messages_002c-in-argp-3101"></a><!-- argp.h -->
+<!-- GNU -->
+
+<div class="defun">
+&mdash; Function: void <b>argp_usage</b> (<var>const struct argp_state *state</var>)<var><a name="index-argp_005fusage-3102"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:argpbuf env locale
+| AS-Unsafe heap i18n corrupt
+| AC-Unsafe mem corrupt lock
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Just calls argp_state_help with stderr and ARGP_HELP_STD_USAGE. -->
+        <p>Outputs the standard usage message for the argp parser referred to by
+<var>state</var> to <var>state</var><code>-&gt;err_stream</code> and terminate the program
+with <code>exit (argp_err_exit_status)</code>.  See <a href="Argp-Global-Variables.html#Argp-Global-Variables">Argp Global Variables</a>. 
+</p></blockquote></div>
+
+   <p><a name="index-syntax-error-messages_002c-in-argp-3103"></a><!-- argp.h -->
+<!-- GNU -->
+
+<div class="defun">
+&mdash; Function: void <b>argp_error</b> (<var>const struct argp_state *state, const char *fmt, <small class="dots">...</small></var>)<var><a name="index-argp_005ferror-3104"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:argpbuf env locale
+| AS-Unsafe heap i18n corrupt
+| AC-Unsafe mem corrupt lock
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Lock stream, vasprintf the formatted message into a buffer, print the -->
+     <!-- buffer prefixed by the short program name (in libc, -->
+     <!-- argp_short_program_name is a macro that expands to -->
+     <!-- program_invocation_short_name), releases the buffer, then call -->
+     <!-- argp_state_help with stream and ARGP_HELP_STD_ERR, unlocking the -->
+     <!-- stream at the end. -->
+        <p>Prints the printf format string <var>fmt</var> and following args, preceded
+by the program name and &lsquo;<samp><span class="samp">:</span></samp>&rsquo;, and followed by a &lsquo;<samp><span class="samp">Try&nbsp;...&nbsp;--help</span></samp>&rsquo;<!-- /@w --> message, and terminates the program with an exit status of
+<code>argp_err_exit_status</code>.  See <a href="Argp-Global-Variables.html#Argp-Global-Variables">Argp Global Variables</a>. 
+</p></blockquote></div>
+
+   <p><a name="index-error-messages_002c-in-argp-3105"></a><!-- argp.h -->
+<!-- GNU -->
+
+<div class="defun">
+&mdash; Function: void <b>argp_failure</b> (<var>const struct argp_state *state, int status, int errnum, const char *fmt, <small class="dots">...</small></var>)<var><a name="index-argp_005ffailure-3106"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe corrupt heap
+| AC-Unsafe lock corrupt mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Lock stream, write out the short program name, vasprintf the optional -->
+     <!-- formatted message to a buffer, print the buffer prefixed by colon and -->
+     <!-- blank, release the buffer, call strerror_r with an automatic buffer, -->
+     <!-- print it out after colon and blank, put[w]c a line break, unlock the -->
+     <!-- stream, then exit unless ARGP_NO_EXIT. -->
+        <p>Similar to the standard gnu error-reporting function <code>error</code>, this
+prints the program name and &lsquo;<samp><span class="samp">:</span></samp>&rsquo;, the printf format string
+<var>fmt</var>, and the appropriate following args.  If it is non-zero, the
+standard unix error text for <var>errnum</var> is printed.  If <var>status</var> is
+non-zero, it terminates the program with that value as its exit status.
+
+        <p>The difference between <code>argp_failure</code> and <code>argp_error</code> is that
+<code>argp_error</code> is for <em>parsing errors</em>, whereas
+<code>argp_failure</code> is for other problems that occur during parsing but
+don't reflect a syntactic problem with the input, such as illegal values
+for options, bad phase of the moon, etc. 
+</p></blockquote></div>
+
+<!-- argp.h -->
+<!-- GNU -->
+<div class="defun">
+&mdash; Function: void <b>argp_state_help</b> (<var>const struct argp_state *state, FILE *stream, unsigned flags</var>)<var><a name="index-argp_005fstate_005fhelp-3107"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:argpbuf env locale
+| AS-Unsafe heap i18n corrupt
+| AC-Unsafe mem corrupt lock
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Just calls _help with the short program name and optionally exit. -->
+     <!-- The main problems in _help, besides the usual issues with stream I/O -->
+     <!-- and translation, are the use of a static buffer (uparams, thus -->
+     <!-- @mtasurace:argpbuf) that makes the whole thing thread-unsafe, reading -->
+     <!-- from the environment for ARGP_HELP_FMT, accessing the locale object -->
+     <!-- multiple times. -->
+     <!-- _help @mtsenv @mtasurace:argpbuf @mtslocale @ascuheap @ascuintl @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- dgettext @ascuintl -->
+     <!-- flockfile @aculock -->
+     <!-- funlockfile @aculock -->
+     <!-- fill_in_uparams @mtsenv @mtasurace:argpbuf @mtslocale @asucorrupt @ascuheap @aculock @acucorrupt @acsmem -->
+     <!-- argp_failure dup (status = errnum = 0) -->
+     <!-- atoi dup @mtslocale -->
+     <!-- argp_hol @ascuheap @acsmem -->
+     <!-- make_hol @ascuheap @acsmem -->
+     <!-- hol_add_cluster @ascuheap @acsmem -->
+     <!-- hol_append @ascuheap @acsmem -->
+     <!-- hol_set_group ok -->
+     <!-- hol_find_entry ok -->
+     <!-- hol_sort @mtslocale @acucorrupt -->
+     <!-- qsort dup @acucorrupt -->
+     <!-- hol_entry_qcmp @mtslocale -->
+     <!-- hol_entry_cmp @mtslocale -->
+     <!-- group_cmp ok -->
+     <!-- hol_cluster_cmp ok -->
+     <!-- group_cmp ok -->
+     <!-- hol_entry_first_short @mtslocale -->
+     <!-- hol_entry_short_iterate [@mtslocale] -->
+     <!-- until_short ok -->
+     <!-- oshort ok -->
+     <!-- isprint ok -->
+     <!-- odoc ok -->
+     <!-- hol_entry_first_long ok -->
+     <!-- canon_doc_option @mtslocale -->
+     <!-- tolower dup -->
+     <!-- hol_usage @mtslocale @ascuintl @ascuheap @acsmem -->
+     <!-- hol_entry_short_iterate ok -->
+     <!-- add_argless_short_opt ok -->
+     <!-- argp_fmtstream_printf dup -->
+     <!-- hol_entry_short_iterate @mtslocale @ascuintl @ascuheap @acsmem -->
+     <!-- usage_argful_short_opt @mtslocale @ascuintl @ascuheap @acsmem -->
+     <!-- dgettext dup -->
+     <!-- argp_fmtstream_printf dup -->
+     <!-- hol_entry_long_iterate @mtslocale @ascuintl @ascuheap @acsmem -->
+     <!-- usage_long_opt @mtslocale @ascuintl @ascuheap @acsmem -->
+     <!-- dgettext dup -->
+     <!-- argp_fmtstream_printf dup -->
+     <!-- hol_help @mtslocale @mtasurace:argpbuf @ascuheap @ascuintl @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- hol_entry_help @mtslocale @mtasurace:argpbuf @ascuheap @ascuintl @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- argp_fmtstream_set_lmargin dup -->
+     <!-- argp_fmtstream_wmargin dup -->
+     <!-- argp_fmtstream_set_wmargin dup -->
+     <!-- comma @mtslocale @ascuheap @ascuintl @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- argp_fmtstream_putc dup -->
+     <!-- hol_cluster_is_child ok -->
+     <!-- argp_fmtstream_wmargin dup -->
+     <!-- print_header dup -->
+     <!-- argp_fmtstream_set_wmargin dup -->
+     <!-- argp_fmtstream_puts dup -->
+     <!-- indent_to dup -->
+     <!-- argp_fmtstream_putc dup -->
+     <!-- arg @mtslocale @ascuheap @acsmem -->
+     <!-- argp_fmtstream_printf dup -->
+     <!-- odoc dup -->
+     <!-- argp_fmtstream_puts dup -->
+     <!-- argp_fmtstream_printf dup -->
+     <!-- print_header @mtslocale @mtasurace:argpbuf @ascuheap @ascuintl @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- dgettext dup -->
+     <!-- filter_doc dup -->
+     <!-- argp_fmtstream_putc dup -->
+     <!-- indent_to dup -->
+     <!-- argp_fmtstream_set_lmargin dup -->
+     <!-- argp_fmtstream_set_wmargin dup -->
+     <!-- argp_fmtstream_puts dup -->
+     <!-- free dup -->
+     <!-- filter_doc dup -->
+     <!-- argp_fmtstream_point dup -->
+     <!-- indent_to @mtslocale @ascuheap @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- argp_fmtstream_point dup -->
+     <!-- argp_fmtstream_putc dup -->
+     <!-- dgettext dup -->
+     <!-- filter_doc dup -->
+     <!-- argp_fmtstream_putc dup -->
+     <!-- argp_fmtstream_puts dup -->
+     <!-- free dup -->
+     <!-- hol_free @ascuheap @acsmem -->
+     <!-- free dup -->
+     <!-- argp_args_levels ok -->
+     <!-- argp_args_usage @mtslocale @ascuintl @ascuheap @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- dgettext dup -->
+     <!-- filter_doc ok -->
+     <!-- argp_input ok -->
+     <!-- argp->help_filter -->
+     <!-- space @mtslocale @ascuheap @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- argp_fmtstream_point dup -->
+     <!-- argp_fmtstream_rmargin @mtslocale @asucorrupt @acucorrupt @aculock -->
+     <!-- argp_fmtstream_update dup -->
+     <!-- argp_fmtstream_putc dup -->
+     <!-- argp_fmtstream_write dup -->
+     <!-- free dup -->
+     <!-- argp_doc @mtslocale @ascuheap @ascuintl @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- dgettext @ascuintl -->
+     <!-- strndup @ascuheap @acsmem -->
+     <!-- argp_input dup -->
+     <!-- argp->help_filter -->
+     <!-- argp_fmtstream_putc @mtslocale @ascuheap @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- argp_fmtstream_ensure dup -->
+     <!-- argp_fmtstream_write dup -->
+     <!-- argp_fmtstream_puts dup -->
+     <!-- argp_fmtstream_point @mtslocale @asucorrupt @acucorrupt @aculock -->
+     <!-- argp_fmtstream_update dup -->
+     <!-- argp_fmtstream_lmargin dup -->
+     <!-- free dup -->
+     <!-- argp_make_fmtstream @ascuheap @acsmem -->
+     <!-- argp_fmtstream_free @mtslocale @ascuheap @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- argp_fmtstream_update @mtslocale @asucorrupt @acucorrupt @aculock -->
+     <!-- put[w]c_unlocked dup -->
+     <!-- isblank in loop @mtslocale -->
+     <!-- fxprintf @aculock -->
+     <!-- fxprintf @aculock -->
+     <!-- free dup -->
+     <!-- argp_fmtstream_set_wmargin @mtslocale @asucorrupt @acucorrupt @aculock -->
+     <!-- argp_fmtstream_update dup -->
+     <!-- argp_fmtstream_printf @mtslocale @ascuheap @acsmem -->
+     <!-- argp_fmtstream_ensure dup -->
+     <!-- vsnprintf dup -->
+     <!-- argp_fmtstream_set_lmargin @mtslocale @asucorrupt @acucorrupt @aculock -->
+     <!-- argp_fmtstream_update dup -->
+     <!-- argp_fmtstream_puts @mtslocale @ascuheap @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- argp_fmtstream_write @mtslocale @ascuheap @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- argp_fmtstream_ensure @mtslocale @ascuheap @asucorrupt @acsmem @acucorrupt @aculock -->
+     <!-- argp_fmtstream_update dup -->
+     <!-- fxprintf @aculock -->
+     <!-- realloc @ascuheap @acsmem -->
+        <p>Outputs a help message for the argp parser referred to by <var>state</var>,
+to <var>stream</var>.  The <var>flags</var> argument determines what sort of help
+message is produced.  See <a href="Argp-Help-Flags.html#Argp-Help-Flags">Argp Help Flags</a>. 
+</p></blockquote></div>
+
+   <p>Error output is sent to <var>state</var><code>-&gt;err_stream</code>, and the program
+name printed is <var>state</var><code>-&gt;name</code>.
+
+   <p>The output or program termination behavior of these functions may be
+suppressed if the <code>ARGP_NO_EXIT</code> or <code>ARGP_NO_ERRS</code> flags are
+passed to <code>argp_parse</code>.  See <a href="Argp-Flags.html#Argp-Flags">Argp Flags</a>.
+
+   <p>This behavior is useful if an argp parser is exported for use by other
+programs (e.g., by a library), and may be used in a context where it is
+not desirable to terminate the program in response to parsing errors.  In
+argp parsers intended for such general use, and for the case where the
+program <em>doesn't</em> terminate, calls to any of these functions should
+be followed by code that returns the appropriate error code:
+
+<pre class="smallexample">     if (<var>bad argument syntax</var>)
+       {
+          argp_usage (<var>state</var>);
+          return EINVAL;
+       }
+</pre>
+   <p class="noindent">If a parser function will <em>only</em> be used when <code>ARGP_NO_EXIT</code>
+is not set, the return may be omitted.
+
+   </body></html>
+

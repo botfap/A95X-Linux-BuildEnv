@@ -1,0 +1,1 @@
+/SCRATCH/akolesov/toolchain/newlib/newlib/libc/include/machine/_default_types.h

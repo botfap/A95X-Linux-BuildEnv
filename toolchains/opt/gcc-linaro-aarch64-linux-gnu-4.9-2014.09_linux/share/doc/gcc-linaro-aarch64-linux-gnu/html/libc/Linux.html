@@ -1,0 +1,99 @@
+<html lang="en">
+<head>
+<title>Linux - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Installation.html#Installation" title="Installation">
+<link rel="prev" href="Tools-for-Compilation.html#Tools-for-Compilation" title="Tools for Compilation">
+<link rel="next" href="Reporting-Bugs.html#Reporting-Bugs" title="Reporting Bugs">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Linux"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Reporting-Bugs.html#Reporting-Bugs">Reporting Bugs</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Tools-for-Compilation.html#Tools-for-Compilation">Tools for Compilation</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Installation.html#Installation">Installation</a>
+<hr>
+</div>
+
+<h3 class="appendixsec">C.4 Specific advice for GNU/Linux systems</h3>
+
+<p><a name="index-kernel-header-files-3914"></a>
+If you are installing the GNU C Library on GNU/Linux systems, you need to have
+the header files from a 2.6.19.1 or newer kernel around for reference. 
+These headers must be installed using &lsquo;<samp><span class="samp">make headers_install</span></samp>&rsquo;; the
+headers present in the kernel source directory are not suitable for
+direct use by the GNU C Library.  You do not need to use that kernel, just have
+its headers installed where the GNU C Library can access them, referred to here as
+<var>install-directory</var>.  The easiest way to do this is to unpack it
+in a directory such as <samp><span class="file">/usr/src/linux-</span><var>version</var></samp>.  In that
+directory, run &lsquo;<samp><span class="samp">make headers_install
+INSTALL_HDR_PATH=</span><var>install-directory</var></samp>&rsquo;.  Finally, configure the GNU C Library
+with the option &lsquo;<samp><span class="samp">--with-headers=</span><var>install-directory</var><span class="samp">/include</span></samp>&rsquo;. 
+Use the most recent kernel you can get your hands on.  (If you are
+cross-compiling the GNU C Library, you need to specify
+&lsquo;<samp><span class="samp">ARCH=</span><var>architecture</var></samp>&rsquo; in the &lsquo;<samp><span class="samp">make headers_install</span></samp>&rsquo;
+command, where <var>architecture</var> is the architecture name used by the
+Linux kernel, such as &lsquo;<samp><span class="samp">x86</span></samp>&rsquo; or &lsquo;<samp><span class="samp">powerpc</span></samp>&rsquo;.)
+
+   <p>After installing the GNU C Library, you may need to remove or rename
+directories such as <samp><span class="file">/usr/include/linux</span></samp> and
+<samp><span class="file">/usr/include/asm</span></samp>, and replace them with copies of directories
+such as <samp><span class="file">linux</span></samp> and <samp><span class="file">asm</span></samp> from
+<samp><var>install-directory</var><span class="file">/include</span></samp>.  All directories present in
+<samp><var>install-directory</var><span class="file">/include</span></samp> should be copied, except that
+the GNU C Library provides its own version of <samp><span class="file">/usr/include/scsi</span></samp>; the
+files provided by the kernel should be copied without replacing those
+provided by the GNU C Library.  The <samp><span class="file">linux</span></samp>, <samp><span class="file">asm</span></samp> and
+<samp><span class="file">asm-generic</span></samp> directories are required to compile programs using
+the GNU C Library; the other directories describe interfaces to the kernel but
+are not required if not compiling programs using those interfaces. 
+You do not need to copy kernel headers if you did not specify an
+alternate kernel header source using &lsquo;<samp><span class="samp">--with-headers</span></samp>&rsquo;.
+
+   <p>The Filesystem Hierarchy Standard for GNU/Linux systems expects some
+components of the GNU C Library installation to be in
+<samp><span class="file">/lib</span></samp> and some in <samp><span class="file">/usr/lib</span></samp>.  This is handled automatically
+if you configure the GNU C Library with &lsquo;<samp><span class="samp">--prefix=/usr</span></samp>&rsquo;.  If you set some other
+prefix or allow it to default to <samp><span class="file">/usr/local</span></samp>, then all the
+components are installed there.
+
+   </body></html>
+

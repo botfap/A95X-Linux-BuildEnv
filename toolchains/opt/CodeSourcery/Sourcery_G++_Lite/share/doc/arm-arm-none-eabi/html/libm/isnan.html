@@ -1,0 +1,78 @@
+<html lang="en">
+<head>
+<title>isnan - Untitled</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="Untitled">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Math.html#Math" title="Math">
+<link rel="prev" href="infinity.html#infinity" title="infinity">
+<link rel="next" href="ldexp.html#ldexp" title="ldexp">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+<link rel="stylesheet" type="text/css" href="../cs.css">
+</head>
+<body>
+<div class="node">
+<a name="isnan"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="ldexp.html#ldexp">ldexp</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="infinity.html#infinity">infinity</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Math.html#Math">Math</a>
+<hr>
+</div>
+
+<h3 class="section">1.24 <code>isnan</code>, <code>isnanf</code>, <code>isinf</code>, <code>isinff</code>, <code>finite</code>, <code>finitef</code>&mdash;test for exceptional numbers</h3>
+
+<p><a name="index-isnan-67"></a><a name="index-isinf-68"></a><a name="index-finite-69"></a><a name="index-isnanf-70"></a><a name="index-isinff-71"></a><a name="index-finitef-72"></a><strong>Synopsis</strong>
+<pre class="example">     #include &lt;ieeefp.h&gt;
+     int isnan(double <var>arg</var>);
+     int isinf(double <var>arg</var>);
+     int finite(double <var>arg</var>);
+     int isnanf(float <var>arg</var>);
+     int isinff(float <var>arg</var>);
+     int finitef(float <var>arg</var>);
+     
+</pre>
+   <p><strong>Description</strong><br>
+These functions provide information on the floating-point
+argument supplied.
+
+   <p>There are five major number formats:
+     <dl>
+<dt><code>zero</code><dd>A number which contains all zero bits. 
+<br><dt><code>subnormal</code><dd>A number with a zero exponent but a nonzero fraction. 
+<br><dt><code>normal</code><dd>A number with an exponent and a fraction. 
+<br><dt><code>infinity</code><dd>A number with an all 1's exponent and a zero fraction. 
+<br><dt><code>NAN</code><dd>A number with an all 1's exponent and a nonzero fraction.
+
+   </dl>
+
+   <p><code>isnan</code> returns 1 if the argument is a nan. <code>isinf</code>
+returns 1 if the argument is infinity.  <code>finite</code> returns 1 if the
+argument is zero, subnormal or normal. 
+The <code>isnanf</code>, <code>isinff</code> and <code>finitef</code> functions perform the same
+operations as their <code>isnan</code>, <code>isinf</code> and <code>finite</code>
+counterparts, but on single-precision floating-point numbers.
+
+   <p>It should be noted that the C99 standard dictates that <code>isnan</code>
+and <code>isinf</code> are macros that operate on multiple types of
+floating-point.  The SUSv2 standard declares <code>isnan</code> as
+a function taking double.  Newlib has decided to declare
+them both as macros in math.h and as functions in ieeefp.h.
+
+   <p><br>
+
+   </body></html>
+

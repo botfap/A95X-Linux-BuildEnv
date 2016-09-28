@@ -1,0 +1,126 @@
+<html lang="en">
+<head>
+<title>Netgroup Membership - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Netgroup-Database.html#Netgroup-Database" title="Netgroup Database">
+<link rel="prev" href="Lookup-Netgroup.html#Lookup-Netgroup" title="Lookup Netgroup">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Netgroup-Membership"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Lookup-Netgroup.html#Lookup-Netgroup">Lookup Netgroup</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Netgroup-Database.html#Netgroup-Database">Netgroup Database</a>
+<hr>
+</div>
+
+<h4 class="subsection">29.16.3 Testing for Netgroup Membership</h4>
+
+<p>It is often not necessary to scan the whole netgroup since often the
+only interesting question is whether a given entry is part of the
+selected netgroup.
+
+<!-- netdb.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: int <b>innetgr</b> (<var>const char *netgroup, const char *host, const char *user, const char *domain</var>)<var><a name="index-innetgr-3470"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:netgrent locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- This function does not use the static data structure that the -->
+     <!-- *netgrent* ones do, but since each nss must maintains internal state -->
+     <!-- to support iteration and concurrent iteration will interfere -->
+     <!-- destructively, we regard this internal state as a static buffer. -->
+     <!-- getnetgrent_r iteration in each nss backend. -->
+     <!-- innetgr @mtasurace:netgrent @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- nscd_innetgr @ascuheap @acsfd @acsmem -->
+     <!-- strlen dup ok -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- stpcpy dup ok -->
+     <!-- nscd_get_map_ref dup @ascuheap @acsfd @acsmem -->
+     <!-- nscd_cache_search dup ok -->
+     <!-- nscd_open_socket dup @acsfd -->
+     <!-- close_not_cancel_no_status dup @acsfd -->
+     <!-- nscd_drop_map_ref dup @ascuheap @acsmem -->
+     <!-- nscd_unmap dup @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- memset dup ok -->
+     <!-- (netgroup::)setup dup @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *setfct.f @ascuplugin -->
+     <!-- nss_lookup_function dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *getfct @ascuplugin -->
+     <!-- strcmp dup ok -->
+     <!-- strlen dup ok -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- memcpy dup ok -->
+     <!-- strcasecmp dup -->
+     <!-- *endfct @ascuplugin -->
+     <!-- nss_next2 dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- free_memory dup @ascuheap @acsmem -->
+        <p>This function tests whether the triple specified by the parameters
+<var>hostp</var>, <var>userp</var>, and <var>domainp</var> is part of the netgroup
+<var>netgroup</var>.  Using this function has the advantage that
+
+          <ol type=1 start=1>
+<li>no other netgroup function can use the global netgroup state since
+internal locking is used and
+<li>the function is implemented more efficiently than successive calls
+to the other <code>set</code>/<code>get</code>/<code>endnetgrent</code> functions.
+             </ol>
+
+        <p>Any of the pointers <var>hostp</var>, <var>userp</var>, and <var>domainp</var> can be
+<code>NULL</code> which means any value is accepted in this position.  This is
+also true for the name <code>-</code> which should not match any other string
+otherwise.
+
+        <p>The return value is <code>1</code> if an entry matching the given triple is
+found in the netgroup.  The return value is <code>0</code> if the netgroup
+itself is not found, the netgroup does not contain the triple or
+internal errors occurred. 
+</p></blockquote></div>
+
+<!-- FIXME these are undocumented: -->
+<!-- setresgid -->
+<!-- setresuid -->
+   </body></html>
+

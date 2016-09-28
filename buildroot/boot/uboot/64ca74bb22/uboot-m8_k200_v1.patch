@@ -1,0 +1,61 @@
+Index: uboot-next/board/amlogic/configs/m8_k200_v1.h
+===================================================================
+--- uboot-next.orig/board/amlogic/configs/m8_k200_v1.h	2014-08-18 16:40:51.154093004 +0800
++++ uboot-next/board/amlogic/configs/m8_k200_v1.h	2014-08-18 16:45:12.210097902 +0800
+@@ -249,7 +249,7 @@
+ 	"cvbsmode=576cvbs\0" \
+ 	"outputmode=1080p\0" \
+ 	"vdac_config=0x10\0" \
+-	"initargs=init=/init console=ttyS0,115200n8 no_console_suspend\0" \
++	"initargs=root=/dev/system rootfstype=ext4 init=/init console=ttyS0,115200n8 no_console_suspend\0" \
+ 	"preloaddtb=imgread dtb boot ${loadaddr}\0" \
+ 	"video_dev=tvout\0" \
+ 	"display_width=1920\0" \
+@@ -275,7 +275,7 @@
+ 	"sdcburncfg=aml_sdc_burn.ini\0"\
+ 	"normalstart=1000000\0" \
+ 	"normalsize=400000\0" \
+-	"upgrade_step=0\0" \
++	"upgrade_step=2\0" \
+ 	"firstboot=1\0" \
+ 	"store=0\0"\
+         "wipe_data=success\0"\
+@@ -313,7 +313,14 @@
+         "fi;\0"\
+     \
+    	"storeargs="\
+-        "setenv bootargs ${initargs} cvbsdrv=${cvbs_drv} vdaccfg=${vdac_config} logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} androidboot.firstboot=${firstboot} hdmitx=${cecconfig}\0"\
++        "setenv bootargs ${initargs} cvbsdrv=${cvbs_drv} vdaccfg=${vdac_config} logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} androidboot.firstboot=${firstboot} hdmitx=${hdmimode}\0"\
++    \
++    "bootsdargs="\
++        "setenv bootargs root=/dev/mmcblk0p1 rw rootfstype=ext2 rootwait init=/init console=ttyS0,115200n8 no_console_suspend cvbsdrv=${cvbs_drv} vdaccfg=${vdac_config} logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${hdmimode}\0"\
++    \
++    "bootupdateargs="\
++        "setenv bootargs root=/dev/mmcblk0p1 rw rootfstype=vfat rootwait init=/init console=ttyS0,115200n8 no_console_suspend cvbsdrv=${cvbs_drv} vdaccfg=${vdac_config} logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${hdmimode} firmware=rootfs.tar.gz\0"\
++     \
+     \
+ 	"switch_bootmode="\
+         "if test ${reboot_mode} = factory_reset; then "\
+@@ -342,9 +349,20 @@
+             "setenv bootargs ${bootargs} androidboot.serialno=${usid};"\
+         "fi;"\
+         "imgread kernel boot ${loadaddr};"\
+-        "bootm;"\
+-        "run recovery\0" \
++        "bootm\0"\
+     \
++     "bootsdcard="\
++        "echo Booting ...;"\
++        "run bootsdargs; "\
++        "mmcinfo;"\
++        "ext2load mmc 0 ${loadaddr} boot.img;"\
++        "bootm\0" \
++     "bootupdate="\
++        "echo Updating...;"\
++        "run bootupdateargs; "\
++        "mmcinfo;"\
++        "fatload mmc 0 ${loadaddr} boot.img;"\
++        "bootm\0" \
+ 	"recovery="\
+         "echo enter recovery;"\
+         "if mmcinfo; then "\

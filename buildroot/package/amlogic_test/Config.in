@@ -1,0 +1,7 @@
+config BR2_PACKAGE_AMLOGIC_TEST
+	bool "Amlogic Test"
+	select BR2_PACKAGE_STRESSAPPTEST
+	help
+	    amlogic testing scripts and programs
+
+

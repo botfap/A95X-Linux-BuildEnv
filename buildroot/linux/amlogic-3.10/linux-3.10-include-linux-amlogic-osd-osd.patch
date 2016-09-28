@@ -1,0 +1,15 @@
+Index: linux-amlogic-3.10-bringup/include/linux/amlogic/osd/osd.h
+===================================================================
+--- linux-amlogic-3.10-bringup.orig/include/linux/amlogic/osd/osd.h	2014-12-02 10:43:26.000000000 +0800
++++ linux-amlogic-3.10-bringup/include/linux/amlogic/osd/osd.h	2014-12-02 14:19:12.136616661 +0800
+@@ -55,6 +55,10 @@
+ 	
+ }color_index_t;
+ 
++typedef struct {
++	unsigned int addr;
++} aml_hwc_addr_t;
++
+ typedef  struct {
+ 	color_index_t	color_index;
+ 	u8	hw_colormat;

@@ -1,0 +1,17 @@
+--- qtwebkit-opensource-src-5.2.1/Source/ThirdParty/ANGLE/include/KHR/khrplatform.h.orig	2014-05-28 14:19:07.885137646 +0800
++++ qtwebkit-opensource-src-5.2.1/Source/ThirdParty/ANGLE/include/KHR/khrplatform.h	2014-05-28 14:19:23.969137949 +0800
+@@ -221,10 +221,10 @@ typedef signed   char          khronos_i
+ typedef unsigned char          khronos_uint8_t;
+ typedef signed   short int     khronos_int16_t;
+ typedef unsigned short int     khronos_uint16_t;
+-typedef signed   long  int     khronos_intptr_t;
+-typedef unsigned long  int     khronos_uintptr_t;
+-typedef signed   long  int     khronos_ssize_t;
+-typedef unsigned long  int     khronos_usize_t;
++typedef signed   /*long*/  int     khronos_intptr_t;
++typedef unsigned /*long*/  int     khronos_uintptr_t;
++typedef signed   /*long*/  int     khronos_ssize_t;
++typedef unsigned /*long*/  int     khronos_usize_t;
+ 
+ #if KHRONOS_SUPPORT_FLOAT
+ /*

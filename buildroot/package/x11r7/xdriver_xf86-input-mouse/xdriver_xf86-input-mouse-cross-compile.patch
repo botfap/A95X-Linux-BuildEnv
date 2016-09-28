@@ -1,0 +1,49 @@
+--- xf86-input-mouse-1.9.0/include/Makefile.in.orig	2014-05-28 15:54:53.625245440 +0800
++++ xf86-input-mouse-1.9.0/include/Makefile.in	2014-05-28 15:55:27.573246075 +0800
+@@ -107,7 +107,7 @@ am__uninstall_files_from_dir = { \
+     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+          $(am__cd) "$$dir" && rm -f $$files; }; \
+   }
+-am__installdirs = "$(DESTDIR)$(sdkdir)"
++am__installdirs = "$(sdkdir)"
+ HEADERS = $(sdk_HEADERS)
+ ETAGS = etags
+ CTAGS = ctags
+@@ -300,23 +300,23 @@ install-sdkHEADERS: $(sdk_HEADERS)
+ 	@$(NORMAL_INSTALL)
+ 	@list='$(sdk_HEADERS)'; test -n "$(sdkdir)" || list=; \
+ 	if test -n "$$list"; then \
+-	  echo " $(MKDIR_P) '$(DESTDIR)$(sdkdir)'"; \
+-	  $(MKDIR_P) "$(DESTDIR)$(sdkdir)" || exit 1; \
++	  echo " $(MKDIR_P) '$(sdkdir)'"; \
++	  $(MKDIR_P) "$(sdkdir)" || exit 1; \
+ 	fi; \
+ 	for p in $$list; do \
+ 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+ 	  echo "$$d$$p"; \
+ 	done | $(am__base_list) | \
+ 	while read files; do \
+-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(sdkdir)'"; \
+-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(sdkdir)" || exit $$?; \
++	  echo " $(INSTALL_HEADER) $$files '$(sdkdir)'"; \
++	  $(INSTALL_HEADER) $$files "$(sdkdir)" || exit $$?; \
+ 	done
+ 
+ uninstall-sdkHEADERS:
+ 	@$(NORMAL_UNINSTALL)
+ 	@list='$(sdk_HEADERS)'; test -n "$(sdkdir)" || list=; \
+ 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+-	dir='$(DESTDIR)$(sdkdir)'; $(am__uninstall_files_from_dir)
++	dir='$(sdkdir)'; $(am__uninstall_files_from_dir)
+ 
+ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
+ 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
+@@ -418,7 +418,7 @@ check-am: all-am
+ check: check-am
+ all-am: Makefile $(HEADERS)
+ installdirs:
+-	for dir in "$(DESTDIR)$(sdkdir)"; do \
++	for dir in "$(sdkdir)"; do \
+ 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+ 	done
+ install: install-am

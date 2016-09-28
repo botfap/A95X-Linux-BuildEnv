@@ -1,0 +1,85 @@
+<html lang="en">
+<head>
+<title>mktemp - Untitled</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="Untitled">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Stdio.html#Stdio" title="Stdio">
+<link rel="prev" href="getwchar.html#getwchar" title="getwchar">
+<link rel="next" href="open_005fmemstream.html#open_005fmemstream" title="open_memstream">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+<link rel="stylesheet" type="text/css" href="../cs.css">
+</head>
+<body>
+<div class="node">
+<a name="mktemp"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="open_005fmemstream.html#open_005fmemstream">open_memstream</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="getwchar.html#getwchar">getwchar</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Stdio.html#Stdio">Stdio</a>
+<hr>
+</div>
+
+<h3 class="section">4.40 <code>mktemp</code>, <code>mkstemp</code>&mdash;generate unused file name</h3>
+
+<p><a name="index-mktemp-225"></a><a name="index-mkstemp-226"></a><a name="index-g_t_005fmktemp_005fr-227"></a><a name="index-g_t_005fmkstemp_005fr-228"></a><strong>Synopsis</strong>
+<pre class="example">     #include &lt;stdio.h&gt;
+     char *mktemp(char *<var>path</var>);
+     int mkstemp(char *<var>path</var>);
+     
+     char *_mktemp_r(struct _reent *<var>reent</var>, char *<var>path</var>);
+     int *_mkstemp_r(struct _reent *<var>reent</var>, char *<var>path</var>);
+     
+</pre>
+   <p><strong>Description</strong><br>
+<code>mktemp</code> and <code>mkstemp</code> attempt to generate a file name that is not
+yet in use for any existing file.  <code>mkstemp</code> creates the file and
+opens it for reading and writing; <code>mktemp</code> simply generates the file name.
+
+   <p>You supply a simple pattern for the generated file name, as the string
+at <var>path</var>.  The pattern should be a valid filename (including path
+information if you wish) ending with some number of `<code>X</code>'
+characters.  The generated filename will match the leading part of the
+name you supply, with the trailing `<code>X</code>' characters replaced by some
+combination of digits and letters.
+
+   <p>The alternate functions <code>_mktemp_r</code> and <code>_mkstemp_r</code> are reentrant
+versions.  The extra argument <var>reent</var> is a pointer to a reentrancy
+structure.
+
+   <p><br>
+<strong>Returns</strong><br>
+<code>mktemp</code> returns the pointer <var>path</var> to the modified string
+representing an unused filename, unless it could not generate one, or
+the pattern you provided is not suitable for a filename; in that case,
+it returns <code>NULL</code>.
+
+   <p><code>mkstemp</code> returns a file descriptor to the newly created file,
+unless it could not generate an unused filename, or the pattern you
+provided is not suitable for a filename; in that case, it returns
+<code>-1</code>.
+
+   <p><br>
+<strong>Portability</strong><br>
+ANSI C does not require either <code>mktemp</code> or <code>mkstemp</code>; the System
+V Interface Definition requires <code>mktemp</code> as of Issue 2.
+
+   <p>Supporting OS subroutines required: <code>getpid</code>, <code>open</code>, <code>stat</code>.
+
+   <p><br>
+
+   </body></html>
+

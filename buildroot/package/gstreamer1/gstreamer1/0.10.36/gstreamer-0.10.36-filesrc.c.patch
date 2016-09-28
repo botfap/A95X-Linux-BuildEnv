@@ -1,0 +1,330 @@
+--- gstreamer-0.10.36/plugins/elements/gstfilesrc.c.orig	2011-12-29 17:14:37.000000000 -0800
++++ gstreamer-0.10.36/plugins/elements/gstfilesrc.c	2014-05-11 23:47:20.119205700 -0700
+@@ -91,6 +91,38 @@ static GstStaticPadTemplate srctemplate
+ #define O_BINARY (0)
+ #endif
+ 
++/*for filesrc estimate duration*/
++#define ID_PS_PROGRAM_STREAM_MAP                0x000001BC
++#define ID_PRIVATE_STREAM_2                     0x000001BF
++#define ID_ECM_STREAM                           0x000001F0
++#define ID_EMM_STREAM                           0x000001F1
++#define ID_PROGRAM_STREAM_DIRECTORY             0x000001FF
++#define ID_DSMCC_STREAM                         0x000001F2
++#define ID_ITU_TREC_H222_TYPE_E_STREAM          0x000001F8
++#define ID_PADDING_STREAM                       0x000001BE
++#define SCAN_BLOCK                              188*100
++
++#define READ_TS(data, target, lost_sync_label)          \
++    {                                                   \
++      gint sync_failed = 0;                             \
++      if ((*data & 0x01) != 0x01) sync_failed++;        \
++      target  = ((guint64) (*data++ & 0x0E)) << 29;     \
++      target |= ((guint64) (*data++       )) << 22;     \
++      if ((*data & 0x01) != 0x01) sync_failed++;        \
++      target |= ((guint64) (*data++ & 0xFE)) << 14;     \
++      target |= ((guint64) (*data++       )) << 7;      \
++      if ((*data & 0x01) != 0x01) sync_failed++;        \
++      target |= ((guint64) (*data++ & 0xFE)) >> 1;      \
++      if (G_UNLIKELY (sync_failed > 1))                 \
++        goto lost_sync_label;                           \
++    }
++#define CLOCK_BASE 9LL
++#define MPEGTIME_TO_GSTTIME(time) (gst_util_uint64_scale ((time), \
++            GST_MSECOND/10, CLOCK_BASE))
++/*end*/
++
++
++
+ /* Copy of glib's g_open due to win32 libc/cross-DLL brokenness: we can't
+  * use the 'file descriptor' opened in glib (and returned from this function)
+  * in this library, as they may have unrelated C runtimes. */
+@@ -183,7 +215,8 @@ enum
+   ARG_MMAPSIZE,
+   ARG_SEQUENTIAL,
+   ARG_TOUCH,
+-  ARG_USEMMAP
++  ARG_USEMMAP,
++  ARG_VBRDURATION
+ };
+ 
+ static void gst_file_src_finalize (GObject * object);
+@@ -268,6 +301,12 @@ gst_file_src_class_init (GstFileSrcClass
+           DEFAULT_TOUCH,
+           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
+           GST_PARAM_MUTABLE_PLAYING));
++	
++	g_object_class_install_property (gobject_class, ARG_VBRDURATION,
++      g_param_spec_uint64 ("VBRduration",
++          "estimate the VBR's duration", "estimate the CBR's duration",0, 
++					G_MAXUINT64, 0,
++          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+   /**
+    * GstFileSrc:use-mmap
+    *
+@@ -456,6 +495,9 @@ gst_file_src_get_property (GObject * obj
+     case ARG_USEMMAP:
+       g_value_set_boolean (value, src->use_mmap);
+       break;
++		case ARG_VBRDURATION:
++			g_value_set_uint64 (value, src->duration);
++			break;
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+       break;
+@@ -956,6 +998,234 @@ could_not_stat:
+   }
+ }
+ 
++static gboolean
++gst_pes_filter_is_sync (guint32 sync)
++{
++  return ((sync & 0xfffffffc) == 0x000001bc) ||
++      ((sync & 0xffffffe0) == 0x000001c0) ||
++      ((sync & 0xfffffff0) == 0x000001f0) ||
++      ((sync & 0xfffffff0) == 0x000001e0);
++}
++
++
++static inline gboolean
++gst_ts_demux_scan_ts(const guint8 *data, guint64 *pts)
++{
++		guint32 start_code;
++ 
++		/*get start code*/
++		start_code = GST_READ_UINT32_BE(data);
++		if(!gst_pes_filter_is_sync(start_code))
++				goto beach;
++		/*skip start code and length*/
++		data += 6;
++
++		switch(start_code) {
++				case ID_PS_PROGRAM_STREAM_MAP:
++				case ID_PRIVATE_STREAM_2:
++				case ID_ECM_STREAM:
++				case ID_EMM_STREAM:
++				case ID_PROGRAM_STREAM_DIRECTORY:
++				case ID_DSMCC_STREAM:
++				case ID_ITU_TREC_H222_TYPE_E_STREAM:
++				case ID_PADDING_STREAM:
++						goto beach;
++				default:
++						break;
++		}
++
++		/* stuffing bits, first two bits are '10' for mpeg2 pes so this code is
++			* not triggered. */
++		while (TRUE) {
++			if (*data != 0xff)
++				break;
++			data++; 
++		}
++
++		/* STD buffer size, never for mpeg2 */
++		if ((*data & 0xc0) == 0x40) {
++			data += 2;
++		}
++
++		/* PTS but no DTS, never for mpeg2 */
++		if ((*data & 0xf0) == 0x20 || (*data & 0xf0) == 0x30) {
++			READ_TS(data,*pts,beach);
++		} else if ((*data & 0xc0) == 0x80) {
++			/* mpeg2 case */
++			guchar flags = 0;
++			/* 2: PTS_DTS_flags
++			 * 1: ESCR_flag
++			 * 1: ES_rate_flag
++			 * 1: DSM_trick_mode_flag
++			 * 1: additional_copy_info_flag
++			 * 1: PES_CRC_flag
++			 * 1: PES_extension_flag
++			 */
++			data++;
++			flags = *data++;
++
++			data++;
++			/* only DTS: this is invalid */
++			if ((flags & 0xc0) == 0x40)
++				goto beach;
++
++			/* check for PTS */
++			if (flags & 0x80) {
++				READ_TS(data,*pts,beach);
++			}
++		} else if (*data == 0x0f) {
++			/* Not sure what this clause is for */
++			data++;
++		} else {
++			goto beach;
++		}
++		
++		return TRUE;
++beach:
++		return FALSE;
++}
++
++
++static inline gboolean 
++gst_ts_demux_scan_forward_ts(GstFileSrc * src, guint64 *pos, 
++guint64 *pts, guint64 *stop)
++{
++  GstBuffer *buffer = NULL;
++  guint8 *data = NULL;
++  guint64 offset = *pos;
++  gboolean found = FALSE;
++  int endscan;
++  guint cursor;
++  guint to_read = SCAN_BLOCK;
++
++  do {
++      if(offset > *stop) {
++          return FALSE;
++      }
++
++      if(offset + to_read > *stop)
++          to_read = *stop - offset + 1;
++
++      /*read some data*/
++      buffer = gst_buffer_try_new_and_alloc (to_read);
++			lseek (src->fd, offset, SEEK_SET);
++			endscan = read (src->fd, GST_BUFFER_DATA (buffer), to_read);
++			if(endscan < 0)
++				return found;
++
++
++      data = GST_BUFFER_DATA(buffer);
++    
++      /*scan the block*/
++      for(cursor = 0; !found && cursor < endscan; cursor++) {
++          found = gst_ts_demux_scan_ts(data++, pts); 
++      }
++
++      /*done with the buffer, unref it*/
++      gst_buffer_unref(buffer);
++
++      if(G_UNLIKELY(!found)) {
++          offset += cursor;
++      } 
++  }while(!found && offset < *stop);
++  return found;
++}
++
++
++static inline gboolean
++gst_ts_demux_scan_backward_ts(GstFileSrc * src, guint64 *pos, 
++guint64 *pts)
++{
++  GstBuffer *buffer = NULL;
++  guint8 *data = NULL;
++  gint64 offset = *pos;
++  gboolean found = FALSE;
++  guint64 startscan;
++  guint cursor;
++  guint to_read = SCAN_BLOCK;
++
++  do {
++      if(offset > SCAN_BLOCK)
++          offset -= SCAN_BLOCK;
++      else {
++          to_read = offset + 1;
++          offset = 0;
++      }
++
++      /*read some data*/
++			buffer = gst_buffer_try_new_and_alloc (to_read);
++			lseek (src->fd, offset, SEEK_SET);
++			startscan = read (src->fd, GST_BUFFER_DATA (buffer), to_read);
++			if(startscan < 0)
++				return found;
++
++      data = GST_BUFFER_DATA(buffer) + startscan;
++
++      /*scan the block*/
++      for(cursor = (startscan + 1); !found && cursor > 0; cursor--) {
++          found = gst_ts_demux_scan_ts(data--, pts); 
++      }
++
++      if(found) {
++          *pos = offset + cursor;
++      }
++
++      /*done with the buffer, unref it*/
++      gst_buffer_unref(buffer);
++          
++  }while(!found && offset > 0);
++
++  return found;
++}
++
++
++static guint64 
++gst_filesrc_estimate_duration(GstFileSrc * src, off_t *length)
++{
++   guint64 offset = 0, start = 0, endpos = *length - 1;
++   guint64 first_pts = 0;
++   guint64 last_pts = 0;
++   guint64 dpts;
++
++   /*get the first PTS*/
++   offset = start;
++   gst_ts_demux_scan_forward_ts(src, &offset, &first_pts, &endpos);
++  
++   /*get the last PTS*/
++   offset = endpos;
++   gst_ts_demux_scan_backward_ts(src, &offset, &last_pts);
++   
++   /*Detect wrong PTS values, fixes demuxing some VOP files*/
++   if(first_pts >= last_pts) {
++     guint64 segment, temp_pts, i;
++     segment = offset - start;
++     temp_pts = last_pts;
++     /* Authorize ourselves 8 tries */
++     for (i = 0; i < 8; i++) {
++       segment /= 2;
++       if (first_pts >= temp_pts) {
++         /* Go closer to file start */
++         offset -= segment;
++       }
++       else {
++         /* Go closer to file end */
++         offset += segment;
++       }
++   /* Now search. */
++   /* We could try to optimize search direction using previous result */
++       gst_ts_demux_scan_forward_ts(src, &offset, &first_pts, &endpos);
++       if (first_pts < temp_pts) {
++           last_pts = temp_pts;
++       }
++     }
++   }
++
++	dpts = last_pts - first_pts;
++
++  return dpts;  
++}
++
++
+ /* open the file and mmap it, necessary to go to READY state */
+ static gboolean
+ gst_file_src_start (GstBaseSrc * basesrc)
+@@ -1008,13 +1278,19 @@ gst_file_src_start (GstBaseSrc * basesrc
+     /* If not in mmap mode, we need to check if the underlying file is
+      * seekable. */
+     off_t res = lseek (src->fd, 0, SEEK_END);
+-
++		guint64 durationbytes;
++		gchar *p;
++    p = g_strrstr(src->uri, ".");
+     if (res < 0) {
+       GST_LOG_OBJECT (src, "disabling seeking, not in mmap mode and lseek "
+           "failed: %s", g_strerror (errno));
+       src->seekable = FALSE;
+     } else {
+       src->seekable = TRUE;
++			if(0 == g_strcmp0(p, ".ts")){
++				durationbytes = gst_filesrc_estimate_duration(src, &res);
++				src->duration = MPEGTIME_TO_GSTTIME(durationbytes);
++			}
+     }
+     lseek (src->fd, 0, SEEK_SET);
+   }

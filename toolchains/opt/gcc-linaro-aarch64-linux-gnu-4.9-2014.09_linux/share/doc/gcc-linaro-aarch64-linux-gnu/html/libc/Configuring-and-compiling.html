@@ -1,0 +1,274 @@
+<html lang="en">
+<head>
+<title>Configuring and compiling - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Installation.html#Installation" title="Installation">
+<link rel="next" href="Running-make-install.html#Running-make-install" title="Running make install">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Configuring-and-compiling"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Running-make-install.html#Running-make-install">Running make install</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Installation.html#Installation">Installation</a>
+<hr>
+</div>
+
+<h3 class="appendixsec">C.1 Configuring and compiling the GNU C Library</h3>
+
+<p><a name="index-configuring-3907"></a><a name="index-compiling-3908"></a>
+The GNU C Library cannot be compiled in the source directory.  You must build
+it in a separate build directory.  For example, if you have unpacked
+the GNU C Library sources in <samp><span class="file">/src/gnu/glibc-</span><var>version</var></samp>,
+create a directory
+<samp><span class="file">/src/gnu/glibc-build</span></samp> to put the object files in.  This allows
+removing the whole build directory in case an error occurs, which is
+the safest way to get a fresh start and should always be done.
+
+   <p>From your object directory, run the shell script <samp><span class="file">configure</span></samp> located
+at the top level of the source tree.  In the scenario above, you'd type
+
+<pre class="smallexample">     $ ../glibc-<var>version</var>/configure <var>args<small class="dots">...</small></var>
+</pre>
+   <p>Please note that even though you're building in a separate build
+directory, the compilation may need to create or modify files and
+directories in the source directory.
+
+<p class="noindent"><code>configure</code> takes many options, but the only one that is usually
+mandatory is &lsquo;<samp><span class="samp">--prefix</span></samp>&rsquo;.  This option tells <code>configure</code>
+where you want the GNU C Library installed.  This defaults to <samp><span class="file">/usr/local</span></samp>,
+but the normal setting to install as the standard system library is
+&lsquo;<samp><span class="samp">--prefix=/usr</span></samp>&rsquo; for GNU/Linux systems and &lsquo;<samp><span class="samp">--prefix=</span></samp>&rsquo; (an
+empty prefix) for GNU/Hurd systems.
+
+   <p>It may also be useful to set the <var>CC</var> and <var>CFLAGS</var> variables in
+the environment when running <code>configure</code>.  <var>CC</var> selects the C
+compiler that will be used, and <var>CFLAGS</var> sets optimization options
+for the compiler.
+
+   <p>The following list describes all of the available options for
+ <code>configure</code>:
+
+     <dl>
+<dt>&lsquo;<samp><span class="samp">--prefix=</span><var>directory</var></samp>&rsquo;<dd>Install machine-independent data files in subdirectories of
+<samp><var>directory</var></samp>.  The default is to install in <samp><span class="file">/usr/local</span></samp>.
+
+     <br><dt>&lsquo;<samp><span class="samp">--exec-prefix=</span><var>directory</var></samp>&rsquo;<dd>Install the library and other machine-dependent files in subdirectories
+of <samp><var>directory</var></samp>.  The default is to the &lsquo;<samp><span class="samp">--prefix</span></samp>&rsquo;
+directory if that option is specified, or <samp><span class="file">/usr/local</span></samp> otherwise.
+
+     <br><dt>&lsquo;<samp><span class="samp">--with-headers=</span><var>directory</var></samp>&rsquo;<dd>Look for kernel header files in <var>directory</var>, not
+<samp><span class="file">/usr/include</span></samp>.  The GNU C Library needs information from the kernel's header
+files describing the interface to the kernel.  The GNU C Library will normally
+look in <samp><span class="file">/usr/include</span></samp> for them,
+but if you specify this option, it will look in <var>DIRECTORY</var> instead.
+
+     <p>This option is primarily of use on a system where the headers in
+<samp><span class="file">/usr/include</span></samp> come from an older version of the GNU C Library.  Conflicts can
+occasionally happen in this case.  You can also use this option if you want to
+compile the GNU C Library with a newer set of kernel headers than the ones found in
+<samp><span class="file">/usr/include</span></samp>.
+
+     <br><dt>&lsquo;<samp><span class="samp">--enable-add-ons[=</span><var>list</var><span class="samp">]</span></samp>&rsquo;<dd>Specify add-on packages to include in the build.  If this option is
+specified with no list, it enables all the add-on packages it finds in
+the main source directory; this is the default behavior.  You may
+specify an explicit list of add-ons to use in <var>list</var>, separated by
+spaces or commas (if you use spaces, remember to quote them from the
+shell).  Each add-on in <var>list</var> can be an absolute directory name
+or can be a directory name relative to the main source directory, or
+relative to the build directory (that is, the current working directory). 
+For example, &lsquo;<samp><span class="samp">--enable-add-ons=nptl,../glibc-libidn-</span><var>version</var></samp>&rsquo;.
+
+     <br><dt>&lsquo;<samp><span class="samp">--enable-kernel=</span><var>version</var></samp>&rsquo;<dd>This option is currently only useful on GNU/Linux systems.  The
+<var>version</var> parameter should have the form X.Y.Z and describes the
+smallest version of the Linux kernel the generated library is expected
+to support.  The higher the <var>version</var> number is, the less
+compatibility code is added, and the faster the code gets.
+
+     <br><dt>&lsquo;<samp><span class="samp">--with-binutils=</span><var>directory</var></samp>&rsquo;<dd>Use the binutils (assembler and linker) in <samp><var>directory</var></samp>, not
+the ones the C compiler would default to.  You can use this option if
+the default binutils on your system cannot deal with all the constructs
+in the GNU C Library.  In that case, <code>configure</code> will detect the
+problem and suppress these constructs, so that the library will still be
+usable, but functionality may be lost&mdash;for example, you can't build a
+shared libc with old binutils.
+
+     <br><dt>&lsquo;<samp><span class="samp">--without-fp</span></samp>&rsquo;<dd>Use this option if your computer lacks hardware floating-point support
+and your operating system does not emulate an FPU.
+
+     <!-- disable static doesn't work currently -->
+     <!-- @item -disable-static -->
+     <!-- Don't build static libraries.  Static libraries aren't that useful these -->
+     <!-- days, but we recommend you build them in case you need them. -->
+     <br><dt>&lsquo;<samp><span class="samp">--disable-shared</span></samp>&rsquo;<dd>Don't build shared libraries even if it is possible.  Not all systems
+support shared libraries; you need ELF support and (currently) the GNU
+linker.
+
+     <br><dt>&lsquo;<samp><span class="samp">--disable-profile</span></samp>&rsquo;<dd>Don't build libraries with profiling information.  You may want to use
+this option if you don't plan to do profiling.
+
+     <br><dt>&lsquo;<samp><span class="samp">--enable-static-nss</span></samp>&rsquo;<dd>Compile static versions of the NSS (Name Service Switch) libraries. 
+This is not recommended because it defeats the purpose of NSS; a program
+linked statically with the NSS libraries cannot be dynamically
+reconfigured to use a different name database.
+
+     <br><dt>&lsquo;<samp><span class="samp">--without-tls</span></samp>&rsquo;<dd>By default the C library is built with support for thread-local storage
+if the used tools support it.  By using &lsquo;<samp><span class="samp">--without-tls</span></samp>&rsquo; this can be
+prevented though there generally is no reason since it creates
+compatibility problems.
+
+     <br><dt>&lsquo;<samp><span class="samp">--enable-hardcoded-path-in-tests</span></samp>&rsquo;<dd>By default, dynamic tests are linked to run with the installed C library. 
+This option hardcodes the newly built C library path in dynamic tests
+so that they can be invoked directly.
+
+     <br><dt>&lsquo;<samp><span class="samp">--enable-lock-elision=yes</span></samp>&rsquo;<dd>Enable lock elision for pthread mutexes by default.
+
+     <p><a name="index-pt_005fchown-3909"></a><a name="index-grantpt-3910"></a><br><dt>&lsquo;<samp><span class="samp">--enable-pt_chown</span></samp>&rsquo;<dd>The file <samp><span class="file">pt_chown</span></samp> is a helper binary for <code>grantpt</code>
+(see <a href="Allocation.html#Allocation">Pseudo-Terminals</a>) that is installed setuid root to
+fix up pseudo-terminal ownership.  It is not built by default because
+systems using the Linux kernel are commonly built with the <code>devpts</code>
+filesystem enabled and mounted at <samp><span class="file">/dev/pts</span></samp>, which manages
+pseudo-terminal ownership automatically.  By using
+&lsquo;<samp><span class="samp">--enable-pt_chown</span></samp>&rsquo;, you may build <samp><span class="file">pt_chown</span></samp> and install it
+setuid and owned by <code>root</code>.  The use of <samp><span class="file">pt_chown</span></samp> introduces
+additional security risks to the system and you should enable it only if
+you understand and accept those risks.
+
+     <br><dt>&lsquo;<samp><span class="samp">--build=</span><var>build-system</var></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--host=</span><var>host-system</var></samp>&rsquo;<dd>These options are for cross-compiling.  If you specify both options and
+<var>build-system</var> is different from <var>host-system</var>, <code>configure</code>
+will prepare to cross-compile the GNU C Library from <var>build-system</var> to be used
+on <var>host-system</var>.  You'll probably need the &lsquo;<samp><span class="samp">--with-headers</span></samp>&rsquo;
+option too, and you may have to override <var>configure</var>'s selection of
+the compiler and/or binutils.
+
+     <p>If you only specify &lsquo;<samp><span class="samp">--host</span></samp>&rsquo;, <code>configure</code> will prepare for a
+native compile but use what you specify instead of guessing what your
+system is. This is most useful to change the CPU submodel.  For example,
+if <code>configure</code> guesses your machine as <code>i686-pc-linux-gnu</code> but
+you want to compile a library for 586es, give
+&lsquo;<samp><span class="samp">--host=i586-pc-linux-gnu</span></samp>&rsquo; or just &lsquo;<samp><span class="samp">--host=i586-linux</span></samp>&rsquo; and add
+the appropriate compiler flags (&lsquo;<samp><span class="samp">-mcpu=i586</span></samp>&rsquo; will do the trick) to
+<var>CFLAGS</var>.
+
+     <p>If you specify just &lsquo;<samp><span class="samp">--build</span></samp>&rsquo;, <code>configure</code> will get confused.
+
+     <br><dt>&lsquo;<samp><span class="samp">--with-pkgversion=</span><var>version</var></samp>&rsquo;<dd>Specify a description, possibly including a build number or build
+date, of the binaries being built, to be included in
+<samp><span class="option">--version</span></samp> output from programs installed with the GNU C Library. 
+For example, <samp><span class="option">--with-pkgversion='FooBar GNU/Linux glibc build
+123'</span></samp>.  The default value is &lsquo;<samp><span class="samp">GNU libc</span></samp>&rsquo;.
+
+     <br><dt>&lsquo;<samp><span class="samp">--with-bugurl=</span><var>url</var></samp>&rsquo;<dd>Specify the URL that users should visit if they wish to report a bug,
+to be included in <samp><span class="option">--help</span></samp> output from programs installed with
+the GNU C Library.  The default value refers to the main bug-reporting
+information for the GNU C Library. 
+</dl>
+
+   <p>To build the library and related programs, type <code>make</code>.  This will
+produce a lot of output, some of which may look like errors from
+<code>make</code> but isn't.  Look for error messages from <code>make</code>
+containing &lsquo;<samp><span class="samp">***</span></samp>&rsquo;.  Those indicate that something is seriously wrong.
+
+   <p>The compilation process can take a long time, depending on the
+configuration and the speed of your machine.  Some complex modules may
+take a very long time to compile, as much as several minutes on slower
+machines.  Do not panic if the compiler appears to hang.
+
+   <p>If you want to run a parallel make, simply pass the &lsquo;<samp><span class="samp">-j</span></samp>&rsquo; option
+with an appropriate numeric parameter to <code>make</code>.  You need a recent
+GNU <code>make</code> version, though.
+
+   <p>To build and run test programs which exercise some of the library
+facilities, type <code>make check</code>.  If it does not complete
+successfully, do not use the built library, and report a bug after
+verifying that the problem is not already known.  See <a href="Reporting-Bugs.html#Reporting-Bugs">Reporting Bugs</a>,
+for instructions on reporting bugs.  Note that some of the tests assume
+they are not being run by <code>root</code>.  We recommend you compile and
+test the GNU C Library as an unprivileged user.
+
+   <p>Before reporting bugs make sure there is no problem with your system. 
+The tests (and later installation) use some pre-existing files of the
+system such as <samp><span class="file">/etc/passwd</span></samp>, <samp><span class="file">/etc/nsswitch.conf</span></samp> and others. 
+These files must all contain correct and sensible content.
+
+   <p>To format the <cite>GNU C Library Reference Manual</cite> for printing, type
+<code>make&nbsp;dvi</code><!-- /@w -->.  You need a working TeX installation to do
+this.  The distribution builds the on-line formatted version of the
+manual, as Info files, as part of the build process.  You can build
+them manually with <code>make&nbsp;info</code><!-- /@w -->.
+
+   <p>The library has a number of special-purpose configuration parameters
+which you can find in <samp><span class="file">Makeconfig</span></samp>.  These can be overwritten with
+the file <samp><span class="file">configparms</span></samp>.  To change them, create a
+<samp><span class="file">configparms</span></samp> in your build directory and add values as appropriate
+for your system.  The file is included and parsed by <code>make</code> and has
+to follow the conventions for makefiles.
+
+   <p>It is easy to configure the GNU C Library for cross-compilation by
+setting a few variables in <samp><span class="file">configparms</span></samp>.  Set <code>CC</code> to the
+cross-compiler for the target you configured the library for; it is
+important to use this same <code>CC</code> value when running
+<code>configure</code>, like this: &lsquo;<samp><span class="samp">CC=</span><var>target</var><span class="samp">-gcc configure
+</span><var>target</var></samp>&rsquo;.  Set <code>BUILD_CC</code> to the compiler to use for programs
+run on the build system as part of compiling the library.  You may need to
+set <code>AR</code> to cross-compiling versions of <code>ar</code>
+if the native tools are not configured to work with
+object files for the target you configured for.  When cross-compiling
+the GNU C Library, it may be tested using &lsquo;<samp><span class="samp">make check
+test-wrapper="</span><var>srcdir</var><span class="samp">/scripts/cross-test-ssh.sh </span><var>hostname</var><span class="samp">"</span></samp>&rsquo;,
+where <var>srcdir</var> is the absolute directory name for the main source
+directory and <var>hostname</var> is the host name of a system that can run
+the newly built binaries of the GNU C Library.  The source and build
+directories must be visible at the same locations on both the build
+system and <var>hostname</var>.
+
+   <p>In general, when testing the GNU C Library, &lsquo;<samp><span class="samp">test-wrapper</span></samp>&rsquo; may be set
+to the name and arguments of any program to run newly built binaries. 
+This program must preserve the arguments to the binary being run, its
+working directory, all environment variables set as part of testing
+and the standard input, output and error file descriptors.  If
+&lsquo;<samp><var>test-wrapper</var><span class="samp"> env</span></samp>&rsquo; will not work to run a program with
+environment variables set, then &lsquo;<samp><span class="samp">test-wrapper-env</span></samp>&rsquo; must be set to
+a program that runs a newly built program with environment variable
+assignments in effect, those assignments being specified as
+&lsquo;<samp><var>var</var><span class="samp">=</span><var>value</var></samp>&rsquo; before the name of the program to be run.
+
+   </body></html>
+

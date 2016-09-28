@@ -1,0 +1,342 @@
+<html lang="en">
+<head>
+<title>Basic Allocation - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Unconstrained-Allocation.html#Unconstrained-Allocation" title="Unconstrained Allocation">
+<link rel="next" href="Malloc-Examples.html#Malloc-Examples" title="Malloc Examples">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Basic-Allocation"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Malloc-Examples.html#Malloc-Examples">Malloc Examples</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Unconstrained-Allocation.html#Unconstrained-Allocation">Unconstrained Allocation</a>
+<hr>
+</div>
+
+<h5 class="subsubsection">3.2.2.1 Basic Memory Allocation</h5>
+
+<p><a name="index-allocation-of-memory-with-_0040code_007bmalloc_007d-297"></a>
+To allocate a block of memory, call <code>malloc</code>.  The prototype for
+this function is in <samp><span class="file">stdlib.h</span></samp>. 
+<a name="index-stdlib_002eh-298"></a>
+<!-- malloc.h stdlib.h -->
+<!-- ISO -->
+
+<div class="defun">
+&mdash; Function: void * <b>malloc</b> (<var>size_t size</var>)<var><a name="index-malloc-299"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe lock
+| AC-Unsafe lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Malloc hooks and __morecore pointers, as well as such parameters as -->
+     <!-- max_n_mmaps and max_mmapped_mem, are accessed without guards, so they -->
+     <!-- could pose a thread safety issue; in order to not declare malloc -->
+     <!-- MT-unsafe, it's modifying the hooks and parameters while multiple -->
+     <!-- threads are active that is regarded as unsafe.  An arena's next field -->
+     <!-- is initialized and never changed again, except for main_arena's, -->
+     <!-- that's protected by list_lock; next_free is only modified while -->
+     <!-- list_lock is held too.  All other data members of an arena, as well -->
+     <!-- as the metadata of the memory areas assigned to it, are only modified -->
+     <!-- while holding the arena's mutex (fastbin pointers use catomic ops -->
+     <!-- because they may be modified by free without taking the arena's -->
+     <!-- lock).  Some reassurance was needed for fastbins, for it wasn't clear -->
+     <!-- how they were initialized.  It turns out they are always -->
+     <!-- zero-initialized: main_arena's, for being static data, and other -->
+     <!-- arena's, for being just-mmapped memory. -->
+     <!-- Leaking file descriptors and memory in case of cancellation is -->
+     <!-- unavoidable without disabling cancellation, but the lock situation is -->
+     <!-- a bit more complicated: we don't have fallback arenas for malloc to -->
+     <!-- be safe to call from within signal handlers.  Error-checking mutexes -->
+     <!-- or trylock could enable us to try and use alternate arenas, even with -->
+     <!-- DPER_THREAD (enabled by default), but supporting interruption -->
+     <!-- (cancellation or signal handling) while holding the arena list mutex -->
+     <!-- would require more work; maybe blocking signals and disabling async -->
+     <!-- cancellation while manipulating the arena lists? -->
+     <!-- __libc_malloc @asulock @aculock @acsfd @acsmem -->
+     <!-- force_reg ok -->
+     <!-- *malloc_hook unguarded -->
+     <!-- arena_lookup ok -->
+     <!-- tsd_getspecific ok, TLS -->
+     <!-- arena_lock @asulock @aculock @acsfd @acsmem -->
+     <!-- mutex_lock @asulock @aculock -->
+     <!-- arena_get2 @asulock @aculock @acsfd @acsmem -->
+     <!-- get_free_list @asulock @aculock -->
+     <!-- mutex_lock (list_lock) dup @asulock @aculock -->
+     <!-- mutex_unlock (list_lock) dup @aculock -->
+     <!-- mutex_lock (arena lock) dup @asulock @aculock [returns locked] -->
+     <!-- tsd_setspecific ok, TLS -->
+     <!-- __get_nprocs ext ok @acsfd -->
+     <!-- NARENAS_FROM_NCORES ok -->
+     <!-- catomic_compare_and_exchange_bool_acq ok -->
+     <!-- _int_new_arena ok @asulock @aculock @acsmem -->
+     <!-- new_heap ok @acsmem -->
+     <!-- mmap ok @acsmem -->
+     <!-- munmap ok @acsmem -->
+     <!-- mprotect ok -->
+     <!-- chunk2mem ok -->
+     <!-- set_head ok -->
+     <!-- tsd_setspecific dup ok -->
+     <!-- mutex_init ok -->
+     <!-- mutex_lock (just-created mutex) ok, returns locked -->
+     <!-- mutex_lock (list_lock) dup @asulock @aculock -->
+     <!-- atomic_write_barrier ok -->
+     <!-- mutex_unlock (list_lock) @aculock -->
+     <!-- catomic_decrement ok -->
+     <!-- reused_arena @asulock @aculock -->
+     <!-- reads&writes next_to_use and iterates over arena next without guards -->
+     <!-- those are harmless as long as we don't drop arenas from the -->
+     <!-- NEXT list, and we never do; when a thread terminates, -->
+     <!-- arena_thread_freeres prepends the arena to the free_list -->
+     <!-- NEXT_FREE list, but NEXT is never modified, so it's safe! -->
+     <!-- mutex_trylock (arena lock) @asulock @aculock -->
+     <!-- mutex_lock (arena lock) dup @asulock @aculock -->
+     <!-- tsd_setspecific dup ok -->
+     <!-- _int_malloc @acsfd @acsmem -->
+     <!-- checked_request2size ok -->
+     <!-- REQUEST_OUT_OF_RANGE ok -->
+     <!-- request2size ok -->
+     <!-- get_max_fast ok -->
+     <!-- fastbin_index ok -->
+     <!-- fastbin ok -->
+     <!-- catomic_compare_and_exhange_val_acq ok -->
+     <!-- malloc_printerr dup @mtsenv -->
+     <!-- if we get to it, we're toast already, undefined behavior must have -->
+     <!-- been invoked before -->
+     <!-- libc_message @mtsenv [no leaks with cancellation disabled] -->
+     <!-- FATAL_PREPARE ok -->
+     <!-- pthread_setcancelstate disable ok -->
+     <!-- libc_secure_getenv @mtsenv -->
+     <!-- getenv @mtsenv -->
+     <!-- open_not_cancel_2 dup @acsfd -->
+     <!-- strchrnul ok -->
+     <!-- WRITEV_FOR_FATAL ok -->
+     <!-- writev ok -->
+     <!-- mmap ok @acsmem -->
+     <!-- munmap ok @acsmem -->
+     <!-- BEFORE_ABORT @acsfd -->
+     <!-- backtrace ok -->
+     <!-- write_not_cancel dup ok -->
+     <!-- backtrace_symbols_fd @aculock -->
+     <!-- open_not_cancel_2 dup @acsfd -->
+     <!-- read_not_cancel dup ok -->
+     <!-- close_not_cancel_no_status dup @acsfd -->
+     <!-- abort ok -->
+     <!-- itoa_word ok -->
+     <!-- abort ok -->
+     <!-- check_remalloced_chunk ok/disabled -->
+     <!-- chunk2mem dup ok -->
+     <!-- alloc_perturb ok -->
+     <!-- in_smallbin_range ok -->
+     <!-- smallbin_index ok -->
+     <!-- bin_at ok -->
+     <!-- last ok -->
+     <!-- malloc_consolidate ok -->
+     <!-- get_max_fast dup ok -->
+     <!-- clear_fastchunks ok -->
+     <!-- unsorted_chunks dup ok -->
+     <!-- fastbin dup ok -->
+     <!-- atomic_exchange_acq ok -->
+     <!-- check_inuse_chunk dup ok/disabled -->
+     <!-- chunk_at_offset dup ok -->
+     <!-- chunksize dup ok -->
+     <!-- inuse_bit_at_offset dup ok -->
+     <!-- unlink dup ok -->
+     <!-- clear_inuse_bit_at_offset dup ok -->
+     <!-- in_smallbin_range dup ok -->
+     <!-- set_head dup ok -->
+     <!-- malloc_init_state ok -->
+     <!-- bin_at dup ok -->
+     <!-- set_noncontiguous dup ok -->
+     <!-- set_max_fast dup ok -->
+     <!-- initial_top ok -->
+     <!-- unsorted_chunks dup ok -->
+     <!-- check_malloc_state ok/disabled -->
+     <!-- set_inuse_bit_at_offset ok -->
+     <!-- check_malloced_chunk ok/disabled -->
+     <!-- largebin_index ok -->
+     <!-- have_fastchunks ok -->
+     <!-- unsorted_chunks ok -->
+     <!-- bin_at ok -->
+     <!-- chunksize ok -->
+     <!-- chunk_at_offset ok -->
+     <!-- set_head ok -->
+     <!-- set_foot ok -->
+     <!-- mark_bin ok -->
+     <!-- idx2bit ok -->
+     <!-- first ok -->
+     <!-- unlink ok -->
+     <!-- malloc_printerr dup ok -->
+     <!-- in_smallbin_range dup ok -->
+     <!-- idx2block ok -->
+     <!-- idx2bit dup ok -->
+     <!-- next_bin ok -->
+     <!-- sysmalloc @acsfd @acsmem -->
+     <!-- MMAP @acsmem -->
+     <!-- set_head dup ok -->
+     <!-- check_chunk ok/disabled -->
+     <!-- chunk2mem dup ok -->
+     <!-- chunksize dup ok -->
+     <!-- chunk_at_offset dup ok -->
+     <!-- heap_for_ptr ok -->
+     <!-- grow_heap ok -->
+     <!-- mprotect ok -->
+     <!-- set_head dup ok -->
+     <!-- new_heap @acsmem -->
+     <!-- MMAP dup @acsmem -->
+     <!-- munmap @acsmem -->
+     <!-- top ok -->
+     <!-- set_foot dup ok -->
+     <!-- contiguous ok -->
+     <!-- MORECORE ok -->
+     <!-- *__morecore ok unguarded -->
+     <!-- __default_morecore -->
+     <!-- sbrk ok -->
+     <!-- force_reg dup ok -->
+     <!-- *__after_morecore_hook unguarded -->
+     <!-- set_noncontiguous ok -->
+     <!-- malloc_printerr dup ok -->
+     <!-- _int_free (have_lock) @acsfd @acsmem [@asulock @aculock] -->
+     <!-- chunksize dup ok -->
+     <!-- mutex_unlock dup @aculock/!have_lock -->
+     <!-- malloc_printerr dup ok -->
+     <!-- check_inuse_chunk ok/disabled -->
+     <!-- chunk_at_offset dup ok -->
+     <!-- mutex_lock dup @asulock @aculock/@have_lock -->
+     <!-- chunk2mem dup ok -->
+     <!-- free_perturb ok -->
+     <!-- set_fastchunks ok -->
+     <!-- catomic_and ok -->
+     <!-- fastbin_index dup ok -->
+     <!-- fastbin dup ok -->
+     <!-- catomic_compare_and_exchange_val_rel ok -->
+     <!-- chunk_is_mmapped ok -->
+     <!-- contiguous dup ok -->
+     <!-- prev_inuse ok -->
+     <!-- unlink dup ok -->
+     <!-- inuse_bit_at_offset dup ok -->
+     <!-- clear_inuse_bit_at_offset ok -->
+     <!-- unsorted_chunks dup ok -->
+     <!-- in_smallbin_range dup ok -->
+     <!-- set_head dup ok -->
+     <!-- set_foot dup ok -->
+     <!-- check_free_chunk ok/disabled -->
+     <!-- check_chunk dup ok/disabled -->
+     <!-- have_fastchunks dup ok -->
+     <!-- malloc_consolidate dup ok -->
+     <!-- systrim ok -->
+     <!-- MORECORE dup ok -->
+     <!-- *__after_morecore_hook dup unguarded -->
+     <!-- set_head dup ok -->
+     <!-- check_malloc_state ok/disabled -->
+     <!-- top dup ok -->
+     <!-- heap_for_ptr dup ok -->
+     <!-- heap_trim @acsfd @acsmem -->
+     <!-- top dup ok -->
+     <!-- chunk_at_offset dup ok -->
+     <!-- prev_chunk ok -->
+     <!-- chunksize dup ok -->
+     <!-- prev_inuse dup ok -->
+     <!-- delete_heap @acsmem -->
+     <!-- munmap dup @acsmem -->
+     <!-- unlink dup ok -->
+     <!-- set_head dup ok -->
+     <!-- shrink_heap @acsfd -->
+     <!-- check_may_shrink_heap @acsfd -->
+     <!-- open_not_cancel_2 @acsfd -->
+     <!-- read_not_cancel ok -->
+     <!-- close_not_cancel_no_status @acsfd -->
+     <!-- MMAP dup ok -->
+     <!-- madvise ok -->
+     <!-- munmap_chunk @acsmem -->
+     <!-- chunksize dup ok -->
+     <!-- chunk_is_mmapped dup ok -->
+     <!-- chunk2mem dup ok -->
+     <!-- malloc_printerr dup ok -->
+     <!-- munmap dup @acsmem -->
+     <!-- check_malloc_state ok/disabled -->
+     <!-- arena_get_retry @asulock @aculock @acsfd @acsmem -->
+     <!-- mutex_unlock dup @aculock -->
+     <!-- mutex_lock dup @asulock @aculock -->
+     <!-- arena_get2 dup @asulock @aculock @acsfd @acsmem -->
+     <!-- mutex_unlock @aculock -->
+     <!-- mem2chunk ok -->
+     <!-- chunk_is_mmapped ok -->
+     <!-- arena_for_chunk ok -->
+     <!-- chunk_non_main_arena ok -->
+     <!-- heap_for_ptr ok -->
+        <p>This function returns a pointer to a newly allocated block <var>size</var>
+bytes long, or a null pointer if the block could not be allocated. 
+</p></blockquote></div>
+
+   <p>The contents of the block are undefined; you must initialize it yourself
+(or use <code>calloc</code> instead; see <a href="Allocating-Cleared-Space.html#Allocating-Cleared-Space">Allocating Cleared Space</a>). 
+Normally you would cast the value as a pointer to the kind of object
+that you want to store in the block.  Here we show an example of doing
+so, and of initializing the space with zeros using the library function
+<code>memset</code> (see <a href="Copying-and-Concatenation.html#Copying-and-Concatenation">Copying and Concatenation</a>):
+
+<pre class="smallexample">     struct foo *ptr;
+     ...
+     ptr = (struct foo *) malloc (sizeof (struct foo));
+     if (ptr == 0) abort ();
+     memset (ptr, 0, sizeof (struct foo));
+</pre>
+   <p>You can store the result of <code>malloc</code> into any pointer variable
+without a cast, because ISO&nbsp;C<!-- /@w --> automatically converts the type
+<code>void *</code> to another type of pointer when necessary.  But the cast
+is necessary in contexts other than assignment operators or if you might
+want your code to run in traditional C.
+
+   <p>Remember that when allocating space for a string, the argument to
+<code>malloc</code> must be one plus the length of the string.  This is
+because a string is terminated with a null character that doesn't count
+in the &ldquo;length&rdquo; of the string but does need space.  For example:
+
+<pre class="smallexample">     char *ptr;
+     ...
+     ptr = (char *) malloc (length + 1);
+</pre>
+   <p class="noindent">See <a href="Representation-of-Strings.html#Representation-of-Strings">Representation of Strings</a>, for more information about this.
+
+   </body></html>
+

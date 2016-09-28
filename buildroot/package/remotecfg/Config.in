@@ -1,0 +1,7 @@
+config BR2_PACKAGE_REMOTECFG
+        bool "remotecfg"
+        help
+          amlogic remote config tool.
+
+          http://openlinux.amlogic.com
+

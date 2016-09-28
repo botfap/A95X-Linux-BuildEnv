@@ -1,0 +1,11 @@
+--- gstreamer-0.10.36/plugins/elements/gstfilesrc.h.orig	2011-12-11 10:45:59.000000000 -0800
++++ gstreamer-0.10.36/plugins/elements/gstfilesrc.h	2014-04-27 19:01:19.870669700 -0700
+@@ -72,6 +72,8 @@ struct _GstFileSrc {
+   GstBuffer *mapbuf;
+   size_t mapsize;
+   gboolean use_mmap;
++
++	guint64 duration;
+ };
+ 
+ struct _GstFileSrcClass {

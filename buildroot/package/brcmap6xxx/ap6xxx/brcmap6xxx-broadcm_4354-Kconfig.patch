@@ -1,0 +1,29 @@
+Index: brcmap6xxx-ap6xxx/broadcm_4354/Kconfig
+===================================================================
+--- brcmap6xxx-ap6xxx.orig/broadcm_4354/Kconfig	2014-12-10 17:06:59.000000000 +0800
++++ brcmap6xxx-ap6xxx/broadcm_4354/Kconfig	2015-05-06 12:20:47.163227030 +0800
+@@ -9,21 +9,21 @@
+ config BCMDHD_FW_PATH
+ 	depends on BCMDHD_4354_AMPAK
+ 	string "Firmware path"
+-	default "/system/etc/firmware/fw_bcmdhd.bin"
++	default "/etc/wifi/fw_bcmdhd.bin"
+ 	---help---
+ 	  Path to the firmware file.
+ 
+ config BCMDHD_NVRAM_PATH
+ 	depends on BCMDHD_4354_AMPAK
+ 	string "NVRAM path"
+-	default "/system/etc/firmware/nvram.txt"
++	default "/etc/wifi/nvram.txt"
+ 	---help---
+ 	  Path to the calibration file.
+ 
+ config BCMDHD_CONFIG_PATH
+ 	depends on BCMDHD_4354_AMPAK
+ 	string "Config path"
+-	default "/system/etc/firmware/config.txt"
++	default "/etc/wifi/config.txt"
+ 	---help---
+ 	  Path to the driver configuration file.
+ 

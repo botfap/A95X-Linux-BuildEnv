@@ -1,0 +1,82 @@
+<html lang="en">
+<head>
+<title>Naming conventions - The GNU Fortran Compiler</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU Fortran Compiler">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Naming-and-argument_002dpassing-conventions.html#Naming-and-argument_002dpassing-conventions" title="Naming and argument-passing conventions">
+<link rel="next" href="Argument-passing-conventions.html#Argument-passing-conventions" title="Argument passing conventions">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 1999-2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``Funding Free Software'', the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Naming-conventions"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Argument-passing-conventions.html#Argument-passing-conventions">Argument passing conventions</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Naming-and-argument_002dpassing-conventions.html#Naming-and-argument_002dpassing-conventions">Naming and argument-passing conventions</a>
+<hr>
+</div>
+
+<h4 class="subsection">7.4.1 Naming conventions</h4>
+
+<p>According the Fortran standard, valid Fortran names consist of a letter
+between <code>A</code> to <code>Z</code>, <code>a</code> to <code>z</code>, digits <code>0</code>,
+<code>1</code> to <code>9</code> and underscores (<code>_</code>) with the restriction
+that names may only start with a letter.  As vendor extension, the
+dollar sign (<code>$</code>) is additionally permitted with the option
+<samp><span class="option">-fdollar-ok</span></samp>, but not as first character and only if the
+target system supports it.
+
+   <p>By default, the procedure name is the lower-cased Fortran name with an
+appended underscore (<code>_</code>); using <samp><span class="option">-fno-underscoring</span></samp> no
+underscore is appended while <code>-fsecond-underscore</code> appends two
+underscores.  Depending on the target system and the calling convention,
+the procedure might be additionally dressed; for instance, on 32bit
+Windows with <code>stdcall</code>, an at-sign <code>@</code> followed by an integer
+number is appended.  For the changing the calling convention, see
+see <a href="GNU-Fortran-Compiler-Directives.html#GNU-Fortran-Compiler-Directives">GNU Fortran Compiler Directives</a>.
+
+   <p>For common blocks, the same convention is used, i.e. by default an
+underscore is appended to the lower-cased Fortran name.  Blank commons
+have the name <code>__BLNK__</code>.
+
+   <p>For procedures and variables declared in the specification space of a
+module, the name is formed by <code>__</code>, followed by the lower-cased
+module name, <code>_MOD_</code>, and the lower-cased Fortran name.  Note that
+no underscore is appended.
+
+   </body></html>
+

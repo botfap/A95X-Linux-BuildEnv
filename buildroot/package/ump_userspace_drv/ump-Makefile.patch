@@ -1,0 +1,13 @@
+Index: DX910-SW-99006-r4p0-00rel0/driver/src/ump/Makefile
+===================================================================
+--- DX910-SW-99006-r4p0-00rel0.orig/driver/src/ump/Makefile	2013-11-27 04:48:42.000000000 +0800
++++ DX910-SW-99006-r4p0-00rel0/driver/src/ump/Makefile	2014-09-16 19:07:41.156130304 +0800
+@@ -20,7 +20,7 @@
+ CROSS_COMPILE ?= arm-none-linux-gnueabi-
+ TARGET_CC ?= $(CROSS_COMPILE)gcc
+ TARGET_AR ?= $(CROSS_COMPILE)ar
+-CFLAGS += -I$(UMP_DIR)/include -I$(UMP_DIR)/include/ump -Wall -march=armv6 -mthumb-interwork -fno-strict-aliasing -Wno-strict-aliasing -Wno-long-long -O3
++CFLAGS += -I$(UMP_DIR)/include -I$(UMP_DIR)/include/ump -Wall -march=armv6 -mthumb-interwork -fno-strict-aliasing -Wno-strict-aliasing -Wno-long-long -O3 -marm
+ 
+ include ump.mak
+ 

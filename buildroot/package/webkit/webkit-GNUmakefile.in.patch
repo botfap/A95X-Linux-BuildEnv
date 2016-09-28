@@ -1,0 +1,17 @@
+--- webkitgtk-1.11.5/GNUmakefile.in.orig	2014-06-03 11:43:01.702687437 +0800
++++ webkitgtk-1.11.5/GNUmakefile.in	2014-06-03 11:43:23.370687843 +0800
+@@ -242,11 +242,11 @@ DIST_COMMON = README $(am__configure_dep
+ @TARGET_X11_TRUE@	Source/WebCore/plugins/gtk/gtk2xtbin.h \
+ @TARGET_X11_TRUE@	Source/WebCore/plugins/gtk/PluginPackageGtk.cpp \
+ @TARGET_X11_TRUE@	Source/WebCore/plugins/gtk/PluginViewGtk.cpp \
+-@TARGET_X11_TRUE@	Source/WebCore/plugins/gtk/xembed.h
++@TARGET_X11_TRUE@	Source/WebCore/plugins/gtk/xembed.h \
++@TARGET_X11_TRUE@	Source/WebCore/platform/graphics/cairo/GLContext.cpp \
++@TARGET_X11_TRUE@	Source/WebCore/platform/graphics/cairo/GLContext.h 
+ 
+ @TARGET_X11_TRUE@@USE_OPENGL_TRUE@am__append_25 = \
+-@TARGET_X11_TRUE@@USE_OPENGL_TRUE@	Source/WebCore/platform/graphics/cairo/GLContext.cpp \
+-@TARGET_X11_TRUE@@USE_OPENGL_TRUE@	Source/WebCore/platform/graphics/cairo/GLContext.h \
+ @TARGET_X11_TRUE@@USE_OPENGL_TRUE@	Source/WebCore/platform/gtk/RedirectedXCompositeWindow.cpp \
+ @TARGET_X11_TRUE@@USE_OPENGL_TRUE@	Source/WebCore/platform/gtk/RedirectedXCompositeWindow.h
+ 

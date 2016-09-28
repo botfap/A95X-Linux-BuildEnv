@@ -1,0 +1,17 @@
+MAKE = make
+CXX = arm-none-linux-gnueabi-g++
+CPPFLAGS += -I$(TOPDIR)/include
+RM_F := rm
+
+CPPFLAGS += -Wall
+DEBUG = y
+
+ifeq ($(DEBUG), y)
+CPPFLAGS += -g
+else
+CPPFLAGS += -O2
+endif
+
+SOURCE := $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/*.cpp)
+OBJS := $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCE)))
+

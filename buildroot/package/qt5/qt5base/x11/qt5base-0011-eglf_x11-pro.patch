@@ -1,0 +1,13 @@
+Index: qtbase-opensource-src-5.5.0/src/plugins/platforms/eglfs/deviceintegration/eglfs_x11/eglfs_x11.pro
+===================================================================
+--- qtbase-opensource-src-5.5.0.orig/src/plugins/platforms/eglfs/deviceintegration/eglfs_x11/eglfs_x11.pro	2015-06-30 04:04:43.000000000 +0800
++++ qtbase-opensource-src-5.5.0/src/plugins/platforms/eglfs/deviceintegration/eglfs_x11/eglfs_x11.pro	2015-08-19 14:36:26.532758112 +0800
+@@ -7,7 +7,7 @@
+ QT += core-private gui-private platformsupport-private eglfs_device_lib-private
+ 
+ # Avoid X11 header collision
+-DEFINES += MESA_EGL_NO_X11_HEADERS
++#DEFINES += MESA_EGL_NO_X11_HEADERS
+ 
+ INCLUDEPATH += $$PWD/../..
+ 

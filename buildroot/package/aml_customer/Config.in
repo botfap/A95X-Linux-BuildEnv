@@ -1,0 +1,16 @@
+config BR2_PACKAGE_AML_CUSTOMER
+	bool "amlogic customer git repo"
+	help
+	  The git of amlogic customer git repo
+
+config BR2_PACKAGE_AML_CUSTOMER_VERSION
+	string "amlogic customer branch" 
+	depends on BR2_PACKAGE_AML_CUSTOMER
+	help
+	  the branch of amlogic customer
+
+config BR2_PACKAGE_AML_CUSTOMER_GIT_URL
+	string "amlogic customer git repo url"
+	depends on BR2_PACKAGE_AML_CUSTOMER
+	help
+	  the URL of amlogic customer git repo

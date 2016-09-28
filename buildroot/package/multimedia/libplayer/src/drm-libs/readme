@@ -1,0 +1,14 @@
+libsecmem.so ------- offering secureapi seperated from specific drm to be used in userspace , apis include will be found in widevine_secure_api.h
+secmem.tzo---------- secureapi handling in secureos
+
+liboemcrypto.so ---  DRM CENC secureapi used in userspace
+wvcenc.tzo --------  CENC lib in running in secureos space
+
+update notes
+1, seperate secmem allocate api  from cenc lib
+2, add version control for liboemcrypto
+3, add dynamic GE2D ACCESS control 
+4, add NAL date get api from  secureos , NAL data checking will be do in secureos to avoid non-nal data in non-secure
+5, add phyaddr checking to avoid non-semmem getting clear data
+
+ 

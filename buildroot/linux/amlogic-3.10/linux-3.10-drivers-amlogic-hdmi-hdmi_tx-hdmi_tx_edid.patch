@@ -1,0 +1,13 @@
+Index: linux-amlogic-3.10-bringup/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_edid.c
+===================================================================
+--- linux-amlogic-3.10-bringup.orig/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_edid.c	2014-12-02 10:43:26.000000000 +0800
++++ linux-amlogic-3.10-bringup/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_edid.c	2014-12-02 14:18:39.556616050 +0800
+@@ -227,7 +227,7 @@
+     {
+         for(index2=0;index2<12;index2++)
+         {
+-            if(Data[index2]!=Edid_TimingDescriptors[index1*14+index2])
++            if(Data[index2]!=Edid_TimingDescriptors[index1*12+index2])
+                 break;
+         }
+         if(index2==12)

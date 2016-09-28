@@ -1,0 +1,21 @@
+set number
+set showcmd
+set showmatch
+set hlsearch
+set incsearch
+set sw=4
+set ts=4
+set et
+syntax on
+filetype indent on
+set smarttab
+set sidescroll=1
+set laststatus=2
+set backspace=2
+set autoindent
+set smartindent
+set cindent
+set encoding=utf-8
+set smartcase
+set ruler
+set fileencodings=ucs-bom,utf-8,euc-jp,cp936,big5,gb18030,euc-kr,latin1

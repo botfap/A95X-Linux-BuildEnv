@@ -1,0 +1,18 @@
+Index: linux-amlogic-3.10-bringup/drivers/gpu/drm/Kconfig
+===================================================================
+--- linux-amlogic-3.10-bringup.orig/drivers/gpu/drm/Kconfig	2014-12-02 10:43:26.000000000 +0800
++++ linux-amlogic-3.10-bringup/drivers/gpu/drm/Kconfig	2014-12-02 14:18:39.628616051 +0800
+@@ -199,6 +199,13 @@
+ 	  Choose this option if you have a Savage3D/4/SuperSavage/Pro/Twister
+ 	  chipset. If M is selected the module will be called savage.
+ 
++config DRM_MALI
++	tristate "arm mali cards"
++	depends on DRM
++	help
++	  Choose this option if you have a ARM GPU Mali.
++	  If M is selected the module will be called arm.
++
+ source "drivers/gpu/drm/exynos/Kconfig"
+ 
+ source "drivers/gpu/drm/vmwgfx/Kconfig"

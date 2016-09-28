@@ -1,0 +1,7 @@
+config BR2_PACKAGE_AMAUDIO
+        bool "amaudio"
+        help
+          amlogic audio process.
+
+          http://openlinux.amlogic.com
+

@@ -1,0 +1,184 @@
+<html lang="en">
+<head>
+<title>Logging In and Out - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="User-Accounting-Database.html#User-Accounting-Database" title="User Accounting Database">
+<link rel="prev" href="XPG-Functions.html#XPG-Functions" title="XPG Functions">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Logging-In-and-Out"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="XPG-Functions.html#XPG-Functions">XPG Functions</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="User-Accounting-Database.html#User-Accounting-Database">User Accounting Database</a>
+<hr>
+</div>
+
+<h4 class="subsection">29.12.3 Logging In and Out</h4>
+
+<p>These functions, derived from BSD, are available in the separate
+<samp><span class="file">libutil</span></samp> library, and declared in <samp><span class="file">utmp.h</span></samp>. 
+<a name="index-utmp_002eh-3424"></a>
+Note that the <code>ut_user</code> member of <code>struct utmp</code> is called
+<code>ut_name</code> in BSD.  Therefore, <code>ut_name</code> is defined as an alias
+for <code>ut_user</code> in <samp><span class="file">utmp.h</span></samp>.
+
+<!-- utmp.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: int <b>login_tty</b> (<var>int filedes</var>)<var><a name="index-login_005ftty-3425"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:ttyname
+| AS-Unsafe heap lock
+| AC-Unsafe lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- If this function is canceled, it may have succeeded in redirecting -->
+     <!-- only some of the standard streams to the newly opened terminal. -->
+     <!-- Should there be a safety annotation for this? -->
+     <!-- login_tty @mtasurace:ttyname @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- setsid dup ok -->
+     <!-- ioctl dup ok -->
+     <!-- ttyname dup @mtasurace:ttyname @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- close dup @acsfd -->
+     <!-- open dup @acsfd -->
+     <!-- dup2 dup ok -->
+        <p>This function makes <var>filedes</var> the controlling terminal of the
+current process, redirects standard input, standard output and
+standard error output to this terminal, and closes <var>filedes</var>.
+
+        <p>This function returns <code>0</code> on successful completion, and <code>-1</code>
+on error. 
+</p></blockquote></div>
+
+<!-- utmp.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: void <b>login</b> (<var>const struct utmp *entry</var>)<var><a name="index-login-3426"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:utent sig:ALRM timer
+| AS-Unsafe lock heap
+| AC-Unsafe lock corrupt fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- login @mtasurace:utent @mtascusig:ALRM @mtascutimer @asulock @ascuheap @aculock @acucorrupt @acsfd @acsmem -->
+     <!-- getpid dup ok -->
+     <!-- tty_name @ascuheap @acucorrupt @acsmem @acsfd -->
+     <!-- ttyname_r dup @ascuheap @acsmem @acsfd -->
+     <!-- memchr dup ok -->
+     <!-- realloc dup @ascuheap @acsmem -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- strncmp dup ok -->
+     <!-- basename dup ok -->
+     <!-- strncpy dup ok -->
+     <!-- utmpname dup @mtasurace:utent @asulock @ascuheap @aculock @acsmem -->
+     <!-- setutent dup @mtasurace:utent @asulock @aculock @acsfd -->
+     <!-- pututline dup @mtasurace:utent @mtascusig:ALRM @mtascutimer @asulock @aculock @acsfd -->
+     <!-- endutent dup @mtasurace:utent @asulock @aculock -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- updwtmp dup @mtascusig:ALRM @mtascutimer @acsfd -->
+        <p>The <code>login</code> functions inserts an entry into the user accounting
+database.  The <code>ut_line</code> member is set to the name of the terminal
+on standard input.  If standard input is not a terminal <code>login</code>
+uses standard output or standard error output to determine the name of
+the terminal.  If <code>struct utmp</code> has a <code>ut_type</code> member,
+<code>login</code> sets it to <code>USER_PROCESS</code>, and if there is an
+<code>ut_pid</code> member, it will be set to the process ID of the current
+process.  The remaining entries are copied from <var>entry</var>.
+
+        <p>A copy of the entry is written to the user accounting log file. 
+</p></blockquote></div>
+
+<!-- utmp.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: int <b>logout</b> (<var>const char *ut_line</var>)<var><a name="index-logout-3427"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:utent sig:ALRM timer
+| AS-Unsafe lock heap
+| AC-Unsafe lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- logout @mtasurace:utent @mtascusig:ALRM @mtascutimer @asulock @ascuheap @aculock @acsfd @acsmem -->
+     <!-- utmpname dup @mtasurace:utent @asulock @ascuheap @aculock @acsmem -->
+     <!-- setutent dup @mtasurace:utent @asulock @aculock @acsfd -->
+     <!-- strncpy dup ok -->
+     <!-- getutline_r dup @mtasurace:utent @mtascusig:ALRM @mtascutimer @asulock @aculock @acsfd -->
+     <!-- bzero dup ok -->
+     <!-- gettimeofday dup ok -->
+     <!-- time dup ok -->
+     <!-- pututline dup @mtasurace:utent @mtascusig:ALRM @mtascutimer @asulock @aculock @acsfd -->
+     <!-- endutent dup @mtasurace:utent @asulock @aculock -->
+        <p>This function modifies the user accounting database to indicate that the
+user on <var>ut_line</var> has logged out.
+
+        <p>The <code>logout</code> function returns <code>1</code> if the entry was successfully
+written to the database, or <code>0</code> on error. 
+</p></blockquote></div>
+
+<!-- utmp.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: void <b>logwtmp</b> (<var>const char *ut_line, const char *ut_name, const char *ut_host</var>)<var><a name="index-logwtmp-3428"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe sig:ALRM timer
+| AS-Unsafe
+| AC-Unsafe fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- logwtmp @mtascusig:ALRM @mtascutimer @acsfd -->
+     <!-- memset dup ok -->
+     <!-- getpid dup ok -->
+     <!-- strncpy dup ok -->
+     <!-- gettimeofday dup ok -->
+     <!-- time dup ok -->
+     <!-- updwtmp dup @mtascusig:ALRM @mtascutimer @acsfd -->
+        <p>The <code>logwtmp</code> function appends an entry to the user accounting log
+file, for the current time and the information provided in the
+<var>ut_line</var>, <var>ut_name</var> and <var>ut_host</var> arguments. 
+</p></blockquote></div>
+
+   <p><strong>Portability Note:</strong> The BSD <code>struct utmp</code> only has the
+<code>ut_line</code>, <code>ut_name</code>, <code>ut_host</code> and <code>ut_time</code>
+members.  Older systems do not even have the <code>ut_host</code> member.
+
+   </body></html>
+

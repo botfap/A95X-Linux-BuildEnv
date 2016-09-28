@@ -1,0 +1,23 @@
+config BR2_PACKAGE_BRCMAP6XXX
+	bool "brcmap6xxx"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  brcmap6xxx driver
+
+config BR2_PACKAGE_BRCMAP6XXX_GIT_VERSION
+	string "brcmap6xxx branch"
+	depends on BR2_PACKAGE_BRCMAP6XXX
+	help
+		Branch for brcmap6xxx	
+
+config BR2_PACKAGE_BRCMAP6XXX_GIT_REPO_URL
+	string "brcmap6xxx git"
+	depends on BR2_PACKAGE_BRCMAP6XXX
+	help
+		brcmap6xxx git
+
+config BR2_PACKAGE_BRCMAP6XXX_STANDALONE
+	bool "standalone kernel module"
+	depends on BR2_PACKAGE_BRCMAP6XXX
+	help
+	  compile ko directly

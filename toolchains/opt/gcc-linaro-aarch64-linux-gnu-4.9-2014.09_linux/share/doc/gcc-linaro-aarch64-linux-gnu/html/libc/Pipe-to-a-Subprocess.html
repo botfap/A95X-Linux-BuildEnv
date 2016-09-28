@@ -1,0 +1,261 @@
+<html lang="en">
+<head>
+<title>Pipe to a Subprocess - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Pipes-and-FIFOs.html#Pipes-and-FIFOs" title="Pipes and FIFOs">
+<link rel="prev" href="Creating-a-Pipe.html#Creating-a-Pipe" title="Creating a Pipe">
+<link rel="next" href="FIFO-Special-Files.html#FIFO-Special-Files" title="FIFO Special Files">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Pipe-to-a-Subprocess"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="FIFO-Special-Files.html#FIFO-Special-Files">FIFO Special Files</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Creating-a-Pipe.html#Creating-a-Pipe">Creating a Pipe</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Pipes-and-FIFOs.html#Pipes-and-FIFOs">Pipes and FIFOs</a>
+<hr>
+</div>
+
+<h3 class="section">15.2 Pipe to a Subprocess</h3>
+
+<p><a name="index-creating-a-pipe-to-a-subprocess-1662"></a><a name="index-pipe-to-a-subprocess-1663"></a><a name="index-filtering-i_002fo-through-subprocess-1664"></a>
+A common use of pipes is to send data to or receive data from a program
+being run as a subprocess.  One way of doing this is by using a combination of
+<code>pipe</code> (to create the pipe), <code>fork</code> (to create the subprocess),
+<code>dup2</code> (to force the subprocess to use the pipe as its standard input
+or output channel), and <code>exec</code> (to execute the new program).  Or,
+you can use <code>popen</code> and <code>pclose</code>.
+
+   <p>The advantage of using <code>popen</code> and <code>pclose</code> is that the
+interface is much simpler and easier to use.  But it doesn't offer as
+much flexibility as using the low-level functions directly.
+
+<!-- stdio.h -->
+<!-- POSIX.2, SVID, BSD -->
+<div class="defun">
+&mdash; Function: FILE * <b>popen</b> (<var>const char *command, const char *mode</var>)<var><a name="index-popen-1665"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe heap corrupt
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- popen @ascuheap @asucorrupt @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- _IO_init ok -->
+     <!-- _IO_no_init ok -->
+     <!-- _IO_old_init ok -->
+     <!-- _IO_lock_init ok -->
+     <!-- _IO_new_file_init @asucorrupt @acucorrupt @aculock @acsfd -->
+     <!-- _IO_link_in @asucorrupt @acucorrupt @aculock @acsfd -->
+     <!-- the linked list is guarded by a recursive lock; -->
+     <!-- it may get corrupted with async signals and cancellation -->
+     <!-- _IO_lock_lock dup @aculock -->
+     <!-- _IO_flockfile dup @aculock -->
+     <!-- _IO_funlockfile dup @aculock -->
+     <!-- _IO_lock_unlock dup @aculock -->
+     <!-- _IO_new_proc_open @asucorrupt @acucorrupt @aculock @acsfd -->
+     <!-- the linked list is guarded by a recursive lock; -->
+     <!-- it may get corrupted with async signals and cancellation -->
+     <!-- _IO_file_is_open ok -->
+     <!-- pipe2 dup @acsfd -->
+     <!-- pipe dup @acsfd -->
+     <!-- _IO_fork=fork @aculock -->
+     <!-- _IO_close=close_not_cancel dup @acsfd -->
+     <!-- fcntl dup ok -->
+     <!-- _IO_lock_lock @aculock -->
+     <!-- _IO_lock_unlock @aculock -->
+     <!-- _IO_mask_flags ok [no @mtasurace:stream, nearly but sufficiently exclusive access] -->
+     <!-- _IO_un_link @asucorrupt @acucorrupt @aculock @acsfd -->
+     <!-- the linked list is guarded by a recursive lock; -->
+     <!-- it may get corrupted with async signals and cancellation -->
+     <!-- _IO_lock_lock dup @aculock -->
+     <!-- _IO_flockfile dup @aculock -->
+     <!-- _IO_funlockfile dup @aculock -->
+     <!-- _IO_lock_unlock dup @aculock -->
+     <!-- free dup @ascuheap @acsmem -->
+        <p>The <code>popen</code> function is closely related to the <code>system</code>
+function; see <a href="Running-a-Command.html#Running-a-Command">Running a Command</a>.  It executes the shell command
+<var>command</var> as a subprocess.  However, instead of waiting for the
+command to complete, it creates a pipe to the subprocess and returns a
+stream that corresponds to that pipe.
+
+        <p>If you specify a <var>mode</var> argument of <code>"r"</code>, you can read from the
+stream to retrieve data from the standard output channel of the subprocess. 
+The subprocess inherits its standard input channel from the parent process.
+
+        <p>Similarly, if you specify a <var>mode</var> argument of <code>"w"</code>, you can
+write to the stream to send data to the standard input channel of the
+subprocess.  The subprocess inherits its standard output channel from
+the parent process.
+
+        <p>In the event of an error <code>popen</code> returns a null pointer.  This
+might happen if the pipe or stream cannot be created, if the subprocess
+cannot be forked, or if the program cannot be executed. 
+</p></blockquote></div>
+
+<!-- stdio.h -->
+<!-- POSIX.2, SVID, BSD -->
+<div class="defun">
+&mdash; Function: int <b>pclose</b> (<var>FILE *stream</var>)<var><a name="index-pclose-1666"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe heap plugin corrupt lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Although the stream cannot be used after the call, even in case of -->
+     <!-- async cancellation, because the stream must not be used after pclose -->
+     <!-- is called, other stdio linked lists and their locks may be left in -->
+     <!-- corrupt states; that's where the corrupt and lock annotations come -->
+     <!-- from. -->
+     <!-- pclose @ascuheap @ascuplugin @asucorrupt @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- _IO_new_fclose @ascuheap @ascuplugin @asucorrupt @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- _IO_un_link dup @asucorrupt @acucorrupt @aculock @acsfd -->
+     <!-- _IO_acquire_lock dup @aculock -->
+     <!-- _IO_flockfile dup @aculock -->
+     <!-- _IO_file_close_it @ascuheap @ascuplugin @asucorrupt @aculock @acucorrupt @acsfd @acsmem -->
+     <!-- _IO_file_is_open dup ok -->
+     <!-- _IO_do_flush @asucorrupt @ascuplugin @acucorrupt -->
+     <!-- _IO_do_write @asucorrupt @acucorrupt -->
+     <!-- new_do_write @asucorrupt @acucorrupt -->
+     <!-- _IO_SYSSEEK ok -->
+     <!-- lseek64 dup ok -->
+     <!-- _IO_SYSWRITE ok -->
+     <!-- write_not_cancel dup ok -->
+     <!-- write dup ok -->
+     <!-- _IO_adjust_column ok -->
+     <!-- _IO_setg dup @asucorrupt @acucorrupt [no @mtasurace:stream, locked] -->
+     <!-- _IO_wdo_write @asucorrupt @ascuplugin @acucorrupt -->
+     <!-- _IO_new_do_write=_IO_do_write dup @asucorrupt @acucorrupt -->
+     <!-- *cc->__codecvt_do_out @ascuplugin -->
+     <!-- _IO_wsetg dup @asucorrupt @acucorrupt [no @mtasurace:stream, locked] -->
+     <!-- _IO_unsave_markers @ascuheap @asucorrupt @acucorrupt @acsmem -->
+     <!-- _IO_have_backup dup ok -->
+     <!-- _IO_free_backup_area dup @ascuheap @asucorrupt @acucorrupt @acsmem -->
+     <!-- _IO_SYSCLOSE @aculock @acucorrupt @acsfd -->
+     <!-- _IO_lock_lock dup @aculock -->
+     <!-- _IO_close=close_not_cancel dup @acsfd -->
+     <!-- _IO_lock_unlock dup @aculock -->
+     <!-- _IO_waitpid=waitpid_not_cancel dup ok -->
+     <!-- _IO_have_wbackup ok -->
+     <!-- _IO_free_wbackup_area @ascuheap @asucorrupt @acucorrupt @acsmem -->
+     <!-- _IO_in_backup dup ok -->
+     <!-- _IO_switch_to_main_wget_area @asucorrupt @acucorrupt -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- _IO_wsetb @asucorrupt @acucorrupt [no @mtasurace:stream, locked] -->
+     <!-- _IO_wsetg @asucorrupt @acucorrupt [no @mtasurace:stream, locked] -->
+     <!-- _IO_wsetp @asucorrupt @acucorrupt [no @mtasurace:stream, locked] -->
+     <!-- _IO_setb @asucorrupt @acucorrupt [no @mtasurace:stream, locked] -->
+     <!-- _IO_setg @asucorrupt @acucorrupt [no @mtasurace:stream, locked] -->
+     <!-- _IO_setp @asucorrupt @acucorrupt [no @mtasurace:stream, locked] -->
+     <!-- _IO_un_link dup @asucorrupt @acucorrupt @aculock @acsfd -->
+     <!-- _IO_release_lock dup @aculock -->
+     <!-- _IO_funlockfile dup @aculock -->
+     <!-- _IO_FINISH @ascuheap @ascuplugin @asucorrupt @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- _IO_new_file_finish @ascuheap @ascuplugin @asucorrupt @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- _IO_file_is_open dup ok -->
+     <!-- _IO_do_flush dup @ascuplugin @asucorrupt @acucorrupt -->
+     <!-- _IO_SYSCLOSE dup @aculock @acucorrupt @acsfd -->
+     <!-- _IO_default_finish @ascuheap @asucorrupt @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- FREE_BUF @acsmem -->
+     <!-- munmap dup @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- _IO_un_link dup @asucorrupt @acucorrupt @aculock @acsfd -->
+     <!-- _IO_lock_fini ok -->
+     <!-- libc_lock_fini_recursive ok -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- gconv_release_step ok -->
+     <!-- libc_lock_unlock dup @asulock @aculock -->
+     <!-- _IO_have_backup ok -->
+     <!-- _IO_free_backup_area @ascuheap @asucorrupt @acucorrupt @acsmem -->
+     <!-- _IO_in_backup ok -->
+     <!-- _IO_switch_to_main_get_area @asucorrupt @acucorrupt -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+        <p>The <code>pclose</code> function is used to close a stream created by <code>popen</code>. 
+It waits for the child process to terminate and returns its status value,
+as for the <code>system</code> function. 
+</p></blockquote></div>
+
+   <p>Here is an example showing how to use <code>popen</code> and <code>pclose</code> to
+filter output through another program, in this case the paging program
+<code>more</code>.
+
+<pre class="smallexample">     
+     #include &lt;stdio.h&gt;
+     #include &lt;stdlib.h&gt;
+     
+     void
+     write_data (FILE * stream)
+     {
+       int i;
+       for (i = 0; i &lt; 100; i++)
+         fprintf (stream, "%d\n", i);
+       if (ferror (stream))
+         {
+           fprintf (stderr, "Output to stream failed.\n");
+           exit (EXIT_FAILURE);
+         }
+     }
+     
+     int
+     main (void)
+     {
+       FILE *output;
+     
+       output = popen ("more", "w");
+       if (!output)
+         {
+           fprintf (stderr,
+                    "incorrect parameters or too many files.\n");
+           return EXIT_FAILURE;
+         }
+       write_data (output);
+       if (pclose (output) != 0)
+         {
+           fprintf (stderr,
+                    "Could not run more or other error.\n");
+         }
+       return EXIT_SUCCESS;
+     }
+</pre>
+   </body></html>
+

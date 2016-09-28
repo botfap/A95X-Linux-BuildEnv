@@ -1,0 +1,10 @@
+--- gst-plugins-good-0.10.31/gst/matroska/matroska-ids.h.orig	2011-12-30 21:59:09.000000000 +0800
++++ gst-plugins-good-0.10.31/gst/matroska/matroska-ids.h	2014-11-18 16:13:42.439947911 +0800
+@@ -345,6 +345,7 @@
+ #define GST_MATROSKA_CODEC_ID_VIDEO_SNOW         "V_SNOW"
+ #define GST_MATROSKA_CODEC_ID_VIDEO_DIRAC        "V_DIRAC"
+ #define GST_MATROSKA_CODEC_ID_VIDEO_VP8          "V_VP8"
++#define GST_MATROSKA_CODEC_ID_VIDEO_MPEGH_HEVC   "V_MPEGH/ISO/HEVC"
+ 
+ #define GST_MATROSKA_CODEC_ID_AUDIO_MPEG1_L1       "A_MPEG/L1"
+ #define GST_MATROSKA_CODEC_ID_AUDIO_MPEG1_L2       "A_MPEG/L2"

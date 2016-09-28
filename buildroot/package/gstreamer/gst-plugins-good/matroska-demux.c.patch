@@ -1,0 +1,69 @@
+--- gst-plugins-good-0.10.31/gst/matroska/matroska-demux.c.orig	2012-02-16 07:45:58.000000000 +0800
++++ gst-plugins-good-0.10.31/gst/matroska/matroska-demux.c	2014-11-18 16:13:42.439947911 +0800
+@@ -1188,7 +1188,6 @@
+       ret = GST_FLOW_ERROR;
+     }
+   }
+-
+   if (context->type == 0 || context->codec_id == NULL || (ret != GST_FLOW_OK
+           && ret != GST_FLOW_UNEXPECTED)) {
+     if (ret == GST_FLOW_OK || ret == GST_FLOW_UNEXPECTED)
+@@ -1206,12 +1205,14 @@
+ 
+   /* now create the GStreamer connectivity */
+   switch (context->type) {
++
+     case GST_MATROSKA_TRACK_TYPE_VIDEO:{
+       GstMatroskaTrackVideoContext *videocontext =
+           (GstMatroskaTrackVideoContext *) context;
+ 
+       padname = g_strdup_printf ("video_%02d", demux->num_v_streams++);
+       templ = gst_element_class_get_pad_template (klass, "video_%02d");
++
+       caps = gst_matroska_demux_video_caps (videocontext,
+           context->codec_id, (guint8 *) context->codec_priv,
+           context->codec_priv_size, &codec, &riff_fourcc);
+@@ -4923,6 +4924,27 @@
+           NULL);
+     }
+     *codec_name = g_strdup ("H264");
++  } else if (!strcmp (codec_id, GST_MATROSKA_CODEC_ID_VIDEO_MPEGH_HEVC)) {
++    caps = gst_caps_new_simple ("video/x-h265", NULL);
++	GST_DEBUG ("determine caps for stream with video/x-h265,codec_id='%s'\n", context->codec_id);
++    if (data) {
++      GstBuffer *priv = gst_buffer_new_and_alloc (size);
++     GST_DEBUG ("has data for stream with video/x-h265,codec_id='%s'\n", context->codec_id);
++      gst_codec_utils_h265_caps_set_level_tier_and_profile (caps, data + 1,size - 1);
++
++      //priv = gst_buffer_new_wrapped (g_memdup (data, size), size);
++      memcpy (GST_BUFFER_DATA(priv), data, size);
++      gst_caps_set_simple (caps, "codec_data", GST_TYPE_BUFFER, priv, NULL);
++      gst_buffer_unref (priv);
++      gst_caps_set_simple (caps, "stream-format", G_TYPE_STRING, "hvc1",
++          "alignment", G_TYPE_STRING, "au", NULL);
++    } else {
++      GST_ERROR ("No codec data found for stream with video/x-h265,codec_id='%s'\n", context->codec_id);
++      GST_WARNING ("No codec data found, assuming output is byte-stream");
++      gst_caps_set_simple (caps, "stream-format", G_TYPE_STRING, "byte-stream",
++          NULL);
++    }
++    *codec_name = g_strdup ("HEVC");
+   } else if ((!strcmp (codec_id, GST_MATROSKA_CODEC_ID_VIDEO_REALVIDEO1)) ||
+       (!strcmp (codec_id, GST_MATROSKA_CODEC_ID_VIDEO_REALVIDEO2)) ||
+       (!strcmp (codec_id, GST_MATROSKA_CODEC_ID_VIDEO_REALVIDEO3)) ||
+@@ -4971,13 +4993,14 @@
+     caps = gst_caps_new_simple ("video/x-vp8", NULL);
+     *codec_name = g_strdup_printf ("On2 VP8");
+   } else {
+-    GST_WARNING ("Unknown codec '%s', cannot build Caps", codec_id);
++    GST_WARNING ("mkv Unknown codec case'%s', cannot build Caps", codec_id);
+     return NULL;
+   }
+ 
+   if (caps != NULL) {
+     int i;
+     GstStructure *structure;
++	GST_DEBUG ("found non -nullcaps\n");
+ 
+     for (i = 0; i < gst_caps_get_size (caps); i++) {
+       structure = gst_caps_get_structure (caps, i);

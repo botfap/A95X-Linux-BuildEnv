@@ -1,0 +1,17 @@
+Index: qtbase-opensource-src-5.6.0/src/plugins/platforms/eglfs/deviceintegration/eglfs_mali/qeglfsmaliintegration.cpp
+===================================================================
+--- qtbase-opensource-src-5.6.0.orig/src/plugins/platforms/eglfs/deviceintegration/eglfs_mali/qeglfsmaliintegration.cpp	2016-03-03 19:35:22.000000000 +0800
++++ qtbase-opensource-src-5.6.0/src/plugins/platforms/eglfs/deviceintegration/eglfs_mali/qeglfsmaliintegration.cpp	2016-06-16 14:54:09.269478013 +0800
+@@ -42,10 +42,12 @@
+ 
+ QT_BEGIN_NAMESPACE
+ 
++#if 0
+ struct fbdev_window {
+     unsigned short width;
+     unsigned short height;
+ };
++#endif
+ 
+ void QEglFSMaliIntegration::platformInit()
+ {

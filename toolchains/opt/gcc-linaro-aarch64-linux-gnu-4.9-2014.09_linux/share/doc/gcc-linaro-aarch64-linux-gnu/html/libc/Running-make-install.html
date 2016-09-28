@@ -1,0 +1,123 @@
+<html lang="en">
+<head>
+<title>Running make install - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Installation.html#Installation" title="Installation">
+<link rel="prev" href="Configuring-and-compiling.html#Configuring-and-compiling" title="Configuring and compiling">
+<link rel="next" href="Tools-for-Compilation.html#Tools-for-Compilation" title="Tools for Compilation">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Running-make-install"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Tools-for-Compilation.html#Tools-for-Compilation">Tools for Compilation</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Configuring-and-compiling.html#Configuring-and-compiling">Configuring and compiling</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Installation.html#Installation">Installation</a>
+<hr>
+</div>
+
+<h3 class="appendixsec">C.2 Installing the C Library</h3>
+
+<p><a name="index-installing-3911"></a>
+To install the library and its header files, and the Info files of the
+manual, type <code>env LANGUAGE=C LC_ALL=C make install</code>.  This will
+build things, if necessary, before installing them; however, you should
+still compile everything first.  If you are installing the GNU C Library as your
+primary C library, we recommend that you shut the system down to
+single-user mode first, and reboot afterward.  This minimizes the risk
+of breaking things when the library changes out from underneath.
+
+   <p>&lsquo;<samp><span class="samp">make install</span></samp>&rsquo; will do the entire job of upgrading from a
+previous installation of the GNU C Library version 2.x.  There may sometimes
+be headers
+left behind from the previous installation, but those are generally
+harmless.  If you want to avoid leaving headers behind you can do
+things in the following order.
+
+   <p>You must first build the library (&lsquo;<samp><span class="samp">make</span></samp>&rsquo;), optionally check it
+(&lsquo;<samp><span class="samp">make check</span></samp>&rsquo;), switch the include directories and then install
+(&lsquo;<samp><span class="samp">make install</span></samp>&rsquo;).  The steps must be done in this order.  Not moving
+the directory before install will result in an unusable mixture of header
+files from both libraries, but configuring, building, and checking the
+library requires the ability to compile and run programs against the old
+library.  The new <samp><span class="file">/usr/include</span></samp>, after switching the include
+directories and before installing the library should contain the Linux
+headers, but nothing else.  If you do this, you will need to restore
+any headers from libraries other than the GNU C Library yourself after installing the
+library.
+
+   <p>You can install the GNU C Library somewhere other than where you configured it to go
+by setting the <code>install_root</code> variable on the command line for
+&lsquo;<samp><span class="samp">make install</span></samp>&rsquo;.  The value of this variable is prepended to all the
+paths for installation.  This is useful when setting up a chroot
+environment or preparing a binary distribution.  The directory should be
+specified with an absolute file name.
+
+   <p>The GNU C Library includes a daemon called <code>nscd</code>, which you
+may or may not want to run.  <code>nscd</code> caches name service lookups; it
+can dramatically improve performance with NIS+, and may help with DNS as
+well.
+
+   <p>One auxiliary program, <samp><span class="file">/usr/libexec/pt_chown</span></samp>, is installed setuid
+<code>root</code> if the &lsquo;<samp><span class="samp">--enable-pt_chown</span></samp>&rsquo; configuration option is used. 
+This program is invoked by the <code>grantpt</code> function; it sets the
+permissions on a pseudoterminal so it can be used by the calling process. 
+If you are using a Linux kernel with the <code>devpts</code> filesystem enabled
+and mounted at <samp><span class="file">/dev/pts</span></samp>, you don't need this program.
+
+   <p>After installation you might want to configure the timezone and locale
+installation of your system.  The GNU C Library comes with a locale
+database which gets configured with <code>localedef</code>.  For example, to
+set up a German locale with name <code>de_DE</code>, simply issue the command
+&lsquo;<samp><span class="samp">localedef -i de_DE -f ISO-8859-1 de_DE</span></samp>&rsquo;.  To configure all locales
+that are supported by the GNU C Library, you can issue from your build directory the
+command &lsquo;<samp><span class="samp">make localedata/install-locales</span></samp>&rsquo;.
+
+   <p>To configure the locally used timezone, set the <code>TZ</code> environment
+variable.  The script <code>tzselect</code> helps you to select the right value. 
+As an example, for Germany, <code>tzselect</code> would tell you to use
+&lsquo;<samp><span class="samp">TZ='Europe/Berlin'</span></samp>&rsquo;.  For a system wide installation (the given
+paths are for an installation with &lsquo;<samp><span class="samp">--prefix=/usr</span></samp>&rsquo;), link the
+timezone file which is in <samp><span class="file">/usr/share/zoneinfo</span></samp> to the file
+<samp><span class="file">/etc/localtime</span></samp>.  For Germany, you might execute &lsquo;<samp><span class="samp">ln -s
+/usr/share/zoneinfo/Europe/Berlin /etc/localtime</span></samp>&rsquo;.
+
+   </body></html>
+

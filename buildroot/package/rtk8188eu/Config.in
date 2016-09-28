@@ -1,0 +1,23 @@
+config BR2_PACKAGE_RTK8188EU
+	bool "rtk8188eu"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  rtk8188eu driver
+
+config BR2_PACKAGE_RTK8188EU_GIT_VERSION
+	string "rtk8188eu branch"
+	depends on BR2_PACKAGE_RTK8188EU
+	help
+		Branch for rtk8188eu	
+
+config BR2_PACKAGE_RTK8188EU_GIT_REPO_URL
+	string "rtk8188eu git"
+	depends on BR2_PACKAGE_RTK8188EU
+	help
+		rtk8188eu git
+
+config BR2_PACKAGE_RTK8188EU_STANDALONE
+	bool "standalone kernel module"
+	depends on BR2_PACKAGE_RTK8188EU
+	help
+	  compile ko directly

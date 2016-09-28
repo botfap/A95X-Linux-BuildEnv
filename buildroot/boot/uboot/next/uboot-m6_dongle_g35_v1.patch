@@ -1,0 +1,52 @@
+Index: uboot-next/board/amlogic/configs/m6_dongle_g35_v1.h
+===================================================================
+--- uboot-next.orig/board/amlogic/configs/m6_dongle_g35_v1.h	2014-11-20 09:50:50.000000000 +0800
++++ uboot-next/board/amlogic/configs/m6_dongle_g35_v1.h	2014-11-24 13:58:01.499625482 +0800
+@@ -199,7 +199,7 @@
+ 	"display_color_bg=0\0" \
+ 	"fb_addr=0x85900000\0" \
+ 	"sleep_threshold=20\0" \
+-	"upgrade_step=0\0" \
++	"upgrade_step=2\0" \
+ 	"batlow_threshold=10\0" \
+ 	"batfull_threshold=98\0" \
+ 	"outputmode=1080p\0" \
+@@ -224,18 +224,36 @@
+ 	"nand_key_burning=saradc open 4;if saradc get_in_range 0x164 0x1b4 ;then msleep 50;if saradc get_in_range 0x164 0x1b4; then run usb_burning; fi; fi\0" \
+ 	"nandargs="\
+             "imgread res logo ${loadaddr_misc};unpackimg ${loadaddr_misc}; cp ${bootup_offset} 0x85100000 ${bootup_size}; "\
+-            "setenv bootargs root=/dev/cardblksd2 rw rootfstype=ext3 rootwait init=/init console=ttyS0,115200n8 logo=osd1,0x85100000,${outputmode},full androidboot.resolution=${outputmode} hdmimode=${hdmimode} cvbsmode=${cvbsmode} hlt vmalloc=256m mem=512m a9_clk_max=1200000000 vdachwswitch=${vdacswitchmode} hdmitx=${cecconfig} meson_device_low_power=1 \0"\
++            "setenv bootargs root=/dev/system rw rootfstype=ext4 rootwait init=/sbin/init console=ttyS0,115200n8 logo=osd1,0x85100000,${outputtemp},full androidboot.resolution=${outputmode} hdmimode=${hdmimode} cvbsmode=${cvbsmode} hlt vmalloc=256m mem=512m a9_clk_max=1200000000 vdachwswitch=${vdacswitchmode} hdmitx=${hdmimode} meson_device_low_power=1\0"\
+ 	"switch_bootmode="\
+         "if test ${reboot_mode} = factory_reset; then run recovery; fi;"\
+         "if test ${reboot_mode} = usb_burning; then run usb_burning; fi; "\
+         "if test ${reboot_mode} = update; then run update; fi\0" \
++    "bootsdargs=setenv bootargs root=/dev/mmcblk0p1 rw rootfstype=ext2 rootwait init=/sbin/init console=ttyS0,115200n8 logo=osd1,0x85100000,${outputtemp},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} hlt vmalloc=256m mem=512m a9_clk_max=1200000000 vdachwswitch=${vdacswitchmode} hdmitx=${hdmimode}\0"\
++    "bootupdateargs=setenv bootargs root=/dev/mmcblk0p1 rw rootfstype=vfat rootwait init=/sbin/init console=ttyS0,115200n8 logo=osd1,0x85100000,${outputtemp},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} hlt vmalloc=256m mem=512m a9_clk_max=1200000000 vdachwswitch=${vdacswitchmode} hdmitx=${hdmimode} firmware=rootfs.tar.gz\0"\
+ 	"nandboot="\
+         "echo Booting ...;"\
+         "run nandargs;"\
+         "setenv bootargs ${initargs} androidboot.firstboot=${firstboot}; "\
+         "imgread kernel boot ${loadaddr};"\
+         "hdcp prefetch nand;"\
+-        "bootm;run recovery\0" \
++        "bootm\0" \
++    "bootsdcard="\
++         "echo Booting ...;"\
++         "run nandargs;"\
++         "run bootsdargs; "\
++         "mmcinfo;"\
++         "ext2load mmc 0 ${loadaddr} boot.img;"\
++         "hdcp prefetch nand;"\
++         "bootm\0" \
++    "bootupdate="\
++         "echo Booting ...;"\
++         "run nandargs;"\
++         "run bootupdateargs; "\
++         "mmcinfo;"\
++         "fatload mmc 0 ${loadaddr} boot.img;"\
++         "hdcp prefetch nand;"\
++         "bootm\0" \
+ 	"recovery="\
+         "echo enter recovery;"\
+         "run nandargs;"\

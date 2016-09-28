@@ -1,0 +1,6 @@
+config BR2_PACKAGE_AML_UTIL
+	bool "aml utilities"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  utilities
+

@@ -1,0 +1,236 @@
+<html lang="en">
+<head>
+<title>Networks Database - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Sockets.html#Sockets" title="Sockets">
+<link rel="prev" href="Socket-Options.html#Socket-Options" title="Socket Options">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Networks-Database"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Socket-Options.html#Socket-Options">Socket Options</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Sockets.html#Sockets">Sockets</a>
+<hr>
+</div>
+
+<h3 class="section">16.13 Networks Database</h3>
+
+<p><a name="index-networks-database-1875"></a><a name="index-converting-network-number-to-network-name-1876"></a><a name="index-converting-network-name-to-network-number-1877"></a>
+<a name="index-g_t_002fetc_002fnetworks-1878"></a><a name="index-netdb_002eh-1879"></a>Many systems come with a database that records a list of networks known
+to the system developer.  This is usually kept either in the file
+<samp><span class="file">/etc/networks</span></samp> or in an equivalent from a name server.  This data
+base is useful for routing programs such as <code>route</code>, but it is not
+useful for programs that simply communicate over the network.  We
+provide functions to access this database, which are declared in
+<samp><span class="file">netdb.h</span></samp>.
+
+<!-- netdb.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Data Type: <b>struct netent</b><var><a name="index-struct-netent-1880"></a></var><br>
+<blockquote><p>This data type is used to represent information about entries in the
+networks database.  It has the following members:
+
+          <dl>
+<dt><code>char *n_name</code><dd>This is the &ldquo;official&rdquo; name of the network.
+
+          <br><dt><code>char **n_aliases</code><dd>These are alternative names for the network, represented as a vector
+of strings.  A null pointer terminates the array.
+
+          <br><dt><code>int n_addrtype</code><dd>This is the type of the network number; this is always equal to
+<code>AF_INET</code> for Internet networks.
+
+          <br><dt><code>unsigned long int n_net</code><dd>This is the network number.  Network numbers are returned in host
+byte order; see <a href="Byte-Order.html#Byte-Order">Byte Order</a>. 
+</dl>
+        </p></blockquote></div>
+
+   <p>Use the <code>getnetbyname</code> or <code>getnetbyaddr</code> functions to search
+the networks database for information about a specific network.  The
+information is returned in a statically-allocated structure; you must
+copy the information if you need to save it.
+
+<!-- netdb.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: struct netent * <b>getnetbyname</b> (<var>const char *name</var>)<var><a name="index-getnetbyname-1881"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:netbyname env locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- getnetbyname =~ getpwuid @mtasurace:netbyname @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- getnetbyname_r dup @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- realloc dup @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- libc_lock_unlock dup @aculock -->
+     <!-- getnetbyname_r =~ getpwuid_r @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- no nscd support -->
+     <!-- res_maybe_init(!preinit) dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- nss_networks_lookup2 =~ nss_passwd_lookup2 @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *fct.l -> _nss_*_getnetbyname_r @ascuplugin -->
+     <!-- nss_next2 dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+        <p>The <code>getnetbyname</code> function returns information about the network
+named <var>name</var>.  It returns a null pointer if there is no such
+network. 
+</p></blockquote></div>
+
+<!-- netdb.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: struct netent * <b>getnetbyaddr</b> (<var>uint32_t net, int type</var>)<var><a name="index-getnetbyaddr-1882"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:netbyaddr locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- getnetbyaddr =~ getpwuid @mtasurace:netbyaddr @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- getnetbyaddr_r dup @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- realloc dup @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- libc_lock_unlock dup @aculock -->
+     <!-- getnetbyaddr_r =~ getpwuid_r @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- no nscd support -->
+     <!-- nss_networks_lookup2 =~ nss_passwd_lookup2 @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *fct.l -> _nss_*_getnetbyaddr_r @ascuplugin -->
+     <!-- nss_next2 dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+        <p>The <code>getnetbyaddr</code> function returns information about the network
+of type <var>type</var> with number <var>net</var>.  You should specify a value of
+<code>AF_INET</code> for the <var>type</var> argument for Internet networks.
+
+        <p><code>getnetbyaddr</code> returns a null pointer if there is no such
+network. 
+</p></blockquote></div>
+
+   <p>You can also scan the networks database using <code>setnetent</code>,
+<code>getnetent</code> and <code>endnetent</code>.  Be careful when using these
+functions because they are not reentrant.
+
+<!-- netdb.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: void <b>setnetent</b> (<var>int stayopen</var>)<var><a name="index-setnetent-1883"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:netent env locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- setnetent @mtasurace:netent @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- nss_setent(nss_networks_lookup2) @mtasurace:netent @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- res_maybe_init(!preinit) dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- setup(nss_networks_lookup2) @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *lookup_fct = nss_networks_lookup2 dup @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- nss_lookup dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *fct.f @mtasurace:netent @ascuplugin -->
+     <!-- nss_next2 dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_unlock dup @aculock -->
+        <p>This function opens and rewinds the networks database.
+
+        <p>If the <var>stayopen</var> argument is nonzero, this sets a flag so that
+subsequent calls to <code>getnetbyname</code> or <code>getnetbyaddr</code> will
+not close the database (as they usually would).  This makes for more
+efficiency if you call those functions several times, by avoiding
+reopening the database for each call. 
+</p></blockquote></div>
+
+<!-- netdb.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: struct netent * <b>getnetent</b> (<var>void</var>)<var><a name="index-getnetent-1884"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:netent race:netentbuf env locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- getnetent @mtasurace:netent @mtasurace:netentbuf @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- nss_getent(getnetent_r) @mtasurace:netent @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- *func = getnetent_r dup @mtasurace:netent @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- realloc dup @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- libc_lock_unlock dup @aculock -->
+     <!-- getnetent_r @mtasurace:netent @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- nss_getent_r(nss_networks_lookup2) @mtasurace:netent @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- res_maybe_init(!preinit) dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- setup(nss_networks_lookup2) dup @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *fct.f @mtasurace:servent @ascuplugin -->
+     <!-- nss_next2 dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- nss_lookup dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *sfct.f @mtasurace:netent @ascuplugin -->
+     <!-- libc_lock_unlock dup @aculock -->
+        <p>This function returns the next entry in the networks database.  It
+returns a null pointer if there are no more entries. 
+</p></blockquote></div>
+
+<!-- netdb.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: void <b>endnetent</b> (<var>void</var>)<var><a name="index-endnetent-1885"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:netent env locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- endnetent @mtasurace:netent @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_lock @asulock @aculock -->
+     <!-- nss_endent(nss_networks_lookup2) @mtasurace:netent @mtsenv @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- res_maybe_init(!preinit) dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- setup(nss_networks_lookup2) dup @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *fct.f @mtasurace:netent @ascuplugin -->
+     <!-- nss_next2 dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_unlock @aculock -->
+        <p>This function closes the networks database. 
+</p></blockquote></div>
+
+   </body></html>
+

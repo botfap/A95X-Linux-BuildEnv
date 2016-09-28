@@ -1,0 +1,17 @@
+config BR2_PACKAGE_MTK7603
+	bool "mtk7603"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  mtk7603 driver
+
+config BR2_PACKAGE_MTK7603_GIT_VERSION
+	string "mtk7603 branch"
+	depends on BR2_PACKAGE_MTK7603
+	help
+		Branch for mtk7603
+
+config BR2_PACKAGE_MTK7603_GIT_REPO_URL
+	string "mtk7603 git"
+	depends on BR2_PACKAGE_MTK7603
+	help
+		mtk7603 git

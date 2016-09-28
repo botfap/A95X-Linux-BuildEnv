@@ -1,0 +1,78 @@
+--- gst-plugins-good-0.10.31/gst/isomp4/qtdemux.c.orig	2011-12-30 05:59:09.000000000 -0800
++++ gst-plugins-good-0.10.31/gst/isomp4/qtdemux.c	2014-08-12 17:24:36.942120688 -0700
+@@ -6602,6 +6602,55 @@ qtdemux_parse_trak (GstQTDemux * qtdemux
+ 
+           break;
+         }
++        case FOURCC_hvc1:
++        case FOURCC_H265:
++        case FOURCC_hev1:
++        {
++          gint len = QT_UINT32 (stsd_data) - 0x66;
++          const guint8 *hevc_data = stsd_data + 0x66;
++
++          /* find hevc */
++          while (len >= 0x8) {
++            gint size;
++
++            if (QT_UINT32 (hevc_data) <= len)
++              size = QT_UINT32 (hevc_data) - 0x8;
++            else
++              size = len - 0x8;
++
++            if (size < 1)
++              /* No real data, so break out */
++              break;
++
++            switch (QT_FOURCC (hevc_data + 0x4)) {
++              case FOURCC_hvcC:
++              {
++                /* parse, if found */
++                GstBuffer *buf;
++
++                GST_DEBUG_OBJECT (qtdemux, "found hvcC codec_data in stsd");
++
++                /* First 4 bytes are the length of the atom, the next 4 bytes
++                 * are the fourcc, the next 1 byte is the version, and the
++                 * subsequent bytes are sequence parameter set like data. */
++                gst_codec_utils_h265_caps_set_level_tier_and_profile
++                    (stream->caps, hevc_data + 8 + 1, size - 1);
++
++                buf = gst_buffer_new_and_alloc (size);
++                 memcpy (GST_BUFFER_DATA (buf), hevc_data + 0x8, size);
++                gst_caps_set_simple (stream->caps,
++                    "codec_data", GST_TYPE_BUFFER, buf, NULL);
++                gst_buffer_unref (buf);
++                break;
++              }
++              default:
++                break;
++            }
++            len -= size + 8;
++            hevc_data += size + 8;
++          }
++          break;
++        }
+         case FOURCC_mp4v:
+         case FOURCC_MP4V:
+         case FOURCC_fmp4:
+@@ -9387,6 +9436,19 @@ qtdemux_video_caps (GstQTDemux * qtdemux
+           "stream-format", G_TYPE_STRING, "avc",
+           "alignment", G_TYPE_STRING, "au", NULL);
+       break;
++    case GST_MAKE_FOURCC ('H', '2', '6', '5'):
++    case GST_MAKE_FOURCC ('h', 'v', 'c', '1'):
++      _codec ("H.265 / HEVC");
++      caps = gst_caps_new_simple ("video/x-h265",
++          "stream-format", G_TYPE_STRING, "hvc1",
++          "alignment", G_TYPE_STRING, "au", NULL);
++      break;
++    case GST_MAKE_FOURCC ('h', 'e', 'v', '1'):
++      _codec ("H.265 / HEVC");
++      caps = gst_caps_new_simple ("video/x-h265",
++          "stream-format", G_TYPE_STRING, "hev1",
++          "alignment", G_TYPE_STRING, "au", NULL);
++      break;
+     case GST_MAKE_FOURCC ('r', 'l', 'e', ' '):
+       _codec ("Run-length encoding");
+       caps = gst_caps_new_simple ("video/x-rle",

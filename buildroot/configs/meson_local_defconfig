@@ -1,0 +1,49 @@
+# Mirrors and Download locations
+BR2_BACKUP_SITE="http://openlinux.amlogic.com:8000/download/GPL_code_release/ThirdParty"
+# Architecture
+BR2_arm=y
+BR2_cortex_a9=y
+#
+# Target options
+#
+
+#Tool chain
+BR2_TOOLCHAIN_EXTERNAL=y
+#BR2_TOOLCHAIN_EXTERNAL_CODESOURCERY_ARM2010Q1=y
+BR2_TOOLCHAIN_EXTERNAL_CUSTOM=y
+BR2_TOOLCHAIN_EXTERNAL_PREINSTALLED=y
+BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX="arm-none-linux-gnueabi"
+BR2_TOOLCHAIN_EXTERNAL_PATH="/opt/CodeSourcery/Sourcery_G++_Lite/"
+BR2_TOOLCHAIN_EXTERNAL_PREFIX="arm-none-linux-gnueabi"
+BR2_TOOLCHAIN_EXTERNAL_GLIBC=y
+BR2_TOOLCHAIN_EXTERNAL_CUSTOM_GLIBC=y
+
+#GDB option
+BR2_LARGEFILE=y
+BR2_INET_IPV6=y
+BR2_INET_RPC=y
+BR2_USE_WCHAR=y
+BR2_ENABLE_LOCALE=y
+BR2_INSTALL_LIBSTDCPP=y
+BR2_TOOLCHAIN_HAS_THREADS=y
+BR2_TOOLCHAIN_HAS_THREADS_DEBUG=y
+BR2_TOOLCHAIN_HAS_THREADS_DEBUG_IF_NEEDED=y
+BR2_TOOLCHAIN_HAS_SHADOW_PASSWORDS=y
+BR2_USE_MMU=y
+BR2_PREFER_SOFT_FLOAT=y
+BR2_SOFT_FLOAT=y
+
+#rootfs Image
+BR2_TARGET_ROOTFS_CPIO=y
+BR2_TARGET_ROOTFS_CPIO_NONE=y
+BR2_TARGET_ROOTFS_INITRAMFS=y
+
+#                                                                               
+# Kernel                                                                    
+#                                                                           
+BR2_LINUX_KERNEL=y           
+BR2_LINUX_KERNEL_CUSTOM_LOCAL=y
+BR2_LINUX_KERNEL_CUSTOM_LOCAL_LOCATION="../../amlogic-3.0/common/"
+BR2_LINUX_KERNEL_USE_DEFCONFIG=y                                                                       
+BR2_LINUX_KERNEL_DEFCONFIG="meson6_skt"                                     
+BR2_LINUX_KERNEL_UIMAGE=y 

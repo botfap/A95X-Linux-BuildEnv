@@ -1,0 +1,239 @@
+<html lang="en">
+<head>
+<title>Aligned Memory Blocks - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Unconstrained-Allocation.html#Unconstrained-Allocation" title="Unconstrained Allocation">
+<link rel="prev" href="Efficiency-and-Malloc.html#Efficiency-and-Malloc" title="Efficiency and Malloc">
+<link rel="next" href="Malloc-Tunable-Parameters.html#Malloc-Tunable-Parameters" title="Malloc Tunable Parameters">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Aligned-Memory-Blocks"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Malloc-Tunable-Parameters.html#Malloc-Tunable-Parameters">Malloc Tunable Parameters</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Efficiency-and-Malloc.html#Efficiency-and-Malloc">Efficiency and Malloc</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Unconstrained-Allocation.html#Unconstrained-Allocation">Unconstrained Allocation</a>
+<hr>
+</div>
+
+<h5 class="subsubsection">3.2.2.7 Allocating Aligned Memory Blocks</h5>
+
+<p><a name="index-page-boundary-311"></a><a name="index-alignment-_0028with-_0040code_007bmalloc_007d_0029-312"></a><a name="index-stdlib_002eh-313"></a>The address of a block returned by <code>malloc</code> or <code>realloc</code> in
+GNU systems is always a multiple of eight (or sixteen on 64-bit
+systems).  If you need a block whose address is a multiple of a higher
+power of two than that, use <code>aligned_alloc</code> or <code>posix_memalign</code>. 
+<code>aligned_alloc</code> and <code>posix_memalign</code> are declared in
+<samp><span class="file">stdlib.h</span></samp>.
+
+<!-- stdlib.h -->
+<div class="defun">
+&mdash; Function: void * <b>aligned_alloc</b> (<var>size_t alignment, size_t size</var>)<var><a name="index-aligned_005falloc-314"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe lock
+| AC-Unsafe lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Alias to memalign. -->
+        <p>The <code>aligned_alloc</code> function allocates a block of <var>size</var> bytes whose
+address is a multiple of <var>alignment</var>.  The <var>alignment</var> must be a
+power of two and <var>size</var> must be a multiple of <var>alignment</var>.
+
+        <p>The <code>aligned_alloc</code> function returns a null pointer on error and sets
+<code>errno</code> to one of the following values:
+
+          <dl>
+<dt><code>ENOMEM</code><dd>There was insufficient memory available to satisfy the request.
+
+          <br><dt><code>EINVAL</code><dd><var>alignment</var> is not a power of two.
+
+          <p>This function was introduced in ISO&nbsp;C11<!-- /@w --> and hence may have better
+portability to modern non-POSIX systems than <code>posix_memalign</code>. 
+</dl>
+
+        </blockquote></div>
+
+<!-- malloc.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: void * <b>memalign</b> (<var>size_t boundary, size_t size</var>)<var><a name="index-memalign-315"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe lock
+| AC-Unsafe lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Same issues as malloc.  The padding bytes are safely freed in -->
+     <!-- _int_memalign, with the arena still locked. -->
+     <!-- __libc_memalign @asulock @aculock @acsfd @acsmem -->
+     <!-- *__memalign_hook dup unguarded -->
+     <!-- __libc_malloc dup @asulock @aculock @acsfd @acsmem -->
+     <!-- arena_get dup @asulock @aculock @acsfd @acsmem -->
+     <!-- _int_memalign @acsfd @acsmem -->
+     <!-- _int_malloc dup @acsfd @acsmem -->
+     <!-- checked_request2size dup ok -->
+     <!-- mem2chunk dup ok -->
+     <!-- chunksize dup ok -->
+     <!-- chunk_is_mmapped dup ok -->
+     <!-- set_head dup ok -->
+     <!-- chunk2mem dup ok -->
+     <!-- set_inuse_bit_at_offset dup ok -->
+     <!-- set_head_size dup ok -->
+     <!-- _int_free (have_lock) dup @acsfd @acsmem -->
+     <!-- chunk_at_offset dup ok -->
+     <!-- check_inuse_chunk dup ok -->
+     <!-- arena_get_retry dup @asulock @aculock @acsfd @acsmem -->
+     <!-- mutex_unlock dup @aculock -->
+        <p>The <code>memalign</code> function allocates a block of <var>size</var> bytes whose
+address is a multiple of <var>boundary</var>.  The <var>boundary</var> must be a
+power of two!  The function <code>memalign</code> works by allocating a
+somewhat larger block, and then returning an address within the block
+that is on the specified boundary.
+
+        <p>The <code>memalign</code> function returns a null pointer on error and sets
+<code>errno</code> to one of the following values:
+
+          <dl>
+<dt><code>ENOMEM</code><dd>There was insufficient memory available to satisfy the request.
+
+          <br><dt><code>EINVAL</code><dd><var>alignment</var> is not a power of two.
+
+        </dl>
+
+        <p>The <code>memalign</code> function is obsolete and <code>aligned_alloc</code> or
+<code>posix_memalign</code> should be used instead. 
+</p></blockquote></div>
+
+<!-- stdlib.h -->
+<!-- POSIX -->
+<div class="defun">
+&mdash; Function: int <b>posix_memalign</b> (<var>void **memptr, size_t alignment, size_t size</var>)<var><a name="index-posix_005fmemalign-316"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe lock
+| AC-Unsafe lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Calls memalign unless the requirements are not met (powerof2 macro is -->
+     <!-- safe given an automatic variable as an argument) or there's a -->
+     <!-- memalign hook (accessed unguarded, but safely). -->
+        <p>The <code>posix_memalign</code> function is similar to the <code>memalign</code>
+function in that it returns a buffer of <var>size</var> bytes aligned to a
+multiple of <var>alignment</var>.  But it adds one requirement to the
+parameter <var>alignment</var>: the value must be a power of two multiple of
+<code>sizeof (void *)</code>.
+
+        <p>If the function succeeds in allocation memory a pointer to the allocated
+memory is returned in <code>*</code><var>memptr</var> and the return value is zero. 
+Otherwise the function returns an error value indicating the problem. 
+The possible error values returned are:
+
+          <dl>
+<dt><code>ENOMEM</code><dd>There was insufficient memory available to satisfy the request.
+
+          <br><dt><code>EINVAL</code><dd><var>alignment</var> is not a power of two multiple of <code>sizeof (void *)</code>.
+
+        </dl>
+
+        <p>This function was introduced in POSIX 1003.1d. Although this function is
+superseded by <code>aligned_alloc</code>, it is more portable to older POSIX
+systems that do not support ISO&nbsp;C11<!-- /@w -->. 
+</p></blockquote></div>
+
+<!-- malloc.h stdlib.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: void * <b>valloc</b> (<var>size_t size</var>)<var><a name="index-valloc-317"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe init
+| AS-Unsafe init lock
+| AC-Unsafe init lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- __libc_valloc @mtuinit @asuinit @asulock @aculock @acsfd @acsmem -->
+     <!-- ptmalloc_init (once) @mtsenv @asulock @aculock @acsfd @acsmem -->
+     <!-- _dl_addr @asucorrupt? @aculock -->
+     <!-- __rtld_lock_lock_recursive (dl_load_lock) @asucorrupt? @aculock -->
+     <!-- _dl_find_dso_for_object ok, iterates over dl_ns and its _ns_loaded objs -->
+     <!-- the ok above assumes no partial updates on dl_ns and _ns_loaded -->
+     <!-- that could confuse a _dl_addr call in a signal handler -->
+     <!-- _dl_addr_inside_object ok -->
+     <!-- determine_info ok -->
+     <!-- __rtld_lock_unlock_recursive (dl_load_lock) @aculock -->
+     <!-- thread_atfork @asulock @aculock @acsfd @acsmem -->
+     <!-- __register_atfork @asulock @aculock @acsfd @acsmem -->
+     <!-- lll_lock (__fork_lock) @asulock @aculock -->
+     <!-- fork_handler_alloc @asulock @aculock @acsfd @acsmem -->
+     <!-- calloc dup @asulock @aculock @acsfd @acsmem -->
+     <!-- __linkin_atfork ok -->
+     <!-- catomic_compare_and_exchange_bool_acq ok -->
+     <!-- lll_unlock (__fork_lock) @aculock -->
+     <!-- *_environ @mtsenv -->
+     <!-- next_env_entry ok -->
+     <!-- strcspn dup ok -->
+     <!-- __libc_mallopt dup @mtasuconst:mallopt [setting mp_] -->
+     <!-- __malloc_check_init @mtasuconst:malloc_hooks [setting hooks] -->
+     <!-- *__malloc_initialize_hook unguarded, ok -->
+     <!-- *__memalign_hook dup ok, unguarded -->
+     <!-- arena_get dup @asulock @aculock @acsfd @acsmem -->
+     <!-- _int_valloc @acsfd @acsmem -->
+     <!-- malloc_consolidate dup ok -->
+     <!-- _int_memalign dup @acsfd @acsmem -->
+     <!-- arena_get_retry dup @asulock @aculock @acsfd @acsmem -->
+     <!-- _int_memalign dup @acsfd @acsmem -->
+     <!-- mutex_unlock dup @aculock -->
+        <p>Using <code>valloc</code> is like using <code>memalign</code> and passing the page size
+as the value of the second argument.  It is implemented like this:
+
+     <pre class="smallexample">          void *
+          valloc (size_t size)
+          {
+            return memalign (getpagesize (), size);
+          }
+</pre>
+        <p><a href="Query-Memory-Parameters.html#Query-Memory-Parameters">Query Memory Parameters</a> for more information about the memory
+subsystem.
+
+        <p>The <code>valloc</code> function is obsolete and <code>aligned_alloc</code> or
+<code>posix_memalign</code> should be used instead. 
+</p></blockquote></div>
+
+   </body></html>
+

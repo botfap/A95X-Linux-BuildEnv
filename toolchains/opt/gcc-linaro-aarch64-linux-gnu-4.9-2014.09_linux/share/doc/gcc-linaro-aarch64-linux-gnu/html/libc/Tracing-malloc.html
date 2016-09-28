@@ -1,0 +1,124 @@
+<html lang="en">
+<head>
+<title>Tracing malloc - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Allocation-Debugging.html#Allocation-Debugging" title="Allocation Debugging">
+<link rel="next" href="Using-the-Memory-Debugger.html#Using-the-Memory-Debugger" title="Using the Memory Debugger">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Tracing-malloc"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Using-the-Memory-Debugger.html#Using-the-Memory-Debugger">Using the Memory Debugger</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Allocation-Debugging.html#Allocation-Debugging">Allocation Debugging</a>
+<hr>
+</div>
+
+<h5 class="subsubsection">3.2.3.1 How to install the tracing functionality</h5>
+
+<!-- mcheck.h -->
+<!-- GNU -->
+<div class="defun">
+&mdash; Function: void <b>mtrace</b> (<var>void</var>)<var><a name="index-mtrace-339"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe env race:mtrace const:malloc_hooks init
+| AS-Unsafe init heap corrupt lock
+| AC-Unsafe init corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Like the mcheck hooks, these are not designed with thread safety in -->
+     <!-- mind, because the hook pointers are temporarily modified without -->
+     <!-- regard to other threads, signals or cancellation. -->
+     <!-- mtrace @mtuinit @mtasurace:mtrace @mtsenv @asuinit @ascuheap @asucorrupt @acuinit @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- __libc_secure_getenv dup @mtsenv -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- fopen dup @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- fcntl dup ok -->
+     <!-- setvbuf dup @aculock -->
+     <!-- fprintf dup (on newly-created stream) @aculock -->
+     <!-- __cxa_atexit (once) dup @asulock @aculock @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+        <p>When the <code>mtrace</code> function is called it looks for an environment
+variable named <code>MALLOC_TRACE</code>.  This variable is supposed to
+contain a valid file name.  The user must have write access.  If the
+file already exists it is truncated.  If the environment variable is not
+set or it does not name a valid file which can be opened for writing
+nothing is done.  The behavior of <code>malloc</code> etc. is not changed. 
+For obvious reasons this also happens if the application is installed
+with the SUID or SGID bit set.
+
+        <p>If the named file is successfully opened, <code>mtrace</code> installs special
+handlers for the functions <code>malloc</code>, <code>realloc</code>, and
+<code>free</code> (see <a href="Hooks-for-Malloc.html#Hooks-for-Malloc">Hooks for Malloc</a>).  From then on, all uses of these
+functions are traced and protocolled into the file.  There is now of
+course a speed penalty for all calls to the traced functions so tracing
+should not be enabled during normal use.
+
+        <p>This function is a GNU extension and generally not available on other
+systems.  The prototype can be found in <samp><span class="file">mcheck.h</span></samp>. 
+</p></blockquote></div>
+
+<!-- mcheck.h -->
+<!-- GNU -->
+<div class="defun">
+&mdash; Function: void <b>muntrace</b> (<var>void</var>)<var><a name="index-muntrace-340"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:mtrace const:malloc_hooks locale
+| AS-Unsafe corrupt heap
+| AC-Unsafe corrupt mem lock fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- muntrace @mtasurace:mtrace @mtslocale @asucorrupt @ascuheap @acucorrupt @acsmem @aculock @acsfd -->
+     <!-- fprintf (fputs) dup @mtslocale @asucorrupt @ascuheap @acsmem @aculock @acucorrupt -->
+     <!-- fclose dup @ascuheap @asulock @aculock @acsmem @acsfd -->
+        <p>The <code>muntrace</code> function can be called after <code>mtrace</code> was used
+to enable tracing the <code>malloc</code> calls.  If no (successful) call of
+<code>mtrace</code> was made <code>muntrace</code> does nothing.
+
+        <p>Otherwise it deinstalls the handlers for <code>malloc</code>, <code>realloc</code>,
+and <code>free</code> and then closes the protocol file.  No calls are
+protocolled anymore and the program runs again at full speed.
+
+        <p>This function is a GNU extension and generally not available on other
+systems.  The prototype can be found in <samp><span class="file">mcheck.h</span></samp>. 
+</p></blockquote></div>
+
+   </body></html>
+

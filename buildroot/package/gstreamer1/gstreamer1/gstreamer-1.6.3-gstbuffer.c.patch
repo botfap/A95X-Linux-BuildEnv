@@ -1,0 +1,13 @@
+--- gstreamer1-1.6.3/gst/gstbuffer.c.orig	2016-04-27 18:18:48.245598294 +0800
++++ gstreamer1-1.6.3/gst/gstbuffer.c	2016-04-27 18:19:00.669609107 +0800
+@@ -1703,7 +1703,9 @@
+ void
+ gst_buffer_unmap (GstBuffer * buffer, GstMapInfo * info)
+ {
+-  g_return_if_fail (GST_IS_BUFFER (buffer));
++  if(!GST_IS_BUFFER (buffer))
++  	g_print("!!!ERROR buffer %p\n",buffer);
++  
+   g_return_if_fail (info != NULL);
+ 
+   /* we need to check for NULL, it is possible that we tried to map a buffer

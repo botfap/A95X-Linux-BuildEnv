@@ -1,0 +1,5 @@
+config BR2_PACKAGE_AML_BDK
+    bool "amlogic trust zone"
+    depends on BR2_LINUX_KERNEL
+    help
+        Trustzone 

@@ -1,0 +1,5 @@
+config BR2_PACKAGE_UMP_USERSPACE_DRV
+        bool "ump user space driver"
+	select BR2_PACKAGE_GPU
+        help
+          ump user space driver from arm.

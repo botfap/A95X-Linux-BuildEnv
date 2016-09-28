@@ -1,0 +1,10 @@
+--- qtwebkit-opensource-src-5.2.1/Source/WebCore/Target.pri.orig	2014-05-28 15:04:15.677188446 +0800
++++ qtwebkit-opensource-src-5.2.1/Source/WebCore/Target.pri	2014-05-28 15:04:21.033188635 +0800
+@@ -14,6 +14,7 @@ WEBKIT += javascriptcore
+ 
+ CONFIG += staticlib
+ 
++*-g++*:QMAKE_CXXFLAGS_RELEASE -= -O3
+ # Do it in the WebCore static lib to support force_static_libs_as_shared
+ # since the QtWebKitWidgets lib wouldn't load QtWebKit in that case.
+ # This should match the opposite statement in api.pri for the QtWebKit lib.

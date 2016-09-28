@@ -1,0 +1,12 @@
+Index: uboot-next/arch/arm/cpu/aml_meson/config.mk
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/config.mk	2015-05-04 17:22:49.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/config.mk	2015-05-06 15:01:52.647408435 +0800
+@@ -1,6 +1,6 @@
+ CROSS_COMPILE=arm-none-eabi-
+ ARM_CPU=cortex-a9
+-PLATFORM_CPPFLAGS += $(call cc-option,-mcpu=cortex-a9 -mfpu=neon  -ffixed-r8 -mno-long-calls  -Wall -fPIC ) -Werror
++PLATFORM_CPPFLAGS += $(call cc-option,-mcpu=cortex-a9 -mfpu=neon  -ffixed-r8 -mno-long-calls  -Wall -fPIC ) 
+ #USE_PRIVATE_LIBGCC=yes
+ TEXT_BASE=$(CONFIG_SYS_TEXT_BASE)
+ UCL_TEXT_BASE=$(CONFIG_SYS_UCL_TEXT_BASE)

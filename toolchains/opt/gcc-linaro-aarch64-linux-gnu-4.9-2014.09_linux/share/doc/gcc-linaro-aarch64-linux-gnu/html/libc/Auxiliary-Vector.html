@@ -1,0 +1,93 @@
+<html lang="en">
+<head>
+<title>Auxiliary Vector - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Program-Basics.html#Program-Basics" title="Program Basics">
+<link rel="prev" href="Environment-Variables.html#Environment-Variables" title="Environment Variables">
+<link rel="next" href="System-Calls.html#System-Calls" title="System Calls">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Auxiliary-Vector"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="System-Calls.html#System-Calls">System Calls</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Environment-Variables.html#Environment-Variables">Environment Variables</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Program-Basics.html#Program-Basics">Program Basics</a>
+<hr>
+</div>
+
+<h3 class="section">25.5 Auxiliary Vector</h3>
+
+<p><a name="index-auxiliary-vector-3169"></a>
+When a program is executed, it receives information from the operating
+system about the environment in which it is operating.  The form of this
+information is a table of key-value pairs, where the keys are from the
+set of &lsquo;<samp><span class="samp">AT_</span></samp>&rsquo; values in <samp><span class="file">elf.h</span></samp>.  Some of the data is provided
+by the kernel for libc consumption, and may be obtained by ordinary
+interfaces, such as <code>sysconf</code>.  However, on a platform-by-platform
+basis there may be information that is not available any other way.
+
+<h4 class="subsection">25.5.1 Definition of <code>getauxval</code></h4>
+
+<!-- sys/auxv.h -->
+<div class="defun">
+&mdash; Function: unsigned long int <b>getauxval</b> (<var>unsigned long int type</var>)<var><a name="index-getauxval-3170"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Reads from hwcap or iterates over constant auxv. -->
+        <p>This function is used to inquire about the entries in the auxiliary
+vector.  The <var>type</var> argument should be one of the &lsquo;<samp><span class="samp">AT_</span></samp>&rsquo; symbols
+defined in <samp><span class="file">elf.h</span></samp>.  If a matching entry is found, the value is
+returned; if the entry is not found, zero is returned and <code>errno</code> is
+set to <code>ENOENT</code>. 
+</p></blockquote></div>
+
+   <p>For some platforms, the key <code>AT_HWCAP</code> is the easiest way to inquire
+about any instruction set extensions available at runtime.  In this case,
+there will (of necessity) be a platform-specific set of &lsquo;<samp><span class="samp">HWCAP_</span></samp>&rsquo;
+values masked together that describe the capabilities of the cpu on which
+the program is being executed.
+
+   </body></html>
+

@@ -1,0 +1,180 @@
+<html lang="en">
+<head>
+<title>Setting User ID - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Users-and-Groups.html#Users-and-Groups" title="Users and Groups">
+<link rel="prev" href="Reading-Persona.html#Reading-Persona" title="Reading Persona">
+<link rel="next" href="Setting-Groups.html#Setting-Groups" title="Setting Groups">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Setting-User-ID"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Setting-Groups.html#Setting-Groups">Setting Groups</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Reading-Persona.html#Reading-Persona">Reading Persona</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Users-and-Groups.html#Users-and-Groups">Users and Groups</a>
+<hr>
+</div>
+
+<h3 class="section">29.6 Setting the User ID</h3>
+
+<p>This section describes the functions for altering the user ID (real
+and/or effective) of a process.  To use these facilities, you must
+include the header files <samp><span class="file">sys/types.h</span></samp> and <samp><span class="file">unistd.h</span></samp>. 
+<a name="index-unistd_002eh-3355"></a><a name="index-sys_002ftypes_002eh-3356"></a>
+<!-- unistd.h -->
+<!-- POSIX.1 -->
+
+<div class="defun">
+&mdash; Function: int <b>seteuid</b> (<var>uid_t neweuid</var>)<var><a name="index-seteuid-3357"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe lock
+| AC-Unsafe lock
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- seteuid @asulock @aculock -->
+     <!-- INLINE_SETXID_SYSCALL @asulock @aculock -->
+     <!-- This may be just a unix syscall, or the ugliness below used by -->
+     <!-- nptl to propagate the syscall to all cloned processes used to -->
+     <!-- implement threads. -->
+     <!-- nptl_setxid @asulock @aculock -->
+     <!-- while holding the stack_alloc_lock, mark with SETXID_BITMASK all -->
+     <!-- threads that are not exiting, signal them until no thread remains -->
+     <!-- marked, clear the marks and run the syscall, then release the lock. -->
+     <!-- lll_lock @asulock @aculock -->
+     <!-- list_for_each ok -->
+     <!-- list_entry ok -->
+     <!-- setxid_mark_thread ok -->
+     <!-- if a thread is initializing, wait for it to be cloned. -->
+     <!-- mark it with SETXID_BITMASK if it's not exiting -->
+     <!-- setxid_signal_thread ok -->
+     <!-- if a thread is marked with SETXID_BITMASK, -->
+     <!-- send it the SIGSETXID signal -->
+     <!-- setxid_unmark_thread ok -->
+     <!-- clear SETXID_BITMASK and release the futex if SETXID_BITMASK is -->
+     <!-- set. -->
+     <!-- <syscall> ok -->
+     <!-- lll_unlock @aculock -->
+     <!-- sighandler_setxid ok -->
+     <!-- issue the syscall, clear SETXID_BITMASK, release the futex, and -->
+     <!-- wake up the signaller loop if the counter reached zero. -->
+        <p>This function sets the effective user ID of a process to <var>neweuid</var>,
+provided that the process is allowed to change its effective user ID.  A
+privileged process (effective user ID zero) can change its effective
+user ID to any legal value.  An unprivileged process with a file user ID
+can change its effective user ID to its real user ID or to its file user
+ID.  Otherwise, a process may not change its effective user ID at all.
+
+        <p>The <code>seteuid</code> function returns a value of <code>0</code> to indicate
+successful completion, and a value of <code>-1</code> to indicate an error. 
+The following <code>errno</code> error conditions are defined for this
+function:
+
+          <dl>
+<dt><code>EINVAL</code><dd>The value of the <var>neweuid</var> argument is invalid.
+
+          <br><dt><code>EPERM</code><dd>The process may not change to the specified ID. 
+</dl>
+
+        <p>Older systems (those without the <code>_POSIX_SAVED_IDS</code> feature) do not
+have this function. 
+</p></blockquote></div>
+
+<!-- unistd.h -->
+<!-- POSIX.1 -->
+<div class="defun">
+&mdash; Function: int <b>setuid</b> (<var>uid_t newuid</var>)<var><a name="index-setuid-3358"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe lock
+| AC-Unsafe lock
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- setuid @asulock @aculock -->
+     <!-- INLINE_SETXID_SYSCALL dup @asulock @aculock -->
+        <p>If the calling process is privileged, this function sets both the real
+and effective user ID of the process to <var>newuid</var>.  It also deletes
+the file user ID of the process, if any.  <var>newuid</var> may be any
+legal value.  (Once this has been done, there is no way to recover the
+old effective user ID.)
+
+        <p>If the process is not privileged, and the system supports the
+<code>_POSIX_SAVED_IDS</code> feature, then this function behaves like
+<code>seteuid</code>.
+
+        <p>The return values and error conditions are the same as for <code>seteuid</code>. 
+</p></blockquote></div>
+
+<!-- unistd.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: int <b>setreuid</b> (<var>uid_t ruid, uid_t euid</var>)<var><a name="index-setreuid-3359"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe lock
+| AC-Unsafe lock
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- setreuid @asulock @aculock -->
+     <!-- INLINE_SETXID_SYSCALL dup @asulock @aculock -->
+        <p>This function sets the real user ID of the process to <var>ruid</var> and the
+effective user ID to <var>euid</var>.  If <var>ruid</var> is <code>-1</code>, it means
+not to change the real user ID; likewise if <var>euid</var> is <code>-1</code>, it
+means not to change the effective user ID.
+
+        <p>The <code>setreuid</code> function exists for compatibility with 4.3 BSD Unix,
+which does not support file IDs.  You can use this function to swap the
+effective and real user IDs of the process.  (Privileged processes are
+not limited to this particular usage.)  If file IDs are supported, you
+should use that feature instead of this function.  See <a href="Enable_002fDisable-Setuid.html#Enable_002fDisable-Setuid">Enable/Disable Setuid</a>.
+
+        <p>The return value is <code>0</code> on success and <code>-1</code> on failure. 
+The following <code>errno</code> error conditions are defined for this
+function:
+
+          <dl>
+<dt><code>EPERM</code><dd>The process does not have the appropriate privileges; you do not
+have permission to change to the specified ID. 
+</dl>
+        </p></blockquote></div>
+
+   </body></html>
+

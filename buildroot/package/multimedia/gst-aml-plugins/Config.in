@@ -1,0 +1,9 @@
+config BR2_PACKAGE_GST_AML_PLUGINS
+        bool "gst-aml-plugins"
+        depends on BR2_PACKAGE_GSTREAMER 
+        help
+	  Amlogic GStreamer plugins to send audio es to aml dsp and video es to aml hw decoder. decode and render will be complete
+	  at kernel level.
+
+
+

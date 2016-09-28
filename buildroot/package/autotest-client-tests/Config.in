@@ -1,0 +1,5 @@
+config BR2_PACKAGE_AUTOTEST_CLIENT_TESTS
+	bool "autotest-client-tests"
+	help
+        Autotest client tests.
+

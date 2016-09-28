@@ -1,0 +1,98 @@
+Index: uboot-next/arch/arm/cpu/aml_meson/g9b/firmware/appf/Makefile
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/g9b/firmware/appf/Makefile	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/g9b/firmware/appf/Makefile	2015-05-08 10:58:45.966376616 +0800
+@@ -57,7 +57,7 @@
+ MAPFILE=appf.gls
+ CFLAGS= -g -O2 -fpie -fpic -mcpu=$(CPU) -I. -DNO_PCU -I$(EXTINCDIR) -I$(EXTINCDIR2) -I$(EXTINCDIR3) 
+ # -DUSE_REALVIEW_EB_RESETS
+-ASFLAGS= -g -mcpu=$(CPU) -mfpu=vfpv3 -c
++ASFLAGS= -g -mcpu=$(CPU) -mfpu=neon -c
+ LDFLAGS= -g -nostartfiles -pie -fpic -static -e $(ENTRY_POINT) --verbose -T $(MAPFILE) -M
+ 
+ $(OUTDIR)/%.o : $(OUTDIR)/%.S	# Remove make's implicit rule for .S files
+Index: uboot-next/arch/arm/cpu/aml_meson/g9tv/firmware/appf/Makefile
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/g9tv/firmware/appf/Makefile	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/g9tv/firmware/appf/Makefile	2015-05-08 10:59:00.534376889 +0800
+@@ -57,7 +57,7 @@
+ MAPFILE=appf.gls
+ CFLAGS= -g -O2 -fpie -fpic -mcpu=$(CPU) -I. -DNO_PCU -I$(EXTINCDIR) -I$(EXTINCDIR2) -I$(EXTINCDIR3) 
+ # -DUSE_REALVIEW_EB_RESETS
+-ASFLAGS= -g -mcpu=$(CPU) -mfpu=vfpv3 -c
++ASFLAGS= -g -mcpu=$(CPU) -mfpu=neon -c
+ LDFLAGS= -g -nostartfiles -pie -fpic -static -e $(ENTRY_POINT) --verbose -T $(MAPFILE) -M
+ 
+ $(OUTDIR)/%.o : $(OUTDIR)/%.S	# Remove make's implicit rule for .S files
+Index: uboot-next/arch/arm/cpu/aml_meson/m3/firmware/appf/Makefile
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m3/firmware/appf/Makefile	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m3/firmware/appf/Makefile	2015-05-08 10:59:26.678377379 +0800
+@@ -54,7 +54,7 @@
+ MAPFILE=appf.gls
+ CFLAGS= -g -O2 -fpie -fpic -mcpu=$(CPU) -I. -DNO_PCU -I$(EXTINCDIR)
+ # -DUSE_REALVIEW_EB_RESETS
+-ASFLAGS= -g -mcpu=$(CPU) -mfpu=vfpv3 -c
++ASFLAGS= -g -mcpu=$(CPU) -mfpu=neon -c
+ LDFLAGS= -g -nostartfiles -pie -fpic -static -e $(ENTRY_POINT) --verbose -T $(MAPFILE) -M
+ 
+ $(OUTDIR)/%.o : $(OUTDIR)/%.S	# Remove make's implicit rule for .S files
+@@ -109,4 +109,4 @@
+ 
+ $(OUTDIR)/appf_srec.txt: $(OUTDIR)/appf.axf
+ 	$(fromelf) --gap-fill 0xff -O srec $< $@
+-	
+\ No newline at end of file
++	
+Index: uboot-next/arch/arm/cpu/aml_meson/m6/firmware/appf/Makefile
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m6/firmware/appf/Makefile	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m6/firmware/appf/Makefile	2015-05-08 10:59:42.418377676 +0800
+@@ -57,7 +57,7 @@
+ MAPFILE=appf.gls
+ CFLAGS= -g -O2 -fpie -fpic -mcpu=$(CPU) -I. -DNO_PCU -I$(EXTINCDIR) -I$(EXTINCDIR2) -I$(EXTINCDIR3) 
+ # -DUSE_REALVIEW_EB_RESETS
+-ASFLAGS= -g -mcpu=$(CPU) -mfpu=vfpv3 -c
++ASFLAGS= -g -mcpu=$(CPU) -mfpu=neon -c
+ LDFLAGS= -g -nostartfiles -pie -fpic -static -e $(ENTRY_POINT) --verbose -T $(MAPFILE) -M
+ 
+ $(OUTDIR)/%.o : $(OUTDIR)/%.S	# Remove make's implicit rule for .S files
+Index: uboot-next/arch/arm/cpu/aml_meson/m6tv/firmware/appf/Makefile
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m6tv/firmware/appf/Makefile	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m6tv/firmware/appf/Makefile	2015-05-08 10:59:53.506377885 +0800
+@@ -57,7 +57,7 @@
+ MAPFILE=appf.gls
+ CFLAGS= -g -O2 -fpie -fpic -mcpu=$(CPU) -I. -DNO_PCU -I$(EXTINCDIR) -I$(EXTINCDIR2) -I$(EXTINCDIR3) 
+ # -DUSE_REALVIEW_EB_RESETS
+-ASFLAGS= -g -mcpu=$(CPU) -mfpu=vfpv3 -c
++ASFLAGS= -g -mcpu=$(CPU) -mfpu=neon -c
+ LDFLAGS= -g -nostartfiles -pie -fpic -static -e $(ENTRY_POINT) --verbose -T $(MAPFILE) -M
+ 
+ $(OUTDIR)/%.o : $(OUTDIR)/%.S	# Remove make's implicit rule for .S files
+Index: uboot-next/arch/arm/cpu/aml_meson/m6tvd/firmware/appf/Makefile
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m6tvd/firmware/appf/Makefile	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m6tvd/firmware/appf/Makefile	2015-05-08 11:00:19.210378365 +0800
+@@ -57,7 +57,7 @@
+ MAPFILE=appf.gls
+ CFLAGS= -g -O2 -fpie -fpic -mcpu=$(CPU) -I. -DNO_PCU -I$(EXTINCDIR) -I$(EXTINCDIR2) -I$(EXTINCDIR3) 
+ # -DUSE_REALVIEW_EB_RESETS
+-ASFLAGS= -g -mcpu=$(CPU) -mfpu=vfpv3 -c
++ASFLAGS= -g -mcpu=$(CPU) -mfpu=neon -c
+ LDFLAGS= -g -nostartfiles -pie -fpic -static -e $(ENTRY_POINT) --verbose -T $(MAPFILE) -M
+ 
+ $(OUTDIR)/%.o : $(OUTDIR)/%.S	# Remove make's implicit rule for .S files
+Index: uboot-next/arch/arm/cpu/aml_meson/m8/firmware/appf/Makefile
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m8/firmware/appf/Makefile	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m8/firmware/appf/Makefile	2015-05-08 11:00:04.234378084 +0800
+@@ -57,7 +57,7 @@
+ MAPFILE=appf.gls
+ CFLAGS= -g -O2 -fpie -fpic -mcpu=$(CPU) -I. -DNO_PCU -I$(EXTINCDIR) -I$(EXTINCDIR2) -I$(EXTINCDIR3) 
+ # -DUSE_REALVIEW_EB_RESETS
+-ASFLAGS= -g -mcpu=$(CPU) -mfpu=vfpv3 -c
++ASFLAGS= -g -mcpu=$(CPU) -mfpu=neon -c
+ LDFLAGS= -g -nostartfiles -pie -fpic -static -e $(ENTRY_POINT) --verbose -T $(MAPFILE) -M
+ 
+ $(OUTDIR)/%.o : $(OUTDIR)/%.S	# Remove make's implicit rule for .S files

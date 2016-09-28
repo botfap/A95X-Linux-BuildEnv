@@ -1,0 +1,13 @@
+Index: gpu-2015-11-04-6a0c587df8/egl/x11/drm_module/mali_drm/mali/mali_drv.c
+===================================================================
+--- gpu-2015-11-04-6a0c587df8.orig/egl/x11/drm_module/mali_drm/mali/mali_drv.c	2015-10-20 00:20:04.000000000 +0800
++++ gpu-2015-11-04-6a0c587df8/egl/x11/drm_module/mali_drm/mali/mali_drv.c	2015-11-05 14:05:16.071425655 +0800
+@@ -8,7 +8,7 @@
+  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  */
+ 
+-#include <linux/vermagic.h>
++//#include <linux/vermagic.h>
+ #include <linux/version.h>
+ #include "drmP.h"
+ #include "mali_drm.h"

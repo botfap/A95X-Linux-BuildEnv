@@ -1,0 +1,21 @@
+Index: linux-amlogic-3.10-bringup/drivers/amlogic/display/osd/Makefile
+===================================================================
+--- linux-amlogic-3.10-bringup.orig/drivers/amlogic/display/osd/Makefile	2014-12-02 10:43:26.000000000 +0800
++++ linux-amlogic-3.10-bringup/drivers/amlogic/display/osd/Makefile	2014-12-02 14:18:39.476616049 +0800
+@@ -13,8 +13,12 @@
+ 
+ obj-$(CONFIG_VSYNC_RDMA) += osd_rdma.o
+ 
+-EXTRA_CFLAGS += -Iinclude/linux/osd/ -Idrivers/staging/android/
+-
+-
+-
++EXTRA_CFLAGS += -Iinclude/linux/amlogic/osd/ -Idrivers/staging/android/
++ifeq ($(CONFIG_FB_AMLOGIC_UMP),y)
++fb-objs += osd_ump.o
++endif
++
++ifeq ($(CONFIG_FB_AMLOGIC_UMP),y)
++EXTRA_CFLAGS += -I../hardware/arm/gpu/ump/include/
++endif
+ 

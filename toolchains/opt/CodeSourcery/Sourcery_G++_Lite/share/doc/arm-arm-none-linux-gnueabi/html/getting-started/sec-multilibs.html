@@ -1,0 +1,56 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.2. Library Configurations</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery G++ Lite"><link rel="up" href="chap-target.html" title="Chapter 3. Sourcery G++ Lite for ARM GNU/Linux"><link rel="prev" href="chap-target.html" title="Chapter 3. Sourcery G++ Lite for ARM GNU/Linux"><link rel="next" href="ch03s03.html" title="3.3. Compiling for ARMv4T and ARMv5T Systems"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">3.2. Library Configurations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="chap-target.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Sourcery G++ Lite for ARM GNU/Linux</th><td width="20%" align="right"> <a accesskey="n" href="ch03s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="sec-multilibs"></a>3.2. Library Configurations</h2></div></div></div><p>
+    Sourcery G++ includes copies of run-time libraries that have been built
+    with optimizations for different target architecture variants or other
+    sets of build options.  Each such set of libraries is referred to as a
+    <em class="firstterm">multilib</em>.  When you link a target application,
+    Sourcery G++ selects the multilib matching the build
+    options you have selected.  
+  </p><p>
+    Each multilib corresponds to a <em class="firstterm">sysroot</em> directory
+    that contains the files that should be installed on the target system.
+    <span>
+      The sysroot contains the dynamic linker used to run your applications 
+      on the target as well as the libraries.
+    </span>
+    <span>
+      Refer to <a class="xref" href="included-libraries.html" title="3.5. Using Sourcery G++ Lite on GNU/Linux Targets">Section 3.5, &#8220;Using Sourcery G++ Lite on GNU/Linux Targets&#8221;</a> for instructions
+      on how to install and use these support files on your target GNU/Linux
+      system.
+    </span>
+    <span>
+      You can find the sysroot directories provided with Sourcery G++ in the
+      <code class="filename">arm-none-linux-gnueabi/libc</code> directory of your installation.
+    </span>
+    <span>
+      In the tables below, the dynamic linker pathname is given relative
+      to the corresponding sysroot.
+    </span>
+  </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id277272"></a>3.2.1. Included Libraries</h3></div></div></div><p>
+      The following library configurations are available in
+      Sourcery G++ Lite for ARM GNU/Linux.
+    </p><div class="informaltable"><table border="1" width="100%"><colgroup><col align="left"><col align="left"></colgroup><thead><tr><th colspan="2" align="left">ARMv5TE - Little-Endian, Soft-Float, GLIBC</th></tr></thead><tbody><tr><td align="left">Command-line option(s):</td><td align="left">default</td></tr><tr><td align="left">Sysroot subdirectory:</td><td align="left"><code class="filename">./</code></td></tr><tr><td align="left">Dynamic linker:</td><td align="left"><code class="filename">lib/ld-linux.so.3</code></td></tr></tbody></table></div><div class="informaltable"><table border="1" width="100%"><colgroup><col align="left"><col align="left"></colgroup><thead><tr><th colspan="2" align="left">ARMv4T - Little-Endian, Soft-Float, GLIBC</th></tr></thead><tbody><tr><td align="left">Command-line option(s):</td><td align="left"><code class="option">-march=armv4t</code></td></tr><tr><td align="left">Sysroot subdirectory:</td><td align="left"><code class="filename">armv4t/</code></td></tr><tr><td align="left">Dynamic linker:</td><td align="left"><code class="filename">lib/ld-linux.so.3</code></td></tr><tr><td align="left">Notes:</td><td align="left">This should also be used for ARMv5T cores such as
+the ARM1020T.</td></tr></tbody></table></div><div class="informaltable"><table border="1" width="100%"><colgroup><col align="left"><col align="left"></colgroup><thead><tr><th colspan="2" align="left">ARMv7-A Thumb-2 - Little-Endian, Soft-Float, GLIBC</th></tr></thead><tbody><tr><td align="left">Command-line option(s):</td><td align="left"><code class="option">-mthumb -march=armv7-a</code></td></tr><tr><td align="left">Sysroot subdirectory:</td><td align="left"><code class="filename">thumb2/</code></td></tr><tr><td align="left">Dynamic linker:</td><td align="left"><code class="filename">lib/ld-linux.so.3</code></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id277549"></a>3.2.2. Library Selection</h3></div></div></div><p>
+    A given multilib may be compatible with additional processors
+    and build options beyond those listed above.  
+    However, even if a particular set of command-line options produces
+    code compatible with one of the provided multilibs, those options
+    may not be sufficient to identify the intended library to the linker.
+    For example, on some targets, specifying only a processor option on the
+    command line may imply architecture features or floating-point
+    support for compilation, but not for library selection.
+    The details of the mapping from command-line options to multilibs
+    are target-specific and quite complex.
+    Therefore, it is recommended that your link command line
+    include exactly the options listed in the tables above
+    for your intended target multilib.  
+    In some cases, you may need to supply different
+    options for linking than for compilation.
+  </p><p>
+    If you are uncertain which multilib is selected by a particular set of
+    command-line options, GCC can tell you if you invoke it with the
+    <code class="option">-print-multi-directory</code> option in addition to your
+    other build options.  For example:
+    </p><pre class="screen">&gt; arm-none-linux-gnueabi-gcc -print-multi-directory <em class="replaceable"><code>options...</code></em></pre><p>
+    The output of this command is a directory name for the multilib, which
+    you can look up in the tables given previously.
+  </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="chap-target.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-target.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch03s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 3. Sourcery G++ Lite for ARM GNU/Linux </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 3.3. Compiling for ARMv4T and ARMv5T Systems</td></tr></table></div></body></html>

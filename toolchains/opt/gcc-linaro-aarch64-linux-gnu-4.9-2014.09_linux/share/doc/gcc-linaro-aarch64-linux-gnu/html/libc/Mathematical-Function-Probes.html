@@ -1,0 +1,211 @@
+<html lang="en">
+<head>
+<title>Mathematical Function Probes - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Internal-Probes.html#Internal-Probes" title="Internal Probes">
+<link rel="prev" href="Memory-Allocation-Probes.html#Memory-Allocation-Probes" title="Memory Allocation Probes">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Mathematical-Function-Probes"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Memory-Allocation-Probes.html#Memory-Allocation-Probes">Memory Allocation Probes</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Internal-Probes.html#Internal-Probes">Internal Probes</a>
+<hr>
+</div>
+
+<h3 class="section">35.2 Mathematical Function Probes</h3>
+
+<p>Some mathematical functions fall back to multiple precision arithmetic for
+some inputs to get last bit precision for their return values.  This multiple
+precision fallback is much slower than the default algorithms and may have a
+significant impact on application performance.  The systemtap probe markers
+described in this section may help you determine if your application calls
+mathematical functions with inputs that may result in multiple-precision
+arithmetic.
+
+   <p>Unless explicitly mentioned otherwise, a precision of 1 implies 24 bits of
+precision in the mantissa of the multiple precision number.  Hence, a precision
+level of 32 implies 768 bits of precision in the mantissa.
+
+<div class="defun">
+&mdash; Probe: <b>slowexp_p6</b> (<var>double $arg1, double $arg2</var>)<var><a name="index-slowexp_005fp6-3779"></a></var><br>
+<blockquote><p>This probe is hit when the <code>exp</code> function is called with an input that
+results in multiple precision computation with precision 6. Argument
+<var>$arg1</var> is the input value and <var>$arg2</var> is the computed output. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowexp_p32</b> (<var>double $arg1, double $arg2</var>)<var><a name="index-slowexp_005fp32-3780"></a></var><br>
+<blockquote><p>This probe is hit when the <code>exp</code> function is called with an input that
+results in multiple precision computation with precision 32. Argument
+<var>$arg1</var> is the input value and <var>$arg2</var> is the computed output. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowpow_p10</b> (<var>double $arg1, double $arg2, double $arg3, double $arg4</var>)<var><a name="index-slowpow_005fp10-3781"></a></var><br>
+<blockquote><p>This probe is hit when the <code>pow</code> function is called with inputs that
+result in multiple precision computation with precision 10. Arguments
+<var>$arg1</var> and <var>$arg2</var> are the input values, <code>$arg3</code> is the value
+computed in the fast phase of the algorithm and <code>$arg4</code> is the final
+accurate value. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowpow_p32</b> (<var>double $arg1, double $arg2, double $arg3, double $arg4</var>)<var><a name="index-slowpow_005fp32-3782"></a></var><br>
+<blockquote><p>This probe is hit when the <code>pow</code> function is called with an input that
+results in multiple precision computation with precision 32. Arguments
+<var>$arg1</var> and <var>$arg2</var> are the input values, <code>$arg3</code> is the value
+computed in the fast phase of the algorithm and <code>$arg4</code> is the final
+accurate value. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowlog</b> (<var>int $arg1, double $arg2, double $arg3</var>)<var><a name="index-slowlog-3783"></a></var><br>
+<blockquote><p>This probe is hit when the <code>log</code> function is called with an input that
+results in multiple precision computation.  Argument <var>$arg1</var> is the
+precision with which the computation succeeded.  Argument <var>$arg2</var> is the
+input and <var>$arg3</var> is the computed output. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowlog_inexact</b> (<var>int $arg1, double $arg2, double $arg3</var>)<var><a name="index-slowlog_005finexact-3784"></a></var><br>
+<blockquote><p>This probe is hit when the <code>log</code> function is called with an input that
+results in multiple precision computation and none of the multiple precision
+computations result in an accurate result.  Argument <var>$arg1</var> is the maximum
+precision  with which computations were performed.  Argument <var>$arg2</var> is the
+input and <var>$arg3</var> is the computed output. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowatan2</b> (<var>int $arg1, double $arg2, double $arg3, double $arg4</var>)<var><a name="index-slowatan2-3785"></a></var><br>
+<blockquote><p>This probe is hit when the <code>atan2</code> function is called with an input that
+results in multiple precision computation.  Argument <var>$arg1</var> is the
+precision with which computation succeeded.  Arguments <var>$arg2</var> and
+<var>$arg3</var> are inputs to the <code>atan2</code> function and <var>$arg4</var> is the
+computed result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowatan2_inexact</b> (<var>int $arg1, double $arg2, double $arg3, double $arg4</var>)<var><a name="index-slowatan2_005finexact-3786"></a></var><br>
+<blockquote><p>This probe is hit when the <code>atan</code> function is called with an input that
+results in multiple precision computation and none of the multiple precision
+computations result in an accurate result.  Argument <var>$arg1</var> is the maximum
+precision  with which computations were performed.  Arguments <var>$arg2</var> and
+<var>$arg3</var> are inputs to the <code>atan2</code> function and <var>$arg4</var> is the
+computed result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowatan</b> (<var>int $arg1, double $arg2, double $arg3</var>)<var><a name="index-slowatan-3787"></a></var><br>
+<blockquote><p>This probe is hit when the <code>atan</code> function is called with an input that
+results in multiple precision computation.  Argument <var>$arg1</var> is the
+precision with which computation succeeded.  Argument <var>$arg2</var> is the
+input to the <code>atan</code> function and <var>$arg3</var> is the computed result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowatan_inexact</b> (<var>int $arg1, double $arg2, double $arg3</var>)<var><a name="index-slowatan_005finexact-3788"></a></var><br>
+<blockquote><p>This probe is hit when the <code>atan</code> function is called with an input that
+results in multiple precision computation and none of the multiple precision
+computations result in an accurate result.  Argument <var>$arg1</var> is the maximum
+precision  with which computations were performed.  Argument <var>$arg2</var> is the
+input to the <code>atan</code> function and <var>$arg3</var> is the computed result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowtan</b> (<var>double $arg1, double $arg2</var>)<var><a name="index-slowtan-3789"></a></var><br>
+<blockquote><p>This probe is hit when the <code>tan</code> function is called with an input that
+results in multiple precision computation with precision 32.  Argument
+<var>$arg1</var> is the input to the function and <var>$arg2</var> is the computed
+result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowasin</b> (<var>double $arg1, double $arg2</var>)<var><a name="index-slowasin-3790"></a></var><br>
+<blockquote><p>This probe is hit when the <code>asin</code> function is called with an input that
+results in multiple precision computation with precision 32.  Argument
+<var>$arg1</var> is the input to the function and <var>$arg2</var> is the computed
+result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowacos</b> (<var>double $arg1, double $arg2</var>)<var><a name="index-slowacos-3791"></a></var><br>
+<blockquote><p>This probe is hit when the <code>acos</code> function is called with an input that
+results in multiple precision computation with precision 32.  Argument
+<var>$arg1</var> is the input to the function and <var>$arg2</var> is the computed
+result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowsin</b> (<var>double $arg1, double $arg2</var>)<var><a name="index-slowsin-3792"></a></var><br>
+<blockquote><p>This probe is hit when the <code>sin</code> function is called with an input that
+results in multiple precision computation with precision 32.  Argument
+<var>$arg1</var> is the input to the function and <var>$arg2</var> is the computed
+result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowcos</b> (<var>double $arg1, double $arg2</var>)<var><a name="index-slowcos-3793"></a></var><br>
+<blockquote><p>This probe is hit when the <code>cos</code> function is called with an input that
+results in multiple precision computation with precision 32.  Argument
+<var>$arg1</var> is the input to the function and <var>$arg2</var> is the computed
+result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowsin_dx</b> (<var>double $arg1, double $arg2, double $arg3</var>)<var><a name="index-slowsin_005fdx-3794"></a></var><br>
+<blockquote><p>This probe is hit when the <code>sin</code> function is called with an input that
+results in multiple precision computation with precision 32.  Argument
+<var>$arg1</var> is the input to the function, <var>$arg2</var> is the error bound of
+<var>$arg1</var> and <var>$arg3</var> is the computed result. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Probe: <b>slowcos_dx</b> (<var>double $arg1, double $arg2, double $arg3</var>)<var><a name="index-slowcos_005fdx-3795"></a></var><br>
+<blockquote><p>This probe is hit when the <code>cos</code> function is called with an input that
+results in multiple precision computation with precision 32.  Argument
+<var>$arg1</var> is the input to the function, <var>$arg2</var> is the error bound of
+<var>$arg1</var> and <var>$arg3</var> is the computed result. 
+</p></blockquote></div>
+
+<!-- This node must have no pointers. -->
+   </body></html>
+

@@ -1,0 +1,20 @@
+comment "aml_thermal needs a Linux kernel to be built"
+	depends on !BR2_LINUX_KERNEL
+
+config BR2_PACKAGE_AML_THERMAL
+	depends on BR2_LINUX_KERNEL
+	bool "aml thermal control"
+	help
+		aml thermal control
+
+config BR2_PACKAGE_AML_THERMAL_URL
+	depends on BR2_PACKAGE_AML_THERMAL
+	string "aml thermal url"
+	help
+		aml thermal url
+
+config BR2_PACKAGE_AML_THERMAL_VERSION
+	depends on BR2_PACKAGE_AML_THERMAL
+	string "aml thermal version"
+	help
+		aml thermal version

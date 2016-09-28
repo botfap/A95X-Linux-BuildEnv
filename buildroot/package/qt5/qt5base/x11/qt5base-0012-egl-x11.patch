@@ -1,0 +1,20 @@
+Index: qtbase-opensource-src-5.5.0/config.tests/qpa/egl-x11/egl-x11.cpp
+===================================================================
+--- qtbase-opensource-src-5.5.0.orig/config.tests/qpa/egl-x11/egl-x11.cpp	2015-06-30 04:05:21.000000000 +0800
++++ qtbase-opensource-src-5.5.0/config.tests/qpa/egl-x11/egl-x11.cpp	2015-09-07 14:11:15.747527435 +0800
+@@ -44,11 +44,11 @@
+ 
+ int main(int, char **)
+ {
+-    Display *dpy = EGL_DEFAULT_DISPLAY;
++    Display *dpy = static_cast<Display *>(EGL_DEFAULT_DISPLAY);
+     EGLNativeDisplayType egldpy = XOpenDisplay("");
+-    dpy = egldpy;
+-    EGLNativeWindowType w = XCreateWindow(dpy, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+-    XDestroyWindow(dpy, w);
++    dpy = static_cast<Display *>(egldpy);
++    EGLNativeWindowType w = reinterpret_cast<EGLNativeWindowType>(XCreateWindow(dpy, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
++    XDestroyWindow(dpy, reinterpret_cast<Window>(w));
+     XCloseDisplay(dpy);
+     return 0;
+ }

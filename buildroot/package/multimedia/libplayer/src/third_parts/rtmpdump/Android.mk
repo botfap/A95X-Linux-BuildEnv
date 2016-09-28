@@ -1,0 +1,55 @@
+LOCAL_PATH := $(call my-dir)
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := rtmpdump.c
+
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/librtmp\
+	$(LOCAL_PATH)
+	
+RTMPDUMP_VERSION =\"$(VERSION)\"
+LOCAL_CFLAGS+= -DRTMPDUMP_VERSION
+LOCAL_ARM_MODE := arm
+LOCAL_MODULE := rtmpdump
+LOCAL_SHARED_LIBRARIES := librtmp 
+LOCAL_SHARED_LIBRARIES +=libssl libcrypto libz 
+
+LOCAL_MODULE_TAGS :=tests 
+include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := rtmpsrv.c thread.c
+
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/librtmp\
+	$(LOCAL_PATH)
+	
+DRTMPDUMP_VERSION=v2.4
+LOCAL_CFLAGS+= -DRTMPDUMP_VERSION
+LOCAL_ARM_MODE := arm
+LOCAL_MODULE := rtmpsrv
+LOCAL_SHARED_LIBRARIES := librtmp 
+LOCAL_SHARED_LIBRARIES +=libssl libcrypto libz 
+
+LOCAL_MODULE_TAGS :=tests 
+include $(BUILD_EXECUTABLE)
+
+
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := rtmpsuck.c thread.c
+
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/librtmp\
+	$(LOCAL_PATH)
+	
+DRTMPDUMP_VERSION=v2.4
+LOCAL_CFLAGS+= -DRTMPDUMP_VERSION
+LOCAL_ARM_MODE := arm
+LOCAL_MODULE := rtmpsuck
+LOCAL_SHARED_LIBRARIES := librtmp 
+LOCAL_SHARED_LIBRARIES +=libssl libcrypto libz 
+
+LOCAL_MODULE_TAGS :=tests 
+include $(BUILD_EXECUTABLE)
+
+include $(call all-makefiles-under,$(LOCAL_PATH))

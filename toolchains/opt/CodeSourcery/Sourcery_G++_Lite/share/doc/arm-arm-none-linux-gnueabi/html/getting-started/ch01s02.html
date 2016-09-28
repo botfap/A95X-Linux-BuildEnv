@@ -1,0 +1,22 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.2. Configuring Sourcery G++ Lite for the Target System</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery G++ Lite"><link rel="up" href="chap-quickstart.html" title="Chapter 1. Quick Start"><link rel="prev" href="chap-quickstart.html" title="Chapter 1. Quick Start"><link rel="next" href="ch01s03.html" title="1.3. Building Your Program"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">1.2. Configuring Sourcery G++ Lite for the Target System</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="chap-quickstart.html">Prev</a> </td><th width="60%" align="center">Chapter 1. Quick Start</th><td width="20%" align="right"> <a accesskey="n" href="ch01s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id275364"></a>1.2. Configuring Sourcery G++ Lite for the Target System</h2></div></div></div><p><b>Identify your target libraries. </b>
+       Sourcery G++ Lite supports libraries optimized for different targets.
+       Libraries are selected automatically by the linker, depending
+       on the processor and other options you have specified.
+       Refer to <a class="xref" href="sec-multilibs.html" title="3.2. Library Configurations">Section 3.2, &#8220;Library Configurations&#8221;</a> for details.
+       
+       
+     </p><p><b>Install runtime libraries on your target machine. </b>
+       In order to run programs built with the Sourcery G++ runtime libraries
+       on target hardware, you must install these libraries, the 
+       Sourcery G++ dynamic linker, and other runtime support files
+       -- collectively referred to as the <em class="firstterm">sysroot</em> --
+       on your GNU/Linux target system.
+       Typically, this involves either using third-party tools to build
+       a complete root filesystem including the Sourcery G++ sysroot, or using
+       special commands when linking or running your program so it can find
+       the sysroot installed in another location on the target.  Refer to
+       <a class="xref" href="included-libraries.html" title="3.5. Using Sourcery G++ Lite on GNU/Linux Targets">Section 3.5, &#8220;Using Sourcery G++ Lite on GNU/Linux Targets&#8221;</a> for full discussion of these
+       options.  
+       
+       
+     </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="chap-quickstart.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-quickstart.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch01s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 1. Quick Start </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 1.3. Building Your Program</td></tr></table></div></body></html>

@@ -1,0 +1,57 @@
+Index: uboot-next-2015-dev/board/amlogic/configs/gxb_p200_v1.h
+===================================================================
+--- uboot-next-2015-dev.orig/board/amlogic/configs/gxb_p200_v1.h	2016-07-11 10:51:32.000000000 +0800
++++ uboot-next-2015-dev/board/amlogic/configs/gxb_p200_v1.h	2016-07-11 13:51:07.239162242 +0800
+@@ -105,6 +105,7 @@
+         "cvbs_drv=0\0"\
+         "initargs="\
+             "rootfstype=ramfs init=/init console=ttyS0,115200 no_console_suspend earlyprintk=aml-uart,0xc81004c0 ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000 "\
++            "init=/sbin/init console=ttyS0,115200 no_console_suspend earlyprintk=aml-uart,0xc81004c0 ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000"\
+             "\0"\
+         "upgrade_check="\
+             "echo upgrade_step=${upgrade_step}; "\
+@@ -113,10 +114,20 @@
+             "else fi;"\
+             "\0"\
+         "storeargs="\
+-            "setenv bootargs ${initargs} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} vout=${outputmode},enable hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${cecconfig} cvbsdrv=${cvbs_drv} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
++            "setenv bootargs root=/dev/system rootfstype=ext4 ${initargs} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} vout=${outputmode},enable hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${hdmimode} cvbsdrv=${cvbs_drv} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
+ 	"setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
+             "run cmdline_keys;"\
+             "\0"\
++        "sdcardargs="\
++            "setenv bootargs root=/dev/mmcblk0p1 rootfstype=ext2 ${initargs} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} vout=${outputmode},enable hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${hdmimode} cvbsdrv=${cvbs_drv} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
++	"setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
++            "run cmdline_keys;"\
++            "\0"\
++        "bootupdateargs="\
++            "setenv bootargs root=/dev/mmcblk0p1 rootfstype=vfat ${initargs} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} vout=${outputmode},enable hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${hdmimode} cvbsdrv=${cvbs_drv} androidboot.firstboot=${firstboot} jtag=${jtag} firmware=rootfs.tar.gz;"\
++	"setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
++             "run cmdline_keys;"\
++             "\0"\
+         "switch_bootmode="\
+             "get_rebootmode;"\
+             "if test ${reboot_mode} = factory_reset; then "\
+@@ -131,6 +142,12 @@
+             "if imgread kernel boot ${loadaddr}; then bootm ${loadaddr}; fi;"\
+             "run update;"\
+             "\0"\
++        "bootsdcard="\
++            "run sdcardargs; mmcinfo; ext2load mmc 0 ${loadaddr} boot.img; bootm ${loadaddr};"\
++            "\0"\
++        "bootupdate="\
++            "run bootupdateargs; mmcinfo; fatload mmc 0 ${loadaddr} boot.img; bootm ${loadaddr};"\
++            "\0"\
+         "factory_reset_poweroff_protect="\
+             "echo wipe_data=${wipe_data}; echo wipe_cache=${wipe_cache};"\
+             "if test ${wipe_data} = failed; then "\
+@@ -365,7 +382,8 @@
+ #define CONFIG_FS_FAT 1
+ #define CONFIG_FS_EXT4 1
+ #define CONFIG_LZO 1
+-
++#define CONFIG_CMD_EXT2 1
++#define CONFIG_CMD_EXT4 1
+ /* Cache Definitions */
+ //#define CONFIG_SYS_DCACHE_OFF
+ //#define CONFIG_SYS_ICACHE_OFF

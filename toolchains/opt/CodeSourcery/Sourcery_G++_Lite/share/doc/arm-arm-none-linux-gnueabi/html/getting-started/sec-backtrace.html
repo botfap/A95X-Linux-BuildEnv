@@ -1,0 +1,23 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.7. GLIBC Backtrace Support</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery G++ Lite"><link rel="up" href="chap-target.html" title="Chapter 3. Sourcery G++ Lite for ARM GNU/Linux"><link rel="prev" href="linux-gdbserver.html" title="3.6. Using GDB Server for Debugging"><link rel="next" href="sec-armfloat.html" title="3.8. Using VFP Floating Point"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">3.7. GLIBC Backtrace Support</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="linux-gdbserver.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Sourcery G++ Lite for ARM GNU/Linux</th><td width="20%" align="right"> <a accesskey="n" href="sec-armfloat.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="sec-backtrace"></a>3.7. GLIBC Backtrace Support</h2></div></div></div><p>
+      Sourcery G++ supports the <code class="function">backtrace</code> function
+      from GLIBC.  Backtracing is supported regardless of optimization,
+      with or without a frame pointer, and in both ARM and Thumb modes.
+    </p><p>
+      In order to support backtracing, Sourcery G++ enables generation of
+      unwind tables by default when compiling.  
+      These tables are used for any stack traversal, including 
+      <code class="function">backtrace</code>, C++ exception handling, and POSIX
+      thread cancellation.  Where none of these are required, you can
+      reduce application size by compiling with 
+      <code class="option">-fno-unwind-tables</code>.
+    </p><p>
+      Some stand-alone programs, including bootloaders and the Linux
+      kernel, can not be built with unwind tables.  To accommodate
+      these programs, Sourcery G++ does not generate unwind tables for C
+      code if the <code class="option">-mabi</code> or
+      <code class="option">-ffreestanding</code> options are used.  These options
+      are not generally used in user-space programs.  If you use either
+      of these options and do need unwind tables, specify
+      <code class="option">-funwind-tables</code> on the
+      <code class="command">arm-none-linux-gnueabi-gcc</code> command line.
+    </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="linux-gdbserver.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-target.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sec-armfloat.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3.6. Using GDB Server for Debugging </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 3.8. Using VFP Floating Point</td></tr></table></div></body></html>

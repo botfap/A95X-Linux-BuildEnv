@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GST_APP
+        bool "gst-app"
+#        depends on BR2_PACKAGE_AML_PLUGINS 
+        help
+	  GStreamer players demo
+
+

@@ -1,0 +1,23 @@
+config BR2_PACKAGE_RTK8723BS
+	bool "rtk8723bs"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  rtk8723bs driver
+
+config BR2_PACKAGE_RTK8723BS_GIT_VERSION
+	string "rtk8723bs branch"
+	depends on BR2_PACKAGE_RTK8723BS
+	help
+		Branch for rtk8723bs
+
+config BR2_PACKAGE_RTK8723BS_GIT_REPO_URL
+	string "rtk8723bs git"
+	depends on BR2_PACKAGE_RTK8723BS
+	help
+		rtk8723bs git
+
+config BR2_PACKAGE_RTK8723BS_STANDALONE
+	bool "standalone kernel module"
+	depends on BR2_PACKAGE_RTK8723BS
+	help
+	  compile ko directly

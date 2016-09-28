@@ -1,0 +1,190 @@
+<html lang="en">
+<head>
+<title>PowerPC - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Platform.html#Platform" title="Platform">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="PowerPC"></a>
+<p>
+Up:&nbsp;<a rel="up" accesskey="u" href="Platform.html#Platform">Platform</a>
+<hr>
+</div>
+
+<h3 class="appendixsec">E.1 PowerPC-specific Facilities</h3>
+
+<p>Facilities specific to PowerPC that are not specific to a particular
+operating system are declared in <samp><span class="file">sys/platform/ppc.h</span></samp>.
+
+<div class="defun">
+&mdash; Function: uint64_t <b>__ppc_get_timebase</b> (<var>void</var>)<var><a name="index-g_t_005f_005fppc_005fget_005ftimebase-3917"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>Read the current value of the Time Base Register.
+
+        <p>The <dfn>Time Base Register</dfn> is a 64-bit register that stores a monotonically
+incremented value updated at a system-dependent frequency that may be
+different from the processor frequency.  More information is available in
+<cite>Power ISA 2.06b - Book II - Section 5.2</cite>.
+
+        <p><code>__ppc_get_timebase</code> uses the processor's time base facility directly
+without requiring assistance from the operating system, so it is very
+efficient. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Function: uint64_t <b>__ppc_get_timebase_freq</b> (<var>void</var>)<var><a name="index-g_t_005f_005fppc_005fget_005ftimebase_005ffreq-3918"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe init
+| AS-Unsafe corrupt:init
+| AC-Unsafe corrupt:init
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- __ppc_get_timebase_freq=__get_timebase_freq @mtuinit @acsfd -->
+     <!-- __get_clockfreq @mtuinit @asucorrupt:init @acucorrupt:init @acsfd -->
+     <!-- the initialization of the static timebase_freq is not exactly -->
+     <!-- safe, because hp_timing_t cannot be atomically set up. -->
+     <!-- syscall:get_tbfreq ok -->
+     <!-- open dup @acsfd -->
+     <!-- read dup ok -->
+     <!-- memcpy dup ok -->
+     <!-- memmem dup ok -->
+     <!-- close dup @acsfd -->
+        <p>Read the current frequency at which the Time Base Register is updated.
+
+        <p>This frequency is not related to the processor clock or the bus clock. 
+It is also possible that this frequency is not constant.  More information is
+available in <cite>Power ISA 2.06b - Book II - Section 5.2</cite>. 
+</p></blockquote></div>
+
+   <p>The following functions provide hints about the usage of resources that are
+shared with other processors.  They can be used, for example, if a program
+waiting on a lock intends to divert the shared resources to be used by other
+processors.  More information is available in <cite>Power ISA 2.06b - Book II -
+Section 3.2</cite>.
+
+<div class="defun">
+&mdash; Function: void <b>__ppc_yield</b> (<var>void</var>)<var><a name="index-g_t_005f_005fppc_005fyield-3919"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>Provide a hint that performance will probably be improved if shared resources
+dedicated to the executing processor are released for use by other processors. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Function: void <b>__ppc_mdoio</b> (<var>void</var>)<var><a name="index-g_t_005f_005fppc_005fmdoio-3920"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>Provide a hint that performance will probably be improved if shared resources
+dedicated to the executing processor are released until all outstanding storage
+accesses to caching-inhibited storage have been completed. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Function: void <b>__ppc_mdoom</b> (<var>void</var>)<var><a name="index-g_t_005f_005fppc_005fmdoom-3921"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>Provide a hint that performance will probably be improved if shared resources
+dedicated to the executing processor are released until all outstanding storage
+accesses to cacheable storage for which the data is not in the cache have been
+completed. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Function: void <b>__ppc_set_ppr_med</b> (<var>void</var>)<var><a name="index-g_t_005f_005fppc_005fset_005fppr_005fmed-3922"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>Set the Program Priority Register to medium value (default).
+
+        <p>The <dfn>Program Priority Register</dfn> (PPR) is a 64-bit register that controls
+the program's priority.  By adjusting the PPR value the programmer may
+improve system throughput by causing the system resources to be used
+more efficiently, especially in contention situations. 
+The three unprivileged states available are covered by the functions
+<code>__ppc_set_ppr_med</code> (medium &ndash; default), <code>__ppc_set_ppc_low</code> (low)
+and <code>__ppc_set_ppc_med_low</code> (medium low).  More information
+available in <cite>Power ISA 2.06b - Book II - Section 3.1</cite>. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Function: void <b>__ppc_set_ppr_low</b> (<var>void</var>)<var><a name="index-g_t_005f_005fppc_005fset_005fppr_005flow-3923"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>Set the Program Priority Register to low value. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Function: void <b>__ppc_set_ppr_med_low</b> (<var>void</var>)<var><a name="index-g_t_005f_005fppc_005fset_005fppr_005fmed_005flow-3924"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>Set the Program Priority Register to medium low value. 
+</p></blockquote></div>
+
+   </body></html>
+

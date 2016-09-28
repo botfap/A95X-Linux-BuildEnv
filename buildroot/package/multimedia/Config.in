@@ -1,0 +1,16 @@
+menu "Audio and video applications"
+source "package/multimedia/alsa-plugins/Config.in"
+source "package/multimedia/amaudio/Config.in"
+source "package/multimedia/audiocapture/Config.in"
+source "package/multimedia/mediasupport/Config.in"
+
+# Gstreamer 0.10.x & Plugins
+source "package/multimedia/gst-fluendo-mpegdemux/Config.in"
+source "package/multimedia/gst-aml-plugins/Config.in"
+source "package/multimedia/gst-aml-plugins1/Config.in"
+source "package/multimedia/gst-app/Config.in"
+#source "package/multimedia/aml_libs/Config.in"
+
+source "package/multimedia/libplayer/Config.in"
+source "package/multimedia/wifidisplay/Config.in"
+endmenu

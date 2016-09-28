@@ -1,0 +1,324 @@
+<html lang="en">
+<head>
+<title>Variable Arguments Output - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Formatted-Output.html#Formatted-Output" title="Formatted Output">
+<link rel="prev" href="Dynamic-Output.html#Dynamic-Output" title="Dynamic Output">
+<link rel="next" href="Parsing-a-Template-String.html#Parsing-a-Template-String" title="Parsing a Template String">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Variable-Arguments-Output"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Parsing-a-Template-String.html#Parsing-a-Template-String">Parsing a Template String</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Dynamic-Output.html#Dynamic-Output">Dynamic Output</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Formatted-Output.html#Formatted-Output">Formatted Output</a>
+<hr>
+</div>
+
+<h4 class="subsection">12.12.9 Variable Arguments Output Functions</h4>
+
+<p>The functions <code>vprintf</code> and friends are provided so that you can
+define your own variadic <code>printf</code>-like functions that make use of
+the same internals as the built-in formatted output functions.
+
+   <p>The most natural way to define such functions would be to use a language
+construct to say, &ldquo;Call <code>printf</code> and pass this template plus all
+of my arguments after the first five.&rdquo;  But there is no way to do this
+in C, and it would be hard to provide a way, since at the C language
+level there is no way to tell how many arguments your function received.
+
+   <p>Since that method is impossible, we provide alternative functions, the
+<code>vprintf</code> series, which lets you pass a <code>va_list</code> to describe
+&ldquo;all of my arguments after the first five.&rdquo;
+
+   <p>When it is sufficient to define a macro rather than a real function,
+the GNU C compiler provides a way to do this much more easily with macros. 
+For example:
+
+<pre class="smallexample">     #define myprintf(a, b, c, d, e, rest...) \
+     	    printf (mytemplate , ## rest)
+</pre>
+   <p class="noindent">See <a href="../cpp/Variadic-Macros.html#Variadic-Macros">Variadic Macros</a>, for details. 
+But this is limited to macros, and does not apply to real functions at all.
+
+   <p>Before calling <code>vprintf</code> or the other functions listed in this
+section, you <em>must</em> call <code>va_start</code> (see <a href="Variadic-Functions.html#Variadic-Functions">Variadic Functions</a>) to initialize a pointer to the variable arguments.  Then you
+can call <code>va_arg</code> to fetch the arguments that you want to handle
+yourself.  This advances the pointer past those arguments.
+
+   <p>Once your <code>va_list</code> pointer is pointing at the argument of your
+choice, you are ready to call <code>vprintf</code>.  That argument and all
+subsequent arguments that were passed to your function are used by
+<code>vprintf</code> along with the template that you specified separately.
+
+   <p>In some other systems, the <code>va_list</code> pointer may become invalid
+after the call to <code>vprintf</code>, so you must not use <code>va_arg</code>
+after you call <code>vprintf</code>.  Instead, you should call <code>va_end</code>
+to retire the pointer from service.  However, you can safely call
+<code>va_start</code> on another pointer variable and begin fetching the
+arguments again through that pointer.  Calling <code>vprintf</code> does not
+destroy the argument list of your function, merely the particular
+pointer that you passed to it.
+
+   <p>GNU C does not have such restrictions.  You can safely continue to fetch
+arguments from a <code>va_list</code> pointer after passing it to
+<code>vprintf</code>, and <code>va_end</code> is a no-op.  (Note, however, that
+subsequent <code>va_arg</code> calls will fetch the same arguments which
+<code>vprintf</code> previously used.)
+
+   <p>Prototypes for these functions are declared in <samp><span class="file">stdio.h</span></samp>. 
+<a name="index-stdio_002eh-1076"></a>
+<!-- stdio.h -->
+<!-- ISO -->
+
+<div class="defun">
+&mdash; Function: int <b>vprintf</b> (<var>const char *template, va_list ap</var>)<var><a name="index-vprintf-1077"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe corrupt heap
+| AC-Unsafe mem lock corrupt
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>This function is similar to <code>printf</code> except that, instead of taking
+a variable number of arguments directly, it takes an argument list
+pointer <var>ap</var>. 
+</p></blockquote></div>
+
+<!-- wchar.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Function: int <b>vwprintf</b> (<var>const wchar_t *template, va_list ap</var>)<var><a name="index-vwprintf-1078"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe corrupt heap
+| AC-Unsafe mem lock corrupt
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>This function is similar to <code>wprintf</code> except that, instead of taking
+a variable number of arguments directly, it takes an argument list
+pointer <var>ap</var>. 
+</p></blockquote></div>
+
+<!-- stdio.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Function: int <b>vfprintf</b> (<var>FILE *stream, const char *template, va_list ap</var>)<var><a name="index-vfprintf-1079"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe corrupt heap
+| AC-Unsafe mem lock corrupt
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Although vfprintf sets up a cleanup region to release the lock on the -->
+     <!-- output stream, it doesn't use it to release args_value or string in -->
+     <!-- case of cancellation.  This doesn't make it unsafe, but cancelling it -->
+     <!-- may leak memory.  The unguarded use of __printf_function_table is -->
+     <!-- also of concern for all callers. -->
+     <!-- _itoa ok -->
+     <!-- _udiv_qrnnd_preinv ok -->
+     <!-- group_number ok -->
+     <!-- _i18n_number_rewrite -->
+     <!-- __wctrans ok -->
+     <!-- __towctrans @mtslocale -->
+     <!-- __wcrtomb ok? dup below -->
+     <!-- outdigit_value ok -->
+     <!-- outdigitwc_value ok -->
+     <!-- outchar ok -->
+     <!-- outstring ok -->
+     <!-- PAD ok -->
+     <!-- __printf_fp @mtslocale @ascuheap @acsmem -->
+     <!-- __printf_fphex @mtslocale -->
+     <!-- __readonly_area -->
+     <!-- [GNU/Linux] fopen, strtoul, free -->
+     <!-- __strerror_r ok if no translation, check otherwise -->
+     <!-- __btowc ? gconv-modules -->
+     <!-- __wcrtomb ok (not using internal state) gconv-modules -->
+     <!-- ARGCHECK -->
+     <!-- UNBUFFERED_P (tested before taking the stream lock) -->
+     <!-- buffered_vfprintf ok -->
+     <!-- __find_spec(wc|mb) -->
+     <!-- read_int -->
+     <!-- __libc_use_alloca -->
+     <!-- process_arg -->
+     <!-- process_string_arg -->
+     <!-- extend_alloca -->
+     <!-- __parse_one_spec(wc|mb) -->
+     <!-- *__printf_arginfo_table unguarded -->
+     <!-- __printf_va_arg_table-> unguarded -->
+     <!-- *__printf_function_table unguarded -->
+     <!-- done_add -->
+     <!-- printf_unknown -->
+     <!-- outchar -->
+     <!-- _itoa_word -->
+        <p>This is the equivalent of <code>fprintf</code> with the variable argument list
+specified directly as for <code>vprintf</code>. 
+</p></blockquote></div>
+
+<!-- wchar.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Function: int <b>vfwprintf</b> (<var>FILE *stream, const wchar_t *template, va_list ap</var>)<var><a name="index-vfwprintf-1080"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe corrupt heap
+| AC-Unsafe mem lock corrupt
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>This is the equivalent of <code>fwprintf</code> with the variable argument list
+specified directly as for <code>vwprintf</code>. 
+</p></blockquote></div>
+
+<!-- stdio.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Function: int <b>vsprintf</b> (<var>char *s, const char *template, va_list ap</var>)<var><a name="index-vsprintf-1081"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe heap
+| AC-Unsafe mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>This is the equivalent of <code>sprintf</code> with the variable argument list
+specified directly as for <code>vprintf</code>. 
+</p></blockquote></div>
+
+<!-- wchar.h -->
+<!-- GNU -->
+<div class="defun">
+&mdash; Function: int <b>vswprintf</b> (<var>wchar_t *s, size_t size, const wchar_t *template, va_list ap</var>)<var><a name="index-vswprintf-1082"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe heap
+| AC-Unsafe mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>This is the equivalent of <code>swprintf</code> with the variable argument list
+specified directly as for <code>vwprintf</code>. 
+</p></blockquote></div>
+
+<!-- stdio.h -->
+<!-- GNU -->
+<div class="defun">
+&mdash; Function: int <b>vsnprintf</b> (<var>char *s, size_t size, const char *template, va_list ap</var>)<var><a name="index-vsnprintf-1083"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe heap
+| AC-Unsafe mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>This is the equivalent of <code>snprintf</code> with the variable argument list
+specified directly as for <code>vprintf</code>. 
+</p></blockquote></div>
+
+<!-- stdio.h -->
+<!-- GNU -->
+<div class="defun">
+&mdash; Function: int <b>vasprintf</b> (<var>char **ptr, const char *template, va_list ap</var>)<var><a name="index-vasprintf-1084"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe heap
+| AC-Unsafe mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>The <code>vasprintf</code> function is the equivalent of <code>asprintf</code> with the
+variable argument list specified directly as for <code>vprintf</code>. 
+</p></blockquote></div>
+
+<!-- stdio.h -->
+<!-- GNU -->
+<div class="defun">
+&mdash; Function: int <b>obstack_vprintf</b> (<var>struct obstack *obstack, const char *template, va_list ap</var>)<var><a name="index-obstack_005fvprintf-1085"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe race:obstack locale
+| AS-Unsafe corrupt heap
+| AC-Unsafe corrupt mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- The obstack is not guarded by mutexes, it might be at an inconsistent -->
+     <!-- state within a signal handler, and it could be left at an -->
+     <!-- inconsistent state in case of cancellation. -->
+        <p>The <code>obstack_vprintf</code> function is the equivalent of
+<code>obstack_printf</code> with the variable argument list specified directly
+as for <code>vprintf</code>. 
+</p></blockquote></div>
+
+   <p>Here's an example showing how you might use <code>vfprintf</code>.  This is a
+function that prints error messages to the stream <code>stderr</code>, along
+with a prefix indicating the name of the program
+(see <a href="Error-Messages.html#Error-Messages">Error Messages</a>, for a description of
+<code>program_invocation_short_name</code>).
+
+<pre class="smallexample">     #include &lt;stdio.h&gt;
+     #include &lt;stdarg.h&gt;
+     
+     void
+     eprintf (const char *template, ...)
+     {
+       va_list ap;
+       extern char *program_invocation_short_name;
+     
+       fprintf (stderr, "%s: ", program_invocation_short_name);
+       va_start (ap, template);
+       vfprintf (stderr, template, ap);
+       va_end (ap);
+     }
+</pre>
+   <p class="noindent">You could call <code>eprintf</code> like this:
+
+<pre class="smallexample">     eprintf ("file `%s' does not exist\n", filename);
+</pre>
+   <p>In GNU C, there is a special construct you can use to let the compiler
+know that a function uses a <code>printf</code>-style format string.  Then it
+can check the number and types of arguments in each call to the
+function, and warn you when they do not match the format string. 
+For example, take this declaration of <code>eprintf</code>:
+
+<pre class="smallexample">     void eprintf (const char *template, ...)
+     	__attribute__ ((format (printf, 1, 2)));
+</pre>
+   <p class="noindent">This tells the compiler that <code>eprintf</code> uses a format string like
+<code>printf</code> (as opposed to <code>scanf</code>; see <a href="Formatted-Input.html#Formatted-Input">Formatted Input</a>);
+the format string appears as the first argument;
+and the arguments to satisfy the format begin with the second. 
+See <a href="../gcc/Function-Attributes.html#Function-Attributes">Declaring Attributes of Functions</a>, for more information.
+
+   </body></html>
+

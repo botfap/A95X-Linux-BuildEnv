@@ -1,0 +1,13 @@
+Index: util-linux-2.25.2/configure.ac
+===================================================================
+--- util-linux-2.25.2.orig/configure.ac	2014-10-24 18:24:02.952545559 +0800
++++ util-linux-2.25.2/configure.ac	2015-05-18 13:21:53.482746890 +0800
+@@ -107,8 +107,6 @@
+ UL_WARN_ADD([-Wsign-compare])
+ UL_WARN_ADD([-Wtype-limits])
+ UL_WARN_ADD([-Wuninitialized])
+-UL_WARN_ADD([-Wunused-but-set-parameter])
+-UL_WARN_ADD([-Wunused-but-set-variable])
+ UL_WARN_ADD([-Wunused-parameter])
+ UL_WARN_ADD([-Wunused-result])
+ UL_WARN_ADD([-Wunused-variable])

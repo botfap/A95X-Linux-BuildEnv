@@ -1,0 +1,23 @@
+config BR2_PACKAGE_RTK8192EU
+	bool "rtk8192eu"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  rtk8192eu driver
+
+config BR2_PACKAGE_RTK8192EU_GIT_VERSION
+	string "rtk8192eu branch"
+	depends on BR2_PACKAGE_RTK8192EU
+	help
+		Branch for rtk8192eu	
+
+config BR2_PACKAGE_RTK8192EU_GIT_REPO_URL
+	string "rtk8192eu git"
+	depends on BR2_PACKAGE_RTK8192EU
+	help
+		rtk8192eu git
+
+config BR2_PACKAGE_RTK8192EU_STANDALONE
+	bool "standalone kernel module"
+	depends on BR2_PACKAGE_RTK8192EU
+	help
+	  compile ko directly

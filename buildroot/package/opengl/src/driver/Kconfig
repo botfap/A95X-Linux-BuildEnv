@@ -1,0 +1,73 @@
+menu "Mali GPU OpenGL device driver"
+config MALI400
+	tristate "Mali-300/400/450 support"
+	depends on ARM
+	depends on m
+	default m
+	select DMA_SHARED_BUFFER
+	---help---
+	  This enables support for the ARM Mali-300, Mali-400, and Mali-450
+	  GPUs.
+
+	  To compile this driver as a module, choose M here: the module will be
+	  called mali.
+
+config MALI400_DEBUG
+	bool "Enable debug in Mali driver"
+	depends on MALI400
+	---help---
+	  This enabled extra debug checks and messages in the Mali driver.
+
+if !PROFILING || !FTRACE
+comment "ARM mali streamline with gator is depends on CONFIG_FTRACE and PROFILING.I will"
+comment "select them and other options for you.please refer to ARM DS-5 Documentation."
+comment "Setting up an ARM Linux target"
+endif
+
+config MALI400_PROFILING
+	bool "Enable Mali profiling"
+	depends on MALI400
+	select PROFILING
+	select FTRACE
+	select MALI400_DEBUG
+	select PERF_EVENTS
+	select ENABLE_DEFAULT_TRACERS
+	select DEBUG_MUTEXES
+	select HIGH_RES_TIMERS
+	select HW_PERF_EVENTS
+	select CPU_FREQ
+	select TRACEPOINTS
+	---help---
+	  This enables gator profiling of Mali GPU events.
+
+config MALI400_INTERNAL_PROFILING
+	bool "Enable internal Mali profiling API"
+	depends on MALI400_PROFILING
+	default n
+	---help---
+	  This enables the internal legacy Mali profiling API.
+
+config MALI400_UMP
+	bool "Enable UMP support"
+	depends on MALI400
+	---help---
+	  This enables support for the UMP memory sharing API in the Mali driver.
+	  
+config MALI400_OS_MEMORY_SIZE
+	depends on MALI400
+	int "OS Memory Size(MB)"
+	range 64 2048
+	default 384
+	---help---
+	  The size of mali OS memory with unit of mega byte.
+	  
+if ARCH_MESON6TV
+config MALI400_4_PP
+       bool "Mali 400 for M6TV With 4 pp core."
+       depends on MALI400
+       ---help---
+         M6TV Lite only have 4 mali pp cores.
+endif
+	  
+endmenu
+

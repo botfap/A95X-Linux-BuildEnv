@@ -1,0 +1,18 @@
+config BR2_PACKAGE_RTK8811AU
+	bool "rtk8811au"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  rtk8811au driver
+
+config BR2_PACKAGE_RTK8811AU_GIT_VERSION
+	string "rtk8811au branch"
+	depends on BR2_PACKAGE_RTK8811AU
+	help
+		Branch for rtk8811au	
+
+config BR2_PACKAGE_RTK8811AU_GIT_REPO_URL
+	string "rtk8811au git"
+	depends on BR2_PACKAGE_RTK8811AU
+	help
+		rtk8811au git
+

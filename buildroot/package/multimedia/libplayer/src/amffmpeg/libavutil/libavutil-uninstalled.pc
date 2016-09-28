@@ -1,0 +1,12 @@
+prefix=
+exec_prefix=
+libdir=${pcfiledir}
+includedir=/nishome/zhouzhi/android/android_rootfs_ref/packages/amlogic/LibPlayer/amffmpeg-0.8
+
+Name: libavutil
+Description: FFmpeg utility library
+Version: 51.9.1
+Requires: 
+Conflicts:
+Libs: ${libdir}/libavutil.a -lm
+Cflags: -I${includedir}

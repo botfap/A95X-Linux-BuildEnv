@@ -1,0 +1,29 @@
+Index: brcmap6xxx-ap6xxx/bcmdhd_1_141_xx/Kconfig
+===================================================================
+--- brcmap6xxx-ap6xxx.orig/bcmdhd_1_141_xx/Kconfig	2014-09-16 14:20:57.000000000 +0800
++++ brcmap6xxx-ap6xxx/bcmdhd_1_141_xx/Kconfig	2014-09-22 12:34:53.565413797 +0800
+@@ -10,21 +10,21 @@
+ config BCMDHD_FW_PATH
+ 	depends on BCMDHD_141_AMPAK
+ 	string "Firmware path"
+-	default "/system/etc/wifi/fw_bcmdhd.bin"
++	default "/etc/wifi/fw_bcmdhd.bin"
+ 	---help---
+ 	  Path to the firmware file.
+ 
+ config BCMDHD_NVRAM_PATH
+ 	depends on BCMDHD_141_AMPAK
+ 	string "NVRAM path"
+-	default "/system/etc/wifi/nvram.txt"
++	default "/etc/wifi/nvram.txt"
+ 	---help---
+ 	  Path to the calibration file.
+ 
+ config BCMDHD_CONFIG_PATH
+ 	depends on BCMDHD_141_AMPAK
+ 	string "Config path"
+-	default "/system/etc/wifi/config.txt"
++	default "/etc/wifi/config.txt"
+ 	---help---
+ 	  Path to the driver configuration file.
+ 

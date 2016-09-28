@@ -1,0 +1,17 @@
+Index: linux-amlogic-3.10-bringup/drivers/amlogic/display/osd/Kconfig
+===================================================================
+--- linux-amlogic-3.10-bringup.orig/drivers/amlogic/display/osd/Kconfig	2014-12-02 10:43:26.000000000 +0800
++++ linux-amlogic-3.10-bringup/drivers/amlogic/display/osd/Kconfig	2014-12-02 14:19:12.152616662 +0800
+@@ -111,6 +111,11 @@
+ 	---help---
+ 	  The default osd1/fb0 virtual height. Does not affect ability to change height using fbset or FBIOPUT ioctl.
+ 
+-
++config FB_AMLOGIC_UMP
++   bool "amlogic ump"
++   default n
++   depends on  FB_AM
++   help
++                enable osd ump when we use mali for x11
+ 
+ endmenu	

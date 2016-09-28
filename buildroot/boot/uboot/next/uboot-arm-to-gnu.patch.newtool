@@ -1,0 +1,120 @@
+Index: uboot-next/arch/arm/cpu/aml_meson/g9b/firmware/appf/arm_to_gnu.pl
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/g9b/firmware/appf/arm_to_gnu.pl	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/g9b/firmware/appf/arm_to_gnu.pl	2015-05-08 16:04:57.206721272 +0800
+@@ -288,8 +288,8 @@
+     # So we switch them to MRS/MSR... seems to work.
+     #===============================================================
+ 
+-    $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
+-    $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
++    # $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
++    # $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
+     
+ 
+     #--------------------------------------------------------------------------
+Index: uboot-next/arch/arm/cpu/aml_meson/m6tv/firmware/appf/arm_to_gnu.pl
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m6tv/firmware/appf/arm_to_gnu.pl	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m6tv/firmware/appf/arm_to_gnu.pl	2015-05-08 16:05:23.798721772 +0800
+@@ -288,8 +288,8 @@
+     # So we switch them to MRS/MSR... seems to work.
+     #===============================================================
+ 
+-    $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
+-    $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
++    # $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
++    # $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
+     
+ 
+     #--------------------------------------------------------------------------
+Index: uboot-next/arch/arm/cpu/aml_meson/m6tvd/firmware/appf/arm_to_gnu.pl
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m6tvd/firmware/appf/arm_to_gnu.pl	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m6tvd/firmware/appf/arm_to_gnu.pl	2015-05-08 16:05:54.462722345 +0800
+@@ -288,8 +288,8 @@
+     # So we switch them to MRS/MSR... seems to work.
+     #===============================================================
+ 
+-    $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
+-    $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
++    # $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
++    # $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
+     
+ 
+     #--------------------------------------------------------------------------
+Index: uboot-next/arch/arm/cpu/aml_meson/g9tv/firmware/appf/arm_to_gnu.pl
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/g9tv/firmware/appf/arm_to_gnu.pl	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/g9tv/firmware/appf/arm_to_gnu.pl	2015-05-08 16:06:21.762722859 +0800
+@@ -288,8 +288,8 @@
+     # So we switch them to MRS/MSR... seems to work.
+     #===============================================================
+ 
+-    $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
+-    $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
++    # $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
++    # $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
+     
+ 
+     #--------------------------------------------------------------------------
+Index: uboot-next/arch/arm/cpu/aml_meson/m3/firmware/appf/arm_to_gnu.pl
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m3/firmware/appf/arm_to_gnu.pl	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m3/firmware/appf/arm_to_gnu.pl	2015-05-08 16:07:29.062724121 +0800
+@@ -288,8 +288,8 @@
+     # So we switch them to MRS/MSR... seems to work.
+     #===============================================================
+ 
+-    $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
+-    $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
++    # $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
++    # $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
+     
+ 
+     #--------------------------------------------------------------------------
+Index: uboot-next/arch/arm/cpu/aml_meson/m6/firmware/appf/arm_to_gnu.pl
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m6/firmware/appf/arm_to_gnu.pl	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m6/firmware/appf/arm_to_gnu.pl	2015-05-08 16:06:52.754723437 +0800
+@@ -288,8 +288,8 @@
+     # So we switch them to MRS/MSR... seems to work.
+     #===============================================================
+ 
+-    $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
+-    $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
++    # $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
++    # $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
+     
+ 
+     #--------------------------------------------------------------------------
+Index: uboot-next/arch/arm/cpu/aml_meson/m8/firmware/appf/arm_to_gnu.pl
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m8/firmware/appf/arm_to_gnu.pl	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m8/firmware/appf/arm_to_gnu.pl	2015-05-08 16:06:37.802723157 +0800
+@@ -288,8 +288,8 @@
+     # So we switch them to MRS/MSR... seems to work.
+     #===============================================================
+ 
+-    $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
+-    $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
++    # $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
++    # $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
+     
+ 
+     #--------------------------------------------------------------------------
+Index: uboot-next/arch/arm/cpu/aml_meson/m8b/firmware/appf/arm_to_gnu.pl
+===================================================================
+--- uboot-next.orig/arch/arm/cpu/aml_meson/m8b/firmware/appf/arm_to_gnu.pl	2015-05-07 16:55:55.000000000 +0800
++++ uboot-next/arch/arm/cpu/aml_meson/m8b/firmware/appf/arm_to_gnu.pl	2015-05-08 16:07:45.190724423 +0800
+@@ -288,8 +288,8 @@
+     # So we switch them to MRS/MSR... seems to work.
+     #===============================================================
+ 
+-    $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
+-    $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
++    # $instruction=~s/^\s*VMRS(.*)/        MRS$1/ig;
++    # $instruction=~s/^\s*VMSR(.*)/        MSR$1/ig;
+     
+ 
+     #--------------------------------------------------------------------------

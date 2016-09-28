@@ -1,0 +1,92 @@
+<html lang="en">
+<head>
+<title>Sysconf Definition - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Sysconf.html#Sysconf" title="Sysconf">
+<link rel="next" href="Constants-for-Sysconf.html#Constants-for-Sysconf" title="Constants for Sysconf">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Sysconf-Definition"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Constants-for-Sysconf.html#Constants-for-Sysconf">Constants for Sysconf</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Sysconf.html#Sysconf">Sysconf</a>
+<hr>
+</div>
+
+<h4 class="subsection">31.4.1 Definition of <code>sysconf</code></h4>
+
+<!-- unistd.h -->
+<!-- POSIX.1 -->
+<div class="defun">
+&mdash; Function: long int <b>sysconf</b> (<var>int parameter</var>)<var><a name="index-sysconf-3565"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe env
+| AS-Unsafe lock heap
+| AC-Unsafe lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Some parts of the implementation open /proc and /sys files and dirs -->
+     <!-- to collect system details, using fd and stream I/O depending on the -->
+     <!-- case.  _SC_TZNAME_MAX calls __tzname_max, that (while holding a lock) -->
+     <!-- calls tzset_internal, that calls getenv if it's called the first -->
+     <!-- time; there are free and strdup calls in there too.  The returned max -->
+     <!-- value may change over time for TZNAME_MAX, depending on selected -->
+     <!-- timezones; NPROCS, NPROCS_CONF, PHYS_PAGES, AVPHYS_PAGES, -->
+     <!-- NGROUPS_MAX, SIGQUEUE_MAX, depending on variable values read from -->
+     <!-- /proc at each call, and from rlimit-obtained values CHILD_MAX, -->
+     <!-- OPEN_MAX, ARG_MAX, SIGQUEUE_MAX. -->
+        <p>This function is used to inquire about runtime system parameters.  The
+<var>parameter</var> argument should be one of the &lsquo;<samp><span class="samp">_SC_</span></samp>&rsquo; symbols listed
+below.
+
+        <p>The normal return value from <code>sysconf</code> is the value you requested. 
+A value of <code>-1</code> is returned both if the implementation does not
+impose a limit, and in case of an error.
+
+        <p>The following <code>errno</code> error conditions are defined for this function:
+
+          <dl>
+<dt><code>EINVAL</code><dd>The value of the <var>parameter</var> is invalid. 
+</dl>
+        </p></blockquote></div>
+
+   </body></html>
+

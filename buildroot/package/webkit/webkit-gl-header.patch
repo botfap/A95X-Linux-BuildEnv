@@ -1,0 +1,11 @@
+--- webkit-1.11.5/Source/WebKit/gtk/WebCoreSupport/AcceleratedCompositingContextGL.cpp.orig	2014-03-31 18:56:55.166144959 +0800
++++ webkit-1.11.5/Source/WebKit/gtk/WebCoreSupport/AcceleratedCompositingContextGL.cpp	2014-03-31 18:57:03.854145122 +0800
+@@ -32,7 +32,7 @@
+ #include "TextureMapperGL.h"
+ #include "TextureMapperLayer.h"
+ #include "webkitwebviewprivate.h"
+-#include <GL/gl.h>
++#include <GLES/gl.h>
+ #include <cairo.h>
+ #include <gdk/gdk.h>
+ #include <gtk/gtk.h>

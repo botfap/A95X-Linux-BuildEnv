@@ -1,0 +1,38 @@
+{
+	"EventName" : "Capabilities",
+	"Inputs" : [
+		{
+			"Type" : 7,
+			"InputID" : 0,
+			"Name" : "URI Media Player"
+		}
+	],
+	"Decoders" : [
+		{
+			"Type" : 3,
+			"DecoderID" : 1,
+			"Name" : "Decoder 1"
+		},
+		{
+			"Type" : 3,
+			"DecoderID" : 2,
+			"Name" : "Decoder 2"
+		}
+	],
+	"SupportedMIMETypes" : [
+		"video/h264", "video/mp4", "video/mpeg", "video/x-ms-wmv",
+		"audio/ac3", "audio/mp3", "audio/mpeg", "audio/mp4"
+	],
+	"AspectRatioWidth" : 16,
+	"AspectRatioHeight" : 16,
+	"HDMICount" : 0,
+	"TunerCount" : 0,
+	"ConnectorCount" : 0,
+	"StoragePortCount" : 0,
+	"PeripheralCount" : 0,
+	"RVUCount" : 0,
+	"DisplayPropertyList" : [
+	],
+	"SoundPropertyList" : [
+	]
+}

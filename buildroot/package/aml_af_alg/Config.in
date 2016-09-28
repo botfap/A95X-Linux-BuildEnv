@@ -1,0 +1,18 @@
+config BR2_PACKAGE_AML_AF_ALG
+	bool "aml_af_alog"
+        depends on BR2_PACKAGE_OPENSSL
+	help
+          Openssl af_alg engine modified by Amlogic
+          http://src.carnivore.it/users/common/af_alg/about/
+
+config BR2_PACKAGE_AML_AF_ALG_VERSION
+	string "amlogic af_alg branch" 
+	depends on BR2_PACKAGE_AML_AF_ALG
+	help
+	  the branch of amlogic af_alg
+
+config BR2_PACKAGE_AML_AF_ALG_GIT_URL
+	string "amlogic af_alg git url"
+	depends on BR2_PACKAGE_AML_AF_ALG
+	help
+	  the URL of amlogic af_alg git

@@ -1,0 +1,19 @@
+Index: qtbase-opensource-src-5.5.0/src/plugins/platforms/eglfs/deviceintegration/eglfs_x11/qeglfsx11integration.cpp
+===================================================================
+--- qtbase-opensource-src-5.5.0.orig/src/plugins/platforms/eglfs/deviceintegration/eglfs_x11/qeglfsx11integration.cpp	2015-06-30 04:04:43.000000000 +0800
++++ qtbase-opensource-src-5.5.0/src/plugins/platforms/eglfs/deviceintegration/eglfs_x11/qeglfsx11integration.cpp	2015-09-07 14:12:27.787528556 +0800
+@@ -275,12 +275,12 @@
+ 
+     xcb_flush(m_connection);
+ 
+-    return m_window;
++    return (EGLNativeWindowType)((intptr_t)m_window);
+ }
+ 
+ void QEglFSX11Integration::destroyNativeWindow(EGLNativeWindowType window)
+ {
+-    xcb_destroy_window(m_connection, window);
++    xcb_destroy_window(m_connection, (xcb_window_t)((intptr_t)window));
+ }
+ 
+ bool QEglFSX11Integration::hasCapability(QPlatformIntegration::Capability cap) const

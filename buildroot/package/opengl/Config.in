@@ -1,0 +1,28 @@
+source "package/opengl/libgl/Config.in"
+source "package/opengl/libegl/Config.in"
+source "package/opengl/libgles/Config.in"
+source "package/opengl/libopenvg/Config.in"
+source "package/opengl/libopenmax/Config.in"
+
+config BR2_PACKAGE_OPENGL
+	bool "opengl"
+    select BR2_PACKAGE_HAS_LIBGLES
+    select BR2_PACKAGE_HAS_LIBEGL
+	help
+	  amlogic mali400 opengl driver.
+
+	  http://openlinux.amlogic.com
+
+config BR2_PACKAGE_OPENGL_MALI_VERSION
+    string "mali version"
+
+config BR2_PACKAGE_OPENGL_VERSION
+    string "mali opengl version"
+
+config BR2_PACKAGE_PROVIDES_LIBEGL
+	default "opengl" if BR2_PACKAGE_OPENGL
+
+config BR2_PACKAGE_PROVIDES_LIBGLES
+	default "opengl" if BR2_PACKAGE_OPENGL
+
+

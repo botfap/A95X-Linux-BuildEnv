@@ -1,0 +1,18 @@
+--- gpu-r4p0-01/mali/Kconfig.orig	2014-04-24 17:37:34.836957677 +0800
++++ gpu-r4p0-01/mali/Kconfig	2014-04-24 17:40:55.720961446 +0800
+@@ -2,6 +2,7 @@ menu "Mali GPU OpenGL device driver"
+ config MALI400
+ 	tristate "Mali-300/400/450 support"
+ 	depends on ARM
++    depends on m
+ 	default m
+ 	select DMA_SHARED_BUFFER
+ 	---help---
+@@ -48,6 +49,7 @@ config MALI400_INTERNAL_PROFILING
+ config MALI400_UMP
+ 	bool "Enable UMP support"
+ 	depends on MALI400
++    default n
+ 	---help---
+ 	  This enables support for the UMP memory sharing API in the Mali driver.
+ 

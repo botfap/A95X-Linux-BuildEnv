@@ -1,0 +1,26 @@
+--- qtbase-opensource-src-5.2.1/mkspecs/devices/linux-arm-amlogic-8726M-g++/qeglfshooks_8726m.cpp.orig	2014-05-29 13:39:13.062713636 +0800
++++ qtbase-opensource-src-5.2.1/mkspecs/devices/linux-arm-amlogic-8726M-g++/qeglfshooks_8726m.cpp	2014-05-29 13:41:39.654716385 +0800
+@@ -47,6 +47,7 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <linux/fb.h>
++#include <unistd.h>
+ 
+ QT_BEGIN_NAMESPACE
+ 
+@@ -80,11 +81,11 @@ EGLNativeWindowType QEglFS8726MHooks::cr
+     Q_UNUSED(window)
+     Q_UNUSED(format)
+ 
+-    fbdev_window *window = new fbdev_window;
+-    window->width = size.width();
+-    window->height = size.height();
++    fbdev_window *fbwindow = new fbdev_window;
++    fbwindow->width = size.width();
++    fbwindow->height = size.height();
+ 
+-    return window;
++    return (EGLNativeWindowType) fbwindow;
+ }
+ 
+ void QEglFS8726MHooks::destroyNativeWindow(EGLNativeWindowType window)

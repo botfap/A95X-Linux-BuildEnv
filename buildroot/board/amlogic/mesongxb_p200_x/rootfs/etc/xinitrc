@@ -1,0 +1,2 @@
+export DISPLAY=:0
+enlightenment_start -display $DISPLAY &

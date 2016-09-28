@@ -1,0 +1,22 @@
+--- gst-plugins-base-0.10.36/gst-libs/gst/pbutils/codec-utils.h.orig	2011-12-30 05:29:13.000000000 -0800
++++ gst-plugins-base-0.10.36/gst-libs/gst/pbutils/codec-utils.h	2014-08-12 17:32:03.226133180 -0700
+@@ -50,6 +50,19 @@ gboolean      gst_codec_utils_h264_caps_
+                                                                const guint8 * sps,
+                                                                guint          len);
+ 
++/* H.265 */
++
++const gchar * gst_codec_utils_h265_get_profile (const guint8 * profile_tier_level, guint len);
++
++const gchar * gst_codec_utils_h265_get_tier (const guint8 * profile_tier_level, guint len);
++
++const gchar * gst_codec_utils_h265_get_level(const guint8 * profile_tier_level, guint len);
++
++gboolean      gst_codec_utils_h265_caps_set_level_tier_and_profile (GstCaps * caps, 
++                                                                  const guint8 * profile_tier_level,
++                                                                  guint len);
++
++
+ /* MPEG-4 part 2 */
+ 
+ const gchar * gst_codec_utils_mpeg4video_get_profile (const guint8 * vis_obj_seq, guint len);

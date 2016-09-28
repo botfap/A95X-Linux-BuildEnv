@@ -1,0 +1,33 @@
+all:
+	-make -C libmad all	
+	-make -C libadpcm all
+	-make -C libamr all
+	-make -C libape all
+	-make -C libcook all
+	-make -C libfaad all
+	-make -C libflac all
+	-make -C liblpcm all
+	-make -C libraac all
+	-make -C libpcm all	
+install:
+	-make -C libmad install
+	-make -C libadpcm install
+	-make -C libamr install
+	-make -C libape install
+	-make -C libcook install
+	-make -C libfaad install
+	-make -C libflac install
+	-make -C liblpcm install
+	-make -C libraac install
+	-make -C libpcm install	
+clean:
+	-make -C libmad clean
+	-make -C libadpcm clean
+	-make -C libamr clean
+	-make -C libape clean
+	-make -C libcook clean
+	-make -C libfaad clean
+	-make -C libflac clean
+	-make -C liblpcm clean
+	-make -C libraac clean
+	-make -C libpcm clean		

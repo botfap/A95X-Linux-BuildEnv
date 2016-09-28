@@ -1,0 +1,38 @@
+Index: linux-amlogic-3.10-bringup/drivers/amlogic/display/osd/osd_hw.c
+===================================================================
+--- linux-amlogic-3.10-bringup.orig/drivers/amlogic/display/osd/osd_hw.c	2015-04-10 14:28:38.000000000 +0800
++++ linux-amlogic-3.10-bringup/drivers/amlogic/display/osd/osd_hw.c	2015-04-10 14:30:47.593229586 +0800
+@@ -3223,6 +3223,33 @@
+ }
+ #endif //CONFIG_FB_OSD2_CURSOR
+ 
++void osddev_copy_data_tocursor_hw(u32 cursor_mem_vaddr, aml_hwc_addr_t *hwc_mem)
++{
++	u32 tmp;
++	u32 i;
++	u32 value_pixel = 0;
++	u32 size = 32*32*4;
++
++	if (hwc_mem->addr & 0x3) { /* Address not 32bit aligned */
++		for (i = 0; i < size; i += 4) {
++			tmp = readb(hwc_mem->addr + i);
++			value_pixel = tmp;
++			tmp = readb(hwc_mem->addr + i + 1);
++			value_pixel |= (tmp << 8);
++			tmp = readb(hwc_mem->addr + i + 2);
++			value_pixel |= (tmp << 16);
++			tmp = readb(hwc_mem->addr + i + 3);
++			value_pixel |= (tmp << 24);
++			writel(value_pixel, cursor_mem_vaddr+ i);
++		}
++	} else {
++		for (i = 0; i < size; i += 4) {
++			tmp = readl(hwc_mem->addr + i);
++			writel(tmp, cursor_mem_vaddr+ i);
++		}
++	}
++}
++
+ void  osd_suspend_hw(void)
+ {
+ 	osd_hw.reg_status_save = aml_read_reg32(P_VPP_MISC) & OSD_RELATIVE_BITS;

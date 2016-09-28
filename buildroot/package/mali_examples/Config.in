@@ -1,0 +1,5 @@
+config BR2_PACKAGE_MALI_EXAMPLES
+	bool "mali examples"
+	help
+	  Test examples for Mali OpenGL ES.
+

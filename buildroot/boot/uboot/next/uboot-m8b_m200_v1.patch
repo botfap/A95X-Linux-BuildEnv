@@ -1,0 +1,59 @@
+Index: uboot-next/board/amlogic/configs/m8b_m200_v1.h
+===================================================================
+--- uboot-next.orig/board/amlogic/configs/m8b_m200_v1.h	2015-06-16 17:40:46.000000000 +0800
++++ uboot-next/board/amlogic/configs/m8b_m200_v1.h	2015-06-17 15:24:52.286147923 +0800
+@@ -219,7 +219,7 @@
+ 	"cvbsmode=576cvbs\0" \
+ 	"outputmode=1080p\0" \
+ 	"vdac_config=0x10\0" \
+-	"initargs=init=/init console=ttyS0,115200n8 no_console_suspend ramoops.mem_address=0x04e00000 ramoops.mem_size=0x100000 ramoops.record_size=0x8000 ramoops.console_size=0x4000\0" \
++    "initargs=root=/dev/system rootfstype=ext4 init=/sbin/init console=ttyS0,115200n8 no_console_suspend ramoops.mem_address=0x04e00000 ramoops.mem_size=0x100000 ramoops.record_size=0x8000 ramoops.console_size=0x4000\0"\
+ 	"video_dev=tvout\0" \
+ 	"display_width=1920\0" \
+ 	"display_height=1080\0" \
+@@ -244,7 +244,7 @@
+ 	"sdcburncfg=aml_sdc_burn.ini\0"\
+ 	"normalstart=1000000\0" \
+ 	"normalsize=400000\0" \
+-	"upgrade_step=0\0" \
++	"upgrade_step=2\0" \
+ 	"firstboot=1\0" \
+ 	"store=0\0"\
+ 	"wipe_data=success\0"\
+@@ -292,7 +292,11 @@
+         "fi;\0"\
+     \
+    	"storeargs="\
+-        "setenv bootargs ${initargs} cvbsdrv=${cvbs_drv} vdaccfg=${vdac_config} reboot_args=uboot_suspend logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} androidboot.firstboot=${firstboot} hdmitx=${cecconfig}\0"\
++        "setenv bootargs ${initargs} cvbsdrv=${cvbs_drv} vdaccfg=${vdac_config} reboot_args=uboot_suspend logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} androidboot.firstboot=${firstboot} hdmitx=${hdmimode}\0"\
++    "bootsdargs="\
++       "setenv bootargs root=/dev/mmcblk0p1 rw rootfstype=ext2 rootwait init=/sbin/init console=ttyS0,115200n8 no_console_suspend cvbsdrv=${cvbs_drv} vdaccfg=${vdac_config} reboot_args=uboot_suspend logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${hdmimode}\0"\
++    "bootupdateargs="\
++		"setenv bootargs root=/dev/mmcblk0p1 rw rootfstype=vfat rootwait init=/sbin/init console=ttyS0,115200n8 no_console_suspend cvbsdrv=${cvbs_drv} vdaccfg=${vdac_config} reboot_args=uboot_suspend logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${hdmimode} firmware=rootfs.tar.gz\0"\
+     \
+ 	"switch_bootmode="\
+         "if test ${reboot_mode} = factory_reset; then "\
+@@ -333,9 +337,21 @@
+             "setenv bootargs ${bootargs} androidboot.deviceid=${deviceid};"\
+         "fi;"\
+         "imgread kernel boot ${loadaddr};"\
+-        "bootm;"\
+-        "run recovery;\0" \
++        "bootm;\0"\
+     \
++     "bootsdcard="\
++        "echo Booting ...;"\
++         "run bootsdargs; "\
++         "mmcinfo;"\
++         "ext2load mmc 0 ${loadaddr} boot.img;"\
++         "bootm\0" \
++     "bootupdate="\
++        "echo Updating...;"\
++         "run bootupdateargs; "\
++         "mmcinfo;"\
++         "fatload mmc 0 ${loadaddr} boot.img;"\
++         "bootm\0" \
++     \
+ 	"recovery="\
+         "echo enter recovery;"\
+         "setenv bootargs ${bootargs} wipeinstaboot;"\

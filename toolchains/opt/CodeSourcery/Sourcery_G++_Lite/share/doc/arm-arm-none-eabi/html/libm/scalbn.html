@@ -1,0 +1,62 @@
+<html lang="en">
+<head>
+<title>scalbn - Untitled</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="Untitled">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Math.html#Math" title="Math">
+<link rel="prev" href="remainder.html#remainder" title="remainder">
+<link rel="next" href="sin.html#sin" title="sin">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+<link rel="stylesheet" type="text/css" href="../cs.css">
+</head>
+<body>
+<div class="node">
+<a name="scalbn"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="sin.html#sin">sin</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="remainder.html#remainder">remainder</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Math.html#Math">Math</a>
+<hr>
+</div>
+
+<h3 class="section">1.35 <code>scalbn</code>, <code>scalbnf</code>&mdash;scale by power of two</h3>
+
+<p><a name="index-scalbn-92"></a><a name="index-scalbnf-93"></a><strong>Synopsis</strong>
+<pre class="example">     #include &lt;math.h&gt;
+     double scalbn(double <var>x</var>, int <var>y</var>);
+     float scalbnf(float <var>x</var>, int <var>y</var>);
+     
+</pre>
+   <p><strong>Description</strong><br>
+<code>scalbn</code> and <code>scalbnf</code> scale <var>x</var> by <var>n</var>, returning <var>x</var> times
+2 to the power <var>n</var>.  The result is computed by manipulating the
+exponent, rather than by actually performing an exponentiation or
+multiplication.
+
+   <p><br>
+<strong>Returns</strong><br>
+<var>x</var> times 2 to the power <var>n</var>.
+
+   <p><br>
+<strong>Portability</strong><br>
+Neither <code>scalbn</code> nor <code>scalbnf</code> is required by ANSI C or by the System V
+Interface Definition (Issue 2).
+
+   <p><br>
+
+   </body></html>
+

@@ -1,0 +1,13 @@
+Index: uboot-odroidc2_bsp_20151031/Makefile
+===================================================================
+--- uboot-odroidc2_bsp_20151031.orig/Makefile	2015-12-09 13:36:04.000000000 +0800
++++ uboot-odroidc2_bsp_20151031/Makefile	2015-12-11 16:47:50.379148895 +0800
+@@ -246,7 +246,7 @@
+ CROSS_COMPILE ?=
+ else
+ ifeq ($(CROSS_COMPILE),)
+-CROSS_COMPILE = /opt/toolchains/gcc-linaro-aarch64-none-elf-4.9-2014.09_linux/bin/aarch64-none-elf-
++CROSS_COMPILE = aarch64-none-elf-
+ export CROSS_COMPILE
+ endif
+ 

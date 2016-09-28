@@ -1,0 +1,18 @@
+--- webkitgtk-1.11.5/Source/WebCore/platform/graphics/cairo/GLContext.cpp.orig	2014-06-03 11:48:05.102693129 +0800
++++ webkitgtk-1.11.5/Source/WebCore/platform/graphics/cairo/GLContext.cpp	2014-06-03 11:48:19.822693405 +0800
+@@ -19,7 +19,7 @@
+ #include "config.h"
+ #include "GLContext.h"
+ 
+-#if USE(OPENGL)
++//#if USE(OPENGL)
+ 
+ #include "GLContextEGL.h"
+ #include "GLContextGLX.h"
+@@ -168,5 +168,5 @@ GLContext* GLContext::getCurrent()
+ 
+ } // namespace WebCore
+ 
+-#endif // USE(OPENGL)
++//#endif // USE(OPENGL)
+ 

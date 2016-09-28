@@ -1,0 +1,43 @@
+--- a/include/linux/amlogic/amports/vformat.h
++++ b/include/linux/amlogic/amports/vformat.h
+@@ -35,6 +35,7 @@ typedef enum {
+     VFORMAT_H264MVC,
+     VFORMAT_H264_4K2K,
+     VFORMAT_HEVC,
++		VFORMAT_UNSUPPORT,
+     VFORMAT_MAX
+ } vformat_t;
+ 
+--- a/include/linux/amlogic/amports/canvas.h
++++ b/include/linux/amlogic/amports/canvas.h
+@@ -40,6 +40,18 @@ typedef struct {
+ #define AMVDEC_ALL_CANVAS_RANGE_0 0xb  // vc1/real/mpeg12/mpeg4/ jpeg logo / h264
+ #define AMVDEC_ALL_CANVAS_RANGE_1 0x25 //mjpeg
+ 
++#define PPMGR2_MAX_CANVAS 8
++
++#ifndef MESON_CPU_TYPE_MESON8
++#define PPMGR2_CANVAS_INDEX 0x70    // 0x70-0x7f for PPMGR2 (IONVIDEO)
++#else
++#if MESON_CPU_TYPE >= MESON_CPU_TYPE_MESON8
++#define PPMGR2_CANVAS_INDEX 0xf0    // 0x70-0x7f for PPMGR2 (IONVIDEO)
++#else
++#define PPMGR2_CANVAS_INDEX 0x70    // 0x70-0x7f for PPMGR2 (IONVIDEO)
++#endif
++#endif
++
+ #define AMVDEC_H264MVC_CANVAS_INDEX 0x78
+ #define AMVDEC_H264MVC_CANVAS_MAX 0xbf
+ 
+--- a/include/linux/amlogic/amports/vframe.h
++++ b/include/linux/amlogic/amports/vframe.h
+@@ -45,6 +45,9 @@
+ #define VIDTYPE_CANVAS_TOGGLE           0x20000
+ #define VIDTYPE_PRE_INTERLACE           0x40000
+ #define VIDTYPE_HIGHRUN                 0x80000
++#define VIDTYPE_COMPRESS                0x100000
++#define VIDTYPE_PIC                     0x200000
++#define VIDTYPE_LITTLE_ENDIAN           0x400000
+ 
+ #define DISP_RATIO_FORCECONFIG          0x80000000
+ #define DISP_RATIO_FORCE_NORMALWIDE     0x40000000

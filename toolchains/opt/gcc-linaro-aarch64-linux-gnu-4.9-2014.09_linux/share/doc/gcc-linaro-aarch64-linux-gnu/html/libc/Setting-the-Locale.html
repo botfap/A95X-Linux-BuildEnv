@@ -1,0 +1,312 @@
+<html lang="en">
+<head>
+<title>Setting the Locale - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Locales.html#Locales" title="Locales">
+<link rel="prev" href="Locale-Categories.html#Locale-Categories" title="Locale Categories">
+<link rel="next" href="Standard-Locales.html#Standard-Locales" title="Standard Locales">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Setting-the-Locale"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Standard-Locales.html#Standard-Locales">Standard Locales</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Locale-Categories.html#Locale-Categories">Locale Categories</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Locales.html#Locales">Locales</a>
+<hr>
+</div>
+
+<h3 class="section">7.4 How Programs Set the Locale</h3>
+
+<p>A C program inherits its locale environment variables when it starts up. 
+This happens automatically.  However, these variables do not
+automatically control the locale used by the library functions, because
+ISO&nbsp;C<!-- /@w --> says that all programs start by default in the standard &lsquo;<samp><span class="samp">C</span></samp>&rsquo;
+locale.  To use the locales specified by the environment, you must call
+<code>setlocale</code>.  Call it as follows:
+
+<pre class="smallexample">     setlocale (LC_ALL, "");
+</pre>
+   <p class="noindent">to select a locale based on the user choice of the appropriate
+environment variables.
+
+   <p><a name="index-changing-the-locale-741"></a><a name="index-locale_002c-changing-742"></a>You can also use <code>setlocale</code> to specify a particular locale, for
+general use or for a specific category.
+
+   <p><a name="index-locale_002eh-743"></a>The symbols in this section are defined in the header file <samp><span class="file">locale.h</span></samp>.
+
+<!-- locale.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Function: char * <b>setlocale</b> (<var>int category, const char *locale</var>)<var><a name="index-setlocale-744"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe const:locale env
+| AS-Unsafe init lock heap corrupt
+| AC-Unsafe init corrupt lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Uses of the global locale object are unguarded in functions that -->
+     <!-- ought to be MT-Safe, so we're ruling out the use of this function -->
+     <!-- once threads are started.  It takes a write lock itself, but it may -->
+     <!-- return a pointer loaded from the global locale object after releasing -->
+     <!-- the lock, or before taking it. -->
+     <!-- setlocale @mtasuconst:@mtslocale @mtsenv @asuinit @ascuheap @asulock @asucorrupt @acucorrupt @acsmem @acsfd @aculock -->
+     <!-- libc_rwlock_wrlock @asulock @aculock -->
+     <!-- libc_rwlock_unlock @aculock -->
+     <!-- getenv LOCPATH @mtsenv -->
+     <!-- malloc @ascuheap @acsmem -->
+     <!-- free @ascuheap @acsmem -->
+     <!-- new_composite_name ok -->
+     <!-- setdata ok -->
+     <!-- setname ok -->
+     <!-- _nl_find_locale @mtsenv @asuinit @ascuheap @asulock @asucorrupt @acucorrupt @acsmem @acsfd @aculock -->
+     <!-- getenv LC_ALL and LANG @mtsenv -->
+     <!-- _nl_load_locale_from_archive @ascuheap @acucorrupt @acsmem @acsfd -->
+     <!-- sysconf _SC_PAGE_SIZE ok -->
+     <!-- _nl_normalize_codeset @ascuheap @acsmem -->
+     <!-- isalnum_l ok (C locale) -->
+     <!-- isdigit_l ok (C locale) -->
+     <!-- malloc @ascuheap @acsmem -->
+     <!-- tolower_l ok (C locale) -->
+     <!-- open_not_cancel_2 @acsfd -->
+     <!-- fxstat64 ok -->
+     <!-- close_not_cancel_no_status ok -->
+     <!-- __mmap64 @acsmem -->
+     <!-- calculate_head_size ok -->
+     <!-- __munmap ok -->
+     <!-- compute_hashval ok -->
+     <!-- qsort dup @acucorrupt -->
+     <!-- rangecmp ok -->
+     <!-- malloc @ascuheap @acsmem -->
+     <!-- strdup @ascuheap @acsmem -->
+     <!-- _nl_intern_locale_data @ascuheap @acsmem -->
+     <!-- malloc @ascuheap @acsmem -->
+     <!-- free @ascuheap @acsmem -->
+     <!-- _nl_expand_alias @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- libc_lock_lock @asulock @aculock -->
+     <!-- bsearch ok -->
+     <!-- alias_compare ok -->
+     <!-- strcasecmp ok -->
+     <!-- read_alias_file @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- fopen @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- fsetlocking ok -->
+     <!-- feof_unlocked ok -->
+     <!-- fgets_unlocked ok -->
+     <!-- isspace ok (locale mutex is locked) -->
+     <!-- extend_alias_table @ascuheap @acsmem -->
+     <!-- realloc @ascuheap @acsmem -->
+     <!-- realloc @ascuheap @acsmem -->
+     <!-- fclose @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- qsort @ascuheap @acsmem -->
+     <!-- alias_compare dup -->
+     <!-- libc_lock_unlock @aculock -->
+     <!-- _nl_explode_name @ascuheap @acsmem -->
+     <!-- _nl_find_language ok -->
+     <!-- _nl_normalize_codeset dup @ascuheap @acsmem -->
+     <!-- _nl_make_l10nflist @ascuheap @acsmem -->
+     <!-- malloc @ascuheap @acsmem -->
+     <!-- free @ascuheap @acsmem -->
+     <!-- __argz_stringify ok -->
+     <!-- __argz_count ok -->
+     <!-- __argz_next ok -->
+     <!-- _nl_load_locale @ascuheap @acsmem @acsfd -->
+     <!-- open_not_cancel_2 @acsfd -->
+     <!-- __fxstat64 ok -->
+     <!-- close_not_cancel_no_status ok -->
+     <!-- mmap @acsmem -->
+     <!-- malloc @ascuheap @acsmem -->
+     <!-- read_not_cancel ok -->
+     <!-- free @ascuheap @acsmem -->
+     <!-- _nl_intern_locale_data dup @ascuheap @acsmem -->
+     <!-- munmap ok -->
+     <!-- __gconv_compare_alias @asuinit @ascuheap @asucorrupt @asulock @acsmem@acucorrupt @acsfd @aculock -->
+     <!-- __gconv_read_conf @asuinit @ascuheap @asucorrupt @asulock @acsmem@acucorrupt @acsfd @aculock -->
+     <!-- (libc_once-initializes gconv_cache and gconv_path_envvar; they're -->
+     <!-- never modified afterwards) -->
+     <!-- __gconv_load_cache @ascuheap @acsmem @acsfd -->
+     <!-- getenv GCONV_PATH @mtsenv -->
+     <!-- open_not_cancel @acsfd -->
+     <!-- __fxstat64 ok -->
+     <!-- close_not_cancel_no_status ok -->
+     <!-- mmap @acsmem -->
+     <!-- malloc @ascuheap @acsmem -->
+     <!-- __read ok -->
+     <!-- free @ascuheap @acsmem -->
+     <!-- munmap ok -->
+     <!-- __gconv_get_path @asulock @ascuheap @aculock @acsmem @acsfd -->
+     <!-- getcwd @ascuheap @acsmem @acsfd -->
+     <!-- libc_lock_lock @asulock @aculock -->
+     <!-- malloc @ascuheap @acsmem -->
+     <!-- strtok_r ok -->
+     <!-- libc_lock_unlock @aculock -->
+     <!-- read_conf_file @ascuheap @asucorrupt @asulock @acsmem @acucorrupt @acsfd @aculock -->
+     <!-- fopen @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- fsetlocking ok -->
+     <!-- feof_unlocked ok -->
+     <!-- getdelim @ascuheap @asucorrupt @acsmem @acucorrupt -->
+     <!-- isspace_l ok (C locale) -->
+     <!-- add_alias -->
+     <!-- isspace_l ok (C locale) -->
+     <!-- toupper_l ok (C locale) -->
+     <!-- add_alias2 dup @ascuheap @acucorrupt @acsmem -->
+     <!-- add_module @ascuheap @acsmem -->
+     <!-- isspace_l ok (C locale) -->
+     <!-- toupper_l ok (C locale) -->
+     <!-- strtol ok (@mtslocale but we hold the locale lock) -->
+     <!-- tfind __gconv_alias_db ok -->
+     <!-- __gconv_alias_compare dup ok -->
+     <!-- calloc @ascuheap @acsmem -->
+     <!-- insert_module dup @ascuheap -->
+     <!-- __tfind ok (because the tree is read only by then) -->
+     <!-- __gconv_alias_compare dup ok -->
+     <!-- insert_module @ascuheap -->
+     <!-- free @ascuheap -->
+     <!-- add_alias2 @ascuheap @acucorrupt @acsmem -->
+     <!-- detect_conflict ok, reads __gconv_modules_db -->
+     <!-- malloc @ascuheap @acsmem -->
+     <!-- tsearch __gconv_alias_db @ascuheap @acucorrupt @acsmem [exclusive tree, no @mtsrace] -->
+     <!-- __gconv_alias_compare ok -->
+     <!-- free @ascuheap -->
+     <!-- __gconv_compare_alias_cache ok -->
+     <!-- find_module_idx ok -->
+     <!-- do_lookup_alias ok -->
+     <!-- __tfind ok (because the tree is read only by then) -->
+     <!-- __gconv_alias_compare ok -->
+     <!-- strndup @ascuheap @acsmem -->
+     <!-- strcasecmp_l ok (C locale) -->
+        <p>The function <code>setlocale</code> sets the current locale for category
+<var>category</var> to <var>locale</var>.  A list of all the locales the system
+provides can be created by running
+
+        <p><a name="index-locale-745"></a>
+     <pre class="smallexample">            locale -a
+</pre>
+        <p>If <var>category</var> is <code>LC_ALL</code>, this specifies the locale for all
+purposes.  The other possible values of <var>category</var> specify an
+single purpose (see <a href="Locale-Categories.html#Locale-Categories">Locale Categories</a>).
+
+        <p>You can also use this function to find out the current locale by passing
+a null pointer as the <var>locale</var> argument.  In this case,
+<code>setlocale</code> returns a string that is the name of the locale
+currently selected for category <var>category</var>.
+
+        <p>The string returned by <code>setlocale</code> can be overwritten by subsequent
+calls, so you should make a copy of the string (see <a href="Copying-and-Concatenation.html#Copying-and-Concatenation">Copying and Concatenation</a>) if you want to save it past any further calls to
+<code>setlocale</code>.  (The standard library is guaranteed never to call
+<code>setlocale</code> itself.)
+
+        <p>You should not modify the string returned by <code>setlocale</code>.  It might
+be the same string that was passed as an argument in a previous call to
+<code>setlocale</code>.  One requirement is that the <var>category</var> must be
+the same in the call the string was returned and the one when the string
+is passed in as <var>locale</var> parameter.
+
+        <p>When you read the current locale for category <code>LC_ALL</code>, the value
+encodes the entire combination of selected locales for all categories. 
+In this case, the value is not just a single locale name.  In fact, we
+don't make any promises about what it looks like.  But if you specify
+the same &ldquo;locale name&rdquo; with <code>LC_ALL</code> in a subsequent call to
+<code>setlocale</code>, it restores the same combination of locale selections.
+
+        <p>To be sure you can use the returned string encoding the currently selected
+locale at a later time, you must make a copy of the string.  It is not
+guaranteed that the returned pointer remains valid over time.
+
+        <p>When the <var>locale</var> argument is not a null pointer, the string returned
+by <code>setlocale</code> reflects the newly-modified locale.
+
+        <p>If you specify an empty string for <var>locale</var>, this means to read the
+appropriate environment variable and use its value to select the locale
+for <var>category</var>.
+
+        <p>If a nonempty string is given for <var>locale</var>, then the locale of that
+name is used if possible.
+
+        <p>If you specify an invalid locale name, <code>setlocale</code> returns a null
+pointer and leaves the current locale unchanged. 
+</p></blockquote></div>
+
+   <p>The path used for finding locale data can be set using the
+<code>LOCPATH</code> environment variable. The default path for finding
+locale data is system specific.  It is computed from the value given
+as the prefix while configuring the C library.  This value normally is
+<samp><span class="file">/usr</span></samp> or <samp><span class="file">/</span></samp>.  For the former the complete path is:
+
+<pre class="smallexample">     /usr/lib/locale
+</pre>
+   <p>Here is an example showing how you might use <code>setlocale</code> to
+temporarily switch to a new locale.
+
+<pre class="smallexample">     #include &lt;stddef.h&gt;
+     #include &lt;locale.h&gt;
+     #include &lt;stdlib.h&gt;
+     #include &lt;string.h&gt;
+     
+     void
+     with_other_locale (char *new_locale,
+                        void (*subroutine) (int),
+                        int argument)
+     {
+       char *old_locale, *saved_locale;
+     
+       /* <span class="roman">Get the name of the current locale.</span>  */
+       old_locale = setlocale (LC_ALL, NULL);
+     
+       /* <span class="roman">Copy the name so it won't be clobbered by </span><code>setlocale</code><span class="roman">.</span> */
+       saved_locale = strdup (old_locale);
+       if (saved_locale == NULL)
+         fatal ("Out of memory");
+     
+       /* <span class="roman">Now change the locale and do some stuff with it.</span> */
+       setlocale (LC_ALL, new_locale);
+       (*subroutine) (argument);
+     
+       /* <span class="roman">Restore the original locale.</span> */
+       setlocale (LC_ALL, saved_locale);
+       free (saved_locale);
+     }
+</pre>
+   <p><strong>Portability Note:</strong> Some ISO&nbsp;C<!-- /@w --> systems may define additional
+locale categories, and future versions of the library will do so.  For
+portability, assume that any symbol beginning with &lsquo;<samp><span class="samp">LC_</span></samp>&rsquo; might be
+defined in <samp><span class="file">locale.h</span></samp>.
+
+   </body></html>
+

@@ -1,0 +1,13 @@
+Index: linux-amlogic-3.14-dev/Makefile
+===================================================================
+--- linux-amlogic-3.14-dev.orig/Makefile	2015-07-24 17:49:25.000000000 +0800
++++ linux-amlogic-3.14-dev/Makefile	2015-07-27 15:55:18.863018897 +0800
+@@ -430,8 +430,6 @@
+ scripts_basic:
+ 	$(Q)$(MAKE) $(build)=scripts/basic
+ 	$(Q)rm -f .tmp_quiet_recordmcount
+-	$(Q)cp $(srctree)/scripts/amlogic/pre-commit $(srctree)/.git/hooks/pre-commit
+-	$(Q)chmod +x $(srctree)/.git/hooks/pre-commit
+ 
+ # To avoid any implicit rule to kick in, define an empty command.
+ scripts/basic/%: scripts_basic ;

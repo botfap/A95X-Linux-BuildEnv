@@ -1,0 +1,18 @@
+config BR2_PACKAGE_AML_TOUCH
+	bool "aml touch"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  touch driver
+
+config BR2_PACKAGE_AML_TOUCH_GIT_VERSION
+	string "touch branch"
+	depends on BR2_PACKAGE_AML_TOUCH
+	help
+		Branch for touch
+
+config BR2_PACKAGE_AML_TOUCH_GIT_REPO_URL
+	string "touch git"
+	depends on BR2_PACKAGE_AML_TOUCH
+	help
+		touch git
+

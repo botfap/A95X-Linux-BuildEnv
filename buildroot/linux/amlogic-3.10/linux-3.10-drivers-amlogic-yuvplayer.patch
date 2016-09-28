@@ -1,0 +1,1850 @@
+--- /dev/null
++++ b/drivers/amlogic/yuvplayer/Kconfig
+@@ -0,0 +1,22 @@
++menu "Amlogic yuvplayer support"
++
++config VIDEOBUF2_ION
++	tristate "videobuf2-ion video device support"
++	select VIDEO_DEV
++	select VIDEO_V4L2
++	select VIDEOBUF2_CORE
++	select VIDEOBUF2_MEMOPS
++	select DMA_SHARED_BUFFER
++	default y
++
++	---help---
++	capture yuvplayer to user
++
++config AMLOGIC_YUVPLAYER
++	tristate "Amlogic ion video device support"
++        select VIDEOBUF2_ION
++	default y
++
++	---help---
++	capture yuvplayer to user
++endmenu
+--- /dev/null
++++ b/drivers/amlogic/yuvplayer/Makefile
+@@ -0,0 +1,3 @@
++EXTRA_AFLAGS=-mfloat-abi=softfp -mfpu=neon
++
++obj-$(CONFIG_AMLOGIC_YUVPLAYER) += yuvplayer.o ppmgr2.o
+--- /dev/null
++++ b/drivers/amlogic/yuvplayer/yuvplayer.c
+@@ -0,0 +1,955 @@
++/*
++ * Ion Video driver - This code emulates a real video device with v4l2 api,
++ * used for surface video display.
++ *
++ *Author: Jintao Xu <jintao.xu@amlogic.com>
++ *
++ */
++#include "yuvplayer.h"
++#include <linux/kfifo.h>
++#include <media/videobuf2-core.h>
++
++#define CREATE_TRACE_POINTS
++//#include "trace/yuvplayer.h"
++#define YUVPLAYER_MODULE_NAME "yuvplayer"
++
++#define YUVPLAYER_VERSION "1.0"
++#define PROVIDER_NAME "yuvplayer"
++
++
++static int is_actived = 0;
++
++static unsigned video_nr = 20;
++
++//static u64 last_pts_us64 = 0;
++
++module_param(video_nr, uint, 0644);
++MODULE_PARM_DESC(video_nr, "videoX start number, 13 is autodetect");
++
++static unsigned n_devs = 1;
++module_param(n_devs, uint, 0644);
++MODULE_PARM_DESC(n_devs, "number of video devices to create");
++
++static unsigned debug = 0;
++module_param(debug, uint, 0644);
++MODULE_PARM_DESC(debug, "activates debug info");
++
++static unsigned int vid_limit = 16;
++module_param(vid_limit, uint, 0644);
++MODULE_PARM_DESC(vid_limit, "capture memory limit in megabytes");
++
++static unsigned int freerun_mode = 1;
++module_param(freerun_mode, uint, 0664);
++MODULE_PARM_DESC(freerun_mode, "av synchronization");
++
++static unsigned int skip_frames = 0;
++module_param(skip_frames, uint, 0664);
++MODULE_PARM_DESC(skip_frames, "skip frames");
++
++static DECLARE_KFIFO(display_q, vframe_t *, PPMGR2_MAX_CANVAS);
++static DECLARE_KFIFO(recycle_q, vframe_t *, PPMGR2_MAX_CANVAS);
++
++static DEFINE_SPINLOCK(lock);
++
++
++static struct yuvplayer_dmaqueue* cur_dma_q = NULL;
++
++static const struct yuvplayer_fmt formats[] = {
++    {
++        .name = "RGB32 (LE)",
++        .fourcc = V4L2_PIX_FMT_RGB32, /* argb */
++        .depth = 32,
++    },
++    {
++        .name = "RGB565 (LE)",
++        .fourcc = V4L2_PIX_FMT_RGB565, /* gggbbbbb rrrrrggg */
++        .depth = 16,
++    },
++    {
++        .name = "RGB24 (LE)",
++        .fourcc = V4L2_PIX_FMT_RGB24, /* rgb */
++        .depth = 24,
++    },
++    {
++        .name = "RGB24 (BE)",
++        .fourcc = V4L2_PIX_FMT_BGR24, /* bgr */
++        .depth = 24,
++    },
++    {
++        .name = "12  Y/CbCr 4:2:0",
++        .fourcc   = V4L2_PIX_FMT_NV12,
++        .depth    = 12,
++    },
++    {
++        .name     = "12  Y/CrCb 4:2:0",
++        .fourcc   = V4L2_PIX_FMT_NV21,
++        .depth    = 12,
++    },
++    {
++        .name     = "YUV420P",
++        .fourcc   = V4L2_PIX_FMT_YUV420,
++        .depth    = 12,
++    },
++    {
++        .name     = "YVU420P",
++        .fourcc   = V4L2_PIX_FMT_YVU420,
++        .depth    = 12,
++    }
++};
++
++static vframe_t *yuvplayer_vf_peek(void* op_arg)
++{
++    vframe_t *vf;
++    if (kfifo_peek(&display_q, &vf))
++        return vf;
++
++    return NULL;
++}
++
++static vframe_t *yuvplayer_vf_get(void* op_arg)
++{
++    vframe_t *vf;
++    if (kfifo_get(&display_q, &vf))
++        return vf;
++
++    return NULL;
++}
++
++static void yuvplayer_vf_put(vframe_t *vf, void* op_arg)
++{
++    struct vb2_buffer* vb = (struct vb2_buffer*)vf->private_data;
++    vb2_buffer_done(vb, VB2_BUF_STATE_DONE);
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++    //dma_q->vb_ready++;
++}
++
++static int yuvplayer_event_cb(int type, void *data, void *private_data)
++{
++    return 0;
++}
++
++static int  yuvplayer_vf_states(vframe_states_t *states, void* op_arg)
++{
++    unsigned long flags;
++    spin_lock_irqsave(&lock, flags);
++
++    //states->vf_pool_size = VF_POOL_SIZE;
++    states->buf_avail_num = kfifo_len(&display_q);
++    //states->buf_recycle_num = kfifo_len(&recycle_q);
++    
++    spin_unlock_irqrestore(&lock, flags);
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++
++    return 0;
++}
++
++static const struct vframe_operations_s yuvplayer_provider_operations = {
++    .peek = yuvplayer_vf_peek,
++    .get = yuvplayer_vf_get,
++    .put = yuvplayer_vf_put,
++    .event_cb = yuvplayer_event_cb,
++    .vf_states = yuvplayer_vf_states,
++};
++
++static const struct yuvplayer_fmt *__get_format(u32 pixelformat)
++{
++    const struct yuvplayer_fmt *fmt;
++    unsigned int k;
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++
++    for (k = 0; k < ARRAY_SIZE(formats); k++) {
++        fmt = &formats[k];
++        if (fmt->fourcc == pixelformat)
++            break;
++    }
++
++    if (k == ARRAY_SIZE(formats))
++        return NULL;
++	//printk("[%s %d] k:%d\n", __FUNCTION__, __LINE__, k);
++    return &formats[k];
++}
++
++static const struct yuvplayer_fmt *get_format(struct v4l2_format *f)
++{
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++
++    return __get_format(f->fmt.pix.pixelformat);
++}
++
++static LIST_HEAD (yuvplayer_devlist);
++
++//static DEFINE_SPINLOCK(ion_states_lock);
++
++/* ------------------------------------------------------------------
++ DMA and thread functions
++ ------------------------------------------------------------------*/
++unsigned get_yuvplayer_debug(void) {
++    return debug;
++}
++EXPORT_SYMBOL(get_yuvplayer_debug);
++
++int is_yuvplayer_active(void) {
++    return is_actived;
++}
++EXPORT_SYMBOL(is_yuvplayer_active);
++
++
++static int yuvplayer_fillbuff(struct yuvplayer_dev *dev, struct yuvplayer_buffer *buf) {
++    struct vb2_buffer *vb = &(buf->vb);
++    //int ret = 0;
++//-------------------------------------------------------
++
++    vframe_t *vf = &dev->vfpool[vb->v4l2_buf.index];
++
++    vf->width = dev->width;
++    vf->height = dev->height;
++    vf->bufWidth = dev->width;
++    vf->flag = 0;
++    vf->orientation = 0;
++    //buf->vb.v4l2_buf.timestamp.tv_sec = dev->pts >> 32;
++    //buf->vb.v4l2_buf.timestamp.tv_usec = dev->pts & 0xFFFFFFFF;
++    //vf->pts = 0;
++    //vf->pts_us64 = 0;
++    vf->duration = 0x3000;
++    vf->duration_pulldown = 0x3000;
++    vf->type = VIDTYPE_PROGRESSIVE | VIDTYPE_VIU_FIELD | VIDTYPE_LITTLE_ENDIAN;
++    //vf->canvas0Addr = vf->canvas1Addr = canvasindex;
++    vf->private_data = (void*)vb;
++    //printk("/vf->pts=%d,vf->pts_us64=%lld\n", vf->pts, vf->pts_us64);
++    kfifo_put(&display_q, (const vframe_t **)&vf);
++    vf_notify_receiver(PROVIDER_NAME,VFRAME_EVENT_PROVIDER_VFRAME_READY,NULL);
++    
++//-------------------------------------------------------
++    return 0;
++}
++
++static void yuvplayer_thread_tick(struct yuvplayer_dev *dev) {
++    struct yuvplayer_dmaqueue *dma_q = &dev->vidq;
++    struct yuvplayer_buffer *buf;
++    unsigned long flags = 0;
++   // struct vframe_s* vf;
++    static int vf_wait_cnt = 0;
++
++	//int w ,h ;
++    dprintk(dev, 4, "Thread tick\n");
++
++    if(!dev){
++		return;
++	}
++
++    spin_lock_irqsave(&dev->slock, flags);
++    if (list_empty(&dma_q->active)) {
++        dprintk(dev, 3, "No active queue to serve\n");
++        spin_unlock_irqrestore(&dev->slock, flags);
++        schedule_timeout_interruptible(msecs_to_jiffies(20));
++        return;
++    }
++    buf = list_entry(dma_q->active.next, struct yuvplayer_buffer, list);
++    spin_unlock_irqrestore(&dev->slock, flags);
++    if (yuvplayer_fillbuff(dev, buf)) {
++        return;
++    }
++    vf_wait_cnt = 0;
++
++    spin_lock_irqsave(&dev->slock, flags);
++    list_del(&buf->list);
++    spin_unlock_irqrestore(&dev->slock, flags);
++    //vb2_buffer_done(&buf->vb, VB2_BUF_STATE_DONE);
++    //dma_q->vb_ready++;
++    dprintk(dev, 4, "[%p/%d] done\n", buf, buf->vb.v4l2_buf.index);
++}
++
++#define frames_to_ms(frames)					\
++    ((frames * WAKE_NUMERATOR * 1000) / WAKE_DENOMINATOR)
++
++static void yuvplayer_sleep(struct yuvplayer_dev *dev) {
++    struct yuvplayer_dmaqueue *dma_q = &dev->vidq;
++    //int timeout;
++    DECLARE_WAITQUEUE(wait, current);
++
++    dprintk(dev, 4, "%s dma_q=0x%08lx\n", __func__, (unsigned long)dma_q);
++
++    add_wait_queue(&dma_q->wq, &wait);
++    if (kthread_should_stop())
++        goto stop_task;
++
++    /* Calculate time to wake up */
++    //timeout = msecs_to_jiffies(frames_to_ms(1));
++
++    yuvplayer_thread_tick(dev);
++
++    //schedule_timeout_interruptible(timeout);
++
++stop_task:
++    remove_wait_queue(&dma_q->wq, &wait);
++    try_to_freeze();
++}
++
++static int yuvplayer_thread(void *data) {
++    struct yuvplayer_dev *dev = data;
++
++    dprintk(dev, 2, "thread started\n");
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++
++    set_freezable();
++
++    for (;;) {
++        yuvplayer_sleep(dev);
++
++        if (kthread_should_stop())
++            break;
++    }
++    dprintk(dev, 2, "thread: exit\n");
++    return 0;
++}
++
++static int yuvplayer_start_generating(struct yuvplayer_dev *dev) {
++    struct yuvplayer_dmaqueue *dma_q = &dev->vidq;
++    dev->is_omx_video_started = 1;
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++
++    dprintk(dev, 2, "%s\n", __func__);
++
++    /* Resets frame counters */
++    dev->ms = 0;
++    //dev->jiffies = jiffies;
++
++    dma_q->kthread = kthread_run(yuvplayer_thread, dev, dev->v4l2_dev.name);
++
++    if (IS_ERR(dma_q->kthread)) {
++        v4l2_err(&dev->v4l2_dev, "kernel_thread() failed\n");
++        return PTR_ERR(dma_q->kthread);
++    }
++    /* Wakes thread */
++    wake_up_interruptible(&dma_q->wq);
++
++    dprintk(dev, 2, "returning from %s\n", __func__);
++    return 0;
++}
++
++static void yuvplayer_stop_generating(struct yuvplayer_dev *dev) {
++    struct yuvplayer_dmaqueue *dma_q = &dev->vidq;
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++
++    dprintk(dev, 2, "%s\n", __func__);
++
++    /* shutdown control thread */
++    if (dma_q->kthread) {
++        kthread_stop(dma_q->kthread);
++        dma_q->kthread = NULL;
++    }
++
++    /*
++     * Typical driver might need to wait here until dma engine stops.
++     * In this case we can abort imiedetly, so it's just a noop.
++     */
++
++    /* Release all active buffers */
++    while (!list_empty(&dma_q->active)) {
++        struct yuvplayer_buffer *buf;
++        buf = list_entry(dma_q->active.next, struct yuvplayer_buffer, list);
++        list_del(&buf->list);
++        vb2_buffer_done(&buf->vb, VB2_BUF_STATE_ERROR);
++        dprintk(dev, 2, "[%p/%d] done\n", buf, buf->vb.v4l2_buf.index);
++    }
++}
++/* ------------------------------------------------------------------
++ Videobuf operations
++ ------------------------------------------------------------------*/
++static int queue_setup(struct vb2_queue *vq, const struct v4l2_format *fmt, unsigned int *nbuffers, unsigned int *nplanes, unsigned int sizes[], void *alloc_ctxs[]) {
++    struct yuvplayer_dev *dev = vb2_get_drv_priv(vq);
++    unsigned long size;
++
++    if (fmt)
++        size = fmt->fmt.pix.sizeimage;
++    else
++        size = (dev->width * dev->height * dev->pixelsize) >> 3;
++
++    if (size == 0)
++        return -EINVAL;
++	
++	//printk("[%s %d]nbuffers:%d\n", __FUNCTION__, __LINE__, *nbuffers);
++
++    if (0 == *nbuffers)
++        *nbuffers = 32;
++
++	//printk("[%s %d]size:%lu vid_limit:%u\n", __FUNCTION__, __LINE__, size, vid_limit);
++
++    while (size * *nbuffers > vid_limit * MAX_WIDTH * MAX_HEIGHT)
++        (*nbuffers)--;
++
++    *nplanes = 1;
++
++    sizes[0] = size;
++
++    /*
++     * videobuf2-vmalloc allocator is context-less so no need to set
++     * alloc_ctxs array.
++     */
++
++    //printk("%s, count=%d, size=%ld\n", __func__, *nbuffers, size);
++
++    return 0;
++}
++
++static int buffer_prepare(struct vb2_buffer *vb) {
++    struct yuvplayer_dev *dev = vb2_get_drv_priv(vb->vb2_queue);
++    struct yuvplayer_buffer *buf = container_of(vb, struct yuvplayer_buffer, vb);
++    unsigned long size;
++
++    dprintk(dev, 2, "%s, field=%d\n", __func__, vb->v4l2_buf.field);
++	
++
++    BUG_ON(NULL == dev->fmt);
++
++    /*
++     * Theses properties only change when queue is idle, see s_fmt.
++     * The below checks should not be performed here, on each
++     * buffer_prepare (i.e. on each qbuf). Most of the code in this function
++     * should thus be moved to buffer_init and s_fmt.
++     */
++    if (dev->width < 48 || dev->width > MAX_WIDTH || dev->height < 32 || dev->height > MAX_HEIGHT)
++        return -EINVAL;
++
++    size = (dev->width * dev->height * dev->pixelsize) >> 3;
++    if (vb2_plane_size(vb, 0) < size) {
++        dprintk(dev, 1, "%s data will not fit into plane (%lu < %lu)\n", __func__, vb2_plane_size(vb, 0), size);
++        return -EINVAL;
++    }
++
++	//printk("[%s %d] size=%lu pixelsize:%u\n", __func__, __LINE__, size, dev->pixelsize);
++
++    vb2_set_plane_payload(&buf->vb, 0, size);
++
++    buf->fmt = dev->fmt;
++
++    return 0;
++}
++
++static void buffer_queue(struct vb2_buffer *vb) {
++    struct yuvplayer_dev *dev = vb2_get_drv_priv(vb->vb2_queue);
++    struct yuvplayer_buffer *buf = container_of(vb, struct yuvplayer_buffer, vb);
++    struct yuvplayer_dmaqueue *vidq = &dev->vidq;
++    unsigned long flags = 0;
++
++    dprintk(dev, 2, "%s\n", __func__);
++
++	//printk("[%s %d] index:%d\n", __FUNCTION__, __LINE__, vb->v4l2_buf.index);
++
++    spin_lock_irqsave(&dev->slock, flags);
++    list_add_tail(&buf->list, &vidq->active);
++    spin_unlock_irqrestore(&dev->slock, flags);
++}
++
++static int start_streaming(struct vb2_queue *vq, unsigned int count) {
++    struct yuvplayer_dev *dev = vb2_get_drv_priv(vq);
++    struct yuvplayer_dmaqueue *dma_q = &dev->vidq;
++
++    cur_dma_q = dma_q;
++    is_actived = 1;
++    dma_q->vb_ready = 0;
++    dprintk(dev, 2, "%s\n", __func__);
++
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++    return yuvplayer_start_generating(dev);
++}
++
++/* abort streaming and wait for last buffer */
++static int stop_streaming(struct vb2_queue *vq) {
++    struct yuvplayer_dev *dev = vb2_get_drv_priv(vq);
++    cur_dma_q = NULL;
++    is_actived = 0;
++    dprintk(dev, 2, "%s\n", __func__);
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++    yuvplayer_stop_generating(dev);
++
++    return 0;
++}
++
++static void yuvplayer_lock(struct vb2_queue *vq) {
++    struct yuvplayer_dev *dev = vb2_get_drv_priv(vq);
++    mutex_lock(&dev->mutex);
++}
++
++static void yuvplayer_unlock(struct vb2_queue *vq) {
++    struct yuvplayer_dev *dev = vb2_get_drv_priv(vq);
++    mutex_unlock(&dev->mutex);
++}
++
++static const struct vb2_ops yuvplayer_video_qops = {
++    .queue_setup = queue_setup,
++    .buf_prepare = buffer_prepare,
++    .buf_queue = buffer_queue,
++    .start_streaming = start_streaming,
++    .stop_streaming = stop_streaming,
++    .wait_prepare = yuvplayer_unlock,
++    .wait_finish = yuvplayer_lock,
++};
++
++/* ------------------------------------------------------------------
++ IOCTL vidioc handling
++ ------------------------------------------------------------------*/
++static int vidioc_open(struct file *file) {
++    struct yuvplayer_dev *dev = video_drvdata(file);
++    u32 framerate = 0;
++    if (dev->fd_num > 0 || ppmgr3_init(&(dev->ppmgr2_dev)) < 0) {
++        return -EBUSY;
++    }
++    dev->fd_num++;
++    dev->pts = 0;
++    dev->c_width = 0;
++    dev->c_height = 0;
++    dev->once_record = 1;
++    dev->ppmgr2_dev.bottom_first = 0;
++    skip_frames = 0;
++    //printk("yuvplayer open\n");
++    INIT_KFIFO(display_q);
++	INIT_KFIFO(recycle_q);
++    vf_provider_init(&dev->video_vf_prov, PROVIDER_NAME, &yuvplayer_provider_operations, NULL);
++    vf_reg_provider(&dev->video_vf_prov);
++    vf_notify_receiver(PROVIDER_NAME,VFRAME_EVENT_PROVIDER_START,NULL);
++    
++    vf_notify_receiver(PROVIDER_NAME, VFRAME_EVENT_PROVIDER_FR_HINT, (void *)framerate);
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++    return v4l2_fh_open(file);
++}
++
++static int vidioc_release(struct file *file) {
++    struct yuvplayer_dev *dev = video_drvdata(file);
++    yuvplayer_stop_generating(dev);
++    //printk("yuvplayer_stop_generating!!!!\n");
++    ppmgr3_release(&(dev->ppmgr2_dev));
++    dprintk(dev, 2, "vidioc_release\n");
++    //printk("yuvplayer release\n");
++    if (dev->fd_num > 0) {
++        dev->fd_num--;
++    }
++    dev->once_record = 0;
++    vf_unreg_provider(&dev->video_vf_prov);
++    //printk("[%s %d]\n", __FUNCTION__, __LINE__);
++    return vb2_fop_release(file);
++}
++
++static int vidioc_querycap(struct file *file, void *priv, struct v4l2_capability *cap) {
++    struct yuvplayer_dev *dev = video_drvdata(file);
++
++    strcpy(cap->driver, "yuvplayer");
++    strcpy(cap->card, "yuvplayer");
++    snprintf(cap->bus_info, sizeof(cap->bus_info), "platform:%s", dev->v4l2_dev.name);
++    cap->device_caps = V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_STREAMING | V4L2_CAP_READWRITE;
++    cap->capabilities = cap->device_caps | V4L2_CAP_DEVICE_CAPS;
++
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++    return 0;
++}
++
++static int vidioc_enum_fmt_vid_cap(struct file *file, void *priv, struct v4l2_fmtdesc *f) {
++    const struct yuvplayer_fmt *fmt;
++
++    if (f->index >= ARRAY_SIZE(formats))
++        return -EINVAL;
++
++    fmt = &formats[f->index];
++
++    strlcpy(f->description, fmt->name, sizeof(f->description));
++    f->pixelformat = fmt->fourcc;
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++    return 0;
++}
++
++static int vidioc_g_fmt_vid_cap(struct file *file, void *priv, struct v4l2_format *f) {
++    struct yuvplayer_dev *dev = video_drvdata(file);
++    struct vb2_queue *q = &dev->vb_vidq;
++    int ret = 0;
++    unsigned long flags;
++
++    if (freerun_mode == 0) {
++        if (dev->c_width == 0 || dev->c_height == 0) {
++            return -EINVAL;
++        }
++        f->fmt.pix.width = dev->c_width;
++        f->fmt.pix.height = dev->c_height;
++        spin_lock_irqsave(&q->done_lock, flags);
++        ret = list_empty(&q->done_list);
++        spin_unlock_irqrestore(&q->done_lock, flags);
++        if (!ret) {
++            return -EAGAIN;
++        }
++    } else {
++        f->fmt.pix.width = dev->width;
++        f->fmt.pix.height = dev->height;
++    }
++    f->fmt.pix.field = V4L2_FIELD_INTERLACED;
++    f->fmt.pix.pixelformat = dev->fmt->fourcc;
++    f->fmt.pix.bytesperline = (f->fmt.pix.width * dev->fmt->depth) >> 3;
++    f->fmt.pix.sizeimage = f->fmt.pix.height * f->fmt.pix.bytesperline;
++    if (dev->fmt->is_yuv)
++        f->fmt.pix.colorspace = V4L2_COLORSPACE_SMPTE170M;
++    else
++        f->fmt.pix.colorspace = V4L2_COLORSPACE_SRGB;
++	
++	//printk("[%s %d]\n", __FUNCTION__, __LINE__);
++
++    return 0;
++}
++
++static int vidioc_try_fmt_vid_cap(struct file *file, void *priv, struct v4l2_format *f) {
++    struct yuvplayer_dev *dev = video_drvdata(file);
++    const struct yuvplayer_fmt *fmt;
++
++    fmt = get_format(f);
++    if (!fmt) {
++        dprintk(dev, 1, "Fourcc format (0x%08x) unknown.\n", f->fmt.pix.pixelformat);
++        return -EINVAL;
++    }
++
++    f->fmt.pix.field = V4L2_FIELD_INTERLACED;
++    v4l_bound_align_image(&f->fmt.pix.width, 48, MAX_WIDTH, 4, &f->fmt.pix.height, 32, MAX_HEIGHT, 0, 0);
++    f->fmt.pix.bytesperline = (f->fmt.pix.width * fmt->depth) >> 3;
++    f->fmt.pix.sizeimage = f->fmt.pix.height * f->fmt.pix.bytesperline;
++    if (fmt->is_yuv)
++        f->fmt.pix.colorspace = V4L2_COLORSPACE_SMPTE170M;
++    else
++        f->fmt.pix.colorspace = V4L2_COLORSPACE_SRGB;
++    f->fmt.pix.priv = 0;
++    return 0;
++}
++
++static int vidioc_s_fmt_vid_cap(struct file *file, void *priv, struct v4l2_format *f) {
++    struct yuvplayer_dev *dev = video_drvdata(file);
++    struct vb2_queue *q = &dev->vb_vidq;
++
++    int ret = vidioc_try_fmt_vid_cap(file, priv, f);
++    if (ret < 0)
++        return ret;
++
++    if (vb2_is_busy(q)) {
++        dprintk(dev, 1, "%s device busy\n", __func__);
++        return -EBUSY;
++    }
++    dev->fmt = get_format(f);
++    dev->pixelsize = dev->fmt->depth;
++    dev->width = f->fmt.pix.width;
++    dev->height = f->fmt.pix.height;
++
++	//printk("[%s %d] w:%d h:%d\n", __FUNCTION__, __LINE__, dev->width, dev->height);
++
++    return 0;
++}
++
++static int vidioc_enum_framesizes(struct file *file, void *fh, struct v4l2_frmsizeenum *fsize) {
++    static const struct v4l2_frmsize_stepwise sizes = { 48, MAX_WIDTH, 4, 32, MAX_HEIGHT, 1 };
++    int i;
++
++    if (fsize->index)
++        return -EINVAL;
++    for (i = 0; i < ARRAY_SIZE(formats); i++)
++        if (formats[i].fourcc == fsize->pixel_format)
++            break;
++    if (i == ARRAY_SIZE(formats))
++        return -EINVAL;
++    fsize->type = V4L2_FRMSIZE_TYPE_STEPWISE;
++    fsize->stepwise = sizes;
++    return 0;
++}
++
++static int vidioc_qbuf(struct file *file, void *priv, struct v4l2_buffer *p) {
++    struct yuvplayer_dev *dev = video_drvdata(file);
++    struct yuvplayer_dmaqueue *dma_q = &dev->vidq;
++    struct ppmgr2_device* ppmgr2_dev = &(dev->ppmgr2_dev);
++    int ret = 0;
++
++	//printk("[%s %d] index:%d\n", __func__, __LINE__, p->index);
++	
++    ret = vb2_ioctl_qbuf(file, priv, p);
++    if (ret != 0) { return ret; }
++
++    if (!ppmgr2_dev->phy_addr[p->index]){
++        struct vb2_buffer *vb;
++        struct vb2_queue *q;
++        void* phy_addr = NULL;
++        q = dev->vdev.queue;
++        vb = q->bufs[p->index];
++        phy_addr = vb2_plane_cookie(vb, 0);
++		//printk("[%s %d] index:%d phy_addr:%x name:%s\n", __func__, __LINE__, p->index, (int)phy_addr, dev->fmt->name);
++        if (phy_addr) {
++            ret = ppmgr3_canvas_config(ppmgr2_dev, dev->width, dev->height, dev->fmt->fourcc, phy_addr, p->index);
++        } else {
++            return -ENOMEM;
++        }
++
++        dev->vfpool[p->index].index = p->index;
++        dev->vfpool[p->index].canvas0Addr = dev->vfpool[p->index].canvas1Addr = ppmgr2_dev->canvas_id[p->index];
++    }
++    
++    dev->vfpool[p->index].pts_us64 = p->timestamp.tv_sec & 0xFFFFFFFF;
++    dev->vfpool[p->index].pts_us64 <<= 32;
++    dev->vfpool[p->index].pts_us64 += p->timestamp.tv_usec & 0xFFFFFFFF;
++    //dev->vfpool[p->index].pts = div_u64(dev->vfpool[p->index].pts_us64 * 9, 100);
++	dev->vfpool[p->index].pts = p->timestamp.tv_usec & 0xFFFFFFFF;
++
++	//printk("[%s %d] index:%d\n", __FUNCTION__, __LINE__, p->index);
++
++    wake_up_interruptible(&dma_q->wq);
++    return ret;
++}
++
++static int vidioc_dqbuf(struct file *file, void *priv, struct v4l2_buffer *p){
++    struct yuvplayer_dev *dev = video_drvdata(file);
++    struct yuvplayer_dmaqueue *dma_q = &dev->vidq;
++    int ret = 0;
++
++    ret = vb2_ioctl_dqbuf(file, priv, p);
++
++    if (ret == 0) {
++		//printk("vidioc_dqbuf_ret vb_ready=%d index:%d\n",dma_q->vb_ready, p->index);
++        dma_q->vb_ready--;
++    }
++    return ret;
++}
++
++#define NUM_INPUTS 10
++/* only one input in this sample driver */
++static int vidioc_enum_input(struct file *file, void *priv, struct v4l2_input *inp) {
++    if (inp->index >= NUM_INPUTS)
++        return -EINVAL;
++
++    inp->type = V4L2_INPUT_TYPE_CAMERA;
++    sprintf(inp->name, "Camera %u", inp->index);
++	printk("[%s %d] name:%s\n", __FUNCTION__, __LINE__, inp->name);
++    return 0;
++}
++
++static int vidioc_g_input(struct file *file, void *priv, unsigned int *i) {
++    struct yuvplayer_dev *dev = video_drvdata(file);
++
++    *i = dev->input;
++
++	printk("[%s %d] input:%d\n", __FUNCTION__, __LINE__, dev->input);
++	
++    return 0;
++}
++
++static int vidioc_s_input(struct file *file, void *priv, unsigned int i) {
++    struct yuvplayer_dev *dev = video_drvdata(file);
++
++    if (i >= NUM_INPUTS)
++        return -EINVAL;
++
++	printk("[%s %d] i:%d\n", __FUNCTION__, __LINE__, i);
++
++    if (i == dev->input)
++        return 0;
++	
++	printk("[%s %d] i:%d\n", __FUNCTION__, __LINE__, i);
++
++    dev->input = i;
++    return 0;
++}
++
++/* ------------------------------------------------------------------
++ File operations for the device
++ ------------------------------------------------------------------*/
++static const struct v4l2_file_operations yuvplayer_fops = {
++    .owner = THIS_MODULE,
++    .open = vidioc_open,
++    .release = vidioc_release,
++    .read = vb2_fop_read,
++    .poll = vb2_fop_poll,
++    .unlocked_ioctl = video_ioctl2, /* V4L2 ioctl handler */
++    .mmap = vb2_fop_mmap,
++};
++
++static const struct v4l2_ioctl_ops yuvplayer_ioctl_ops = {
++    .vidioc_querycap = vidioc_querycap,
++    .vidioc_enum_fmt_vid_cap = vidioc_enum_fmt_vid_cap,
++    .vidioc_g_fmt_vid_cap = vidioc_g_fmt_vid_cap,
++    .vidioc_try_fmt_vid_cap = vidioc_try_fmt_vid_cap,
++    .vidioc_s_fmt_vid_cap = vidioc_s_fmt_vid_cap,
++    .vidioc_enum_framesizes = vidioc_enum_framesizes,
++    .vidioc_reqbufs = vb2_ioctl_reqbufs,
++    .vidioc_create_bufs = vb2_ioctl_create_bufs,
++    .vidioc_prepare_buf = vb2_ioctl_prepare_buf,
++    .vidioc_querybuf = vb2_ioctl_querybuf,
++    .vidioc_qbuf = vidioc_qbuf,
++    .vidioc_dqbuf = vidioc_dqbuf,
++    .vidioc_enum_input = vidioc_enum_input,
++    .vidioc_g_input = vidioc_g_input,
++    .vidioc_s_input = vidioc_s_input,
++    .vidioc_streamon = vb2_ioctl_streamon,
++    .vidioc_streamoff = vb2_ioctl_streamoff,
++    .vidioc_log_status = v4l2_ctrl_log_status,
++    .vidioc_subscribe_event = v4l2_ctrl_subscribe_event,
++    .vidioc_unsubscribe_event = v4l2_event_unsubscribe,
++};
++
++static const struct video_device yuvplayer_template = {
++    .name = "yuvplayer",
++    .fops = &yuvplayer_fops,
++    .ioctl_ops = &yuvplayer_ioctl_ops,
++    .release = video_device_release_empty,
++};
++
++/* -----------------------------------------------------------------
++ Initialization and module stuff
++ ------------------------------------------------------------------*/
++//struct vb2_dc_conf * yuvplayer_dma_ctx = NULL;
++static int yuvplayer_release(void) {
++    struct yuvplayer_dev *dev;
++    struct list_head *list;
++
++    while (!list_empty(&yuvplayer_devlist)) {
++        list = yuvplayer_devlist.next;
++        list_del(list);
++        dev = list_entry(list, struct yuvplayer_dev, yuvplayer_devlist);
++
++        v4l2_info(&dev->v4l2_dev, "unregistering %s\n", video_device_node_name(&dev->vdev));
++        video_unregister_device(&dev->vdev);
++        v4l2_device_unregister(&dev->v4l2_dev);
++        kfree(dev);
++    }
++    //vb2_dma_contig_cleanup_ctx(yuvplayer_dma_ctx);
++
++    return 0;
++}
++
++static int __init yuvplayer_create_instance(int inst)
++{
++    struct yuvplayer_dev *dev;
++    struct video_device *vfd;
++    struct vb2_queue *q;
++    int ret;
++   // u32 framerate = 0;
++
++    dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++    if (!dev)
++    return -ENOMEM;
++
++    snprintf(dev->v4l2_dev.name, sizeof(dev->v4l2_dev.name),
++            "%s-%03d", YUVPLAYER_MODULE_NAME, inst);
++    ret = v4l2_device_register(NULL, &dev->v4l2_dev);
++    if (ret)
++    goto free_dev;
++
++    dev->fmt = &formats[0];
++    dev->width = 640;
++    dev->height = 480;
++    dev->pixelsize = dev->fmt->depth;
++    dev->fd_num = 0;
++
++    /* initialize locks */
++    spin_lock_init(&dev->slock);
++
++    /* initialize queue */
++    q = &dev->vb_vidq;
++    q->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++    q->io_modes = VB2_MMAP | VB2_USERPTR | VB2_DMABUF | VB2_READ;
++    q->drv_priv = dev;
++    q->buf_struct_size = sizeof(struct yuvplayer_buffer);
++    q->ops = &yuvplayer_video_qops;
++    q->mem_ops = &vb2_ion_memops;
++    q->timestamp_type = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
++
++    ret = vb2_queue_init(q);
++    if (ret)
++    goto unreg_dev;
++
++    mutex_init(&dev->mutex);
++
++    /* init video dma queues */
++    INIT_LIST_HEAD(&dev->vidq.active);
++    init_waitqueue_head(&dev->vidq.wq);
++    dev->vidq.pdev = dev;
++
++    vfd = &dev->vdev;
++    *vfd = yuvplayer_template;
++    vfd->debug = debug;
++    vfd->v4l2_dev = &dev->v4l2_dev;
++    vfd->queue = q;
++    set_bit(V4L2_FL_USE_FH_PRIO, &vfd->flags);
++
++    /*
++     * Provide a mutex to v4l2 core. It will be used to protect
++     * all fops and v4l2 ioctls.
++     */
++    vfd->lock = &dev->mutex;
++    video_set_drvdata(vfd, dev);
++
++    ret = video_register_device(vfd, VFL_TYPE_GRABBER, video_nr);
++    if (ret < 0)
++        goto unreg_dev;
++
++    /* Now that everything is fine, let's add it to device list */
++    list_add_tail(&dev->yuvplayer_devlist, &yuvplayer_devlist);
++    v4l2_info(&dev->v4l2_dev, "V4L2 device registered as %s\n",
++            video_device_node_name(vfd));
++    return 0;
++
++unreg_dev:
++    v4l2_device_unregister(&dev->v4l2_dev);
++free_dev:
++    kfree(dev);
++    return ret;
++}
++
++static struct class_attribute ion_video_class_attrs[] = {
++    __ATTR_NULL
++};
++static struct class yuvplayer_class = {
++        .name = "yuvplayer",
++        .class_attrs = ion_video_class_attrs,
++};
++
++/* This routine allocates from 1 to n_devs virtual drivers.
++
++ The real maximum number of virtual drivers will depend on how many drivers
++ will succeed. This is limited to the maximum number of devices that
++ videodev supports, which is equal to VIDEO_NUM_DEVICES.
++ */
++static int __init yuvplayer_init(void)
++{
++    int ret = 0, i;
++    ret = class_register(&yuvplayer_class);
++    if(ret<0)
++        return ret;
++    if (n_devs <= 0)
++    n_devs = 1;
++
++    for (i = 0; i < n_devs; i++) {
++        ret = yuvplayer_create_instance(i);
++        if (ret) {
++            /* If some instantiations succeeded, keep driver */
++            if (i)
++            ret = 0;
++            break;
++        }
++    }
++
++    if (ret < 0) {
++        printk(KERN_ERR "yuvplayer: error %d while loading driver\n", ret);
++        return ret;
++    }
++
++    printk(KERN_INFO "Video Technology Magazine Ion Video "
++            "Capture Board ver %s successfully loaded.\n",
++            YUVPLAYER_VERSION);
++
++    /* n_devs will reflect the actual number of allocated devices */
++    n_devs = i;
++    
++    return ret;
++}
++
++static void __exit yuvplayer_exit(void)
++{
++    yuvplayer_release();
++	class_unregister(&yuvplayer_class);
++}
++
++MODULE_DESCRIPTION("Video Technology Magazine Ion Video Capture Board");
++MODULE_AUTHOR("Amlogic, Jintao Xu<jintao.xu@amlogic.com>");
++MODULE_LICENSE("Dual BSD/GPL");
++MODULE_VERSION(YUVPLAYER_VERSION);
++
++module_init (yuvplayer_init);
++module_exit (yuvplayer_exit);
+--- /dev/null
++++ b/drivers/amlogic/yuvplayer/yuvplayer.h
+@@ -0,0 +1,161 @@
++#ifndef _YUVPLAYER_H
++#define _YUVPLAYER_H
++
++#include <linux/module.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/mutex.h>
++#include <linux/videodev2.h>
++#include <linux/kthread.h>
++#include <linux/freezer.h>
++#include <linux/delay.h>
++#include <linux/math64.h>
++
++#include <media/v4l2-device.h>
++#include <media/v4l2-ioctl.h>
++#include <media/v4l2-ctrls.h>
++#include <media/v4l2-fh.h>
++#include <media/v4l2-event.h>
++#include <media/v4l2-common.h>
++#include <media/videobuf2-core.h>
++
++#include <linux/mm.h>
++#include <mach/mod_gate.h>
++
++#include <linux/amlogic/amports/vframe.h>
++#include <linux/amlogic/amports/vframe_provider.h>
++#include <linux/amlogic/amports/vframe_receiver.h>
++#include <linux/amlogic/ge2d/ge2d.h>
++#include <linux/amlogic/amports/vframe.h>
++#include <linux/amlogic/amports/canvas.h>
++
++#include <linux/amlogic/amports/timestamp.h>
++#include <linux/amlogic/amports/tsync.h>
++#include "../ionvideo/videobuf2-ion.h"
++
++
++/* Wake up at about 30 fps */
++#define WAKE_NUMERATOR 30
++#define WAKE_DENOMINATOR 1001
++
++#define MAX_WIDTH 1920
++#define MAX_HEIGHT 1088
++
++#define DUR2PTS(x) ((x) - ((x) >> 4))
++
++#define dprintk(dev, level, fmt, arg...)                    \
++    v4l2_dbg(level, debug, &dev->v4l2_dev, fmt, ## arg)
++
++#define ppmgr2_printk(level, fmt, arg...)                   \
++    do {                                                    \
++        if (get_yuvplayer_debug() >= level)                  \
++            printk("ppmgr2-dev: " fmt, ## arg);  \
++    } while (0)
++
++/* ------------------------------------------------------------------
++ Basic structures
++ ------------------------------------------------------------------*/
++
++struct yuvplayer_fmt {
++    char *name;
++    u32 fourcc; /* v4l2 format id */
++    u8 depth;
++    bool is_yuv;
++};
++
++/* buffer for one video frame */
++struct yuvplayer_buffer {
++    /* common v4l buffer stuff -- must be first */
++    struct vb2_buffer vb;
++    struct list_head list;
++    const struct yuvplayer_fmt *fmt;
++    u64 pts;
++    u32 duration;
++};
++
++struct yuvplayer_dmaqueue {
++    struct list_head active;
++
++    /* thread for generating video stream*/
++    struct task_struct *kthread;
++    wait_queue_head_t wq;
++    /* Counters to control fps rate */
++    int vb_ready;
++    struct yuvplayer_dev* pdev;
++};
++
++struct ppmgr2_device {
++    int dst_width;
++    int dst_height;
++    int ge2d_fmt;
++    int canvas_id[PPMGR2_MAX_CANVAS];
++    void* phy_addr[PPMGR2_MAX_CANVAS];
++    int phy_size;
++
++    ge2d_context_t* context;
++    config_para_ex_t ge2d_config;
++
++    int angle;
++    int mirror;
++    int paint_mode;
++    int interlaced_num;
++    int bottom_first;
++};
++
++struct yuvplayer_dev {
++    struct list_head yuvplayer_devlist;
++    struct v4l2_device v4l2_dev;
++    struct video_device vdev;
++    int fd_num;
++
++    spinlock_t slock;
++    struct mutex mutex;
++
++    struct yuvplayer_dmaqueue vidq;
++
++    /* Several counters */
++    unsigned ms;
++    unsigned long jiffies;
++
++    /* Input Number */
++    int input;
++
++    /* video capture */
++    const struct yuvplayer_fmt *fmt;
++    unsigned int width, height;
++    unsigned int c_width, c_height;
++    struct vb2_queue vb_vidq;
++    unsigned int field_count;
++
++    unsigned int pixelsize;
++
++    struct ppmgr2_device ppmgr2_dev;
++    //struct vframe_receiver_s video_vf_receiver;
++    struct vframe_provider_s video_vf_prov;
++    struct vframe_s vfpool[PPMGR2_MAX_CANVAS];
++    u64 pts;
++    u8 receiver_register;
++    u8 is_video_started;
++    u32 skip;
++    int once_record;
++    u8 is_omx_video_started;
++};
++
++int is_yuvplayer_active(void);
++unsigned get_yuvplayer_debug(void);
++
++int ppmgr3_init(struct ppmgr2_device *ppd);
++int ppmgr3_canvas_config(struct ppmgr2_device *ppd, int dst_width, int dst_height, int dst_fmt, void* phy_addr, int index);
++int ppmgr3_process(struct vframe_s* vf, struct ppmgr2_device *ppd, int index);
++int ppmgr3_top_process(struct vframe_s* vf, struct ppmgr2_device *ppd, int index);
++int ppmgr3_bottom_process(struct vframe_s* vf, struct ppmgr2_device *ppd, int index);
++void ppmgr3_release(struct ppmgr2_device *ppd);
++void ppmgr3_set_angle(struct ppmgr2_device *ppd, int angle);
++void ppmgr3_set_mirror(struct ppmgr2_device *ppd, int mirror);
++void ppmgr3_set_paint_mode(struct ppmgr2_device *ppd, int paint_mode);
++//int v4l_to_ge2d_format(int v4l2_format);
++
++#endif
+--- a/drivers/amlogic/Kconfig
++++ b/drivers/amlogic/Kconfig
+@@ -88,7 +88,7 @@ source "drivers/amlogic/mipi/Kconfig"
+ source "drivers/amlogic/d2d3/Kconfig"
+ source "drivers/amlogic/amvecm/Kconfig"
+ source "drivers/amlogic/dvb_tv/Kconfig"
+-
++source "drivers/amlogic/yuvplayer/Kconfig"
+ #
+ #	GPU
+ #
+--- a/drivers/amlogic/Makefile
++++ b/drivers/amlogic/Makefile
+@@ -134,3 +134,4 @@ obj-y += crypto/
+ #obj-$(CONFIG_MESON_TRUSTZONE) += trustzone/
+ obj-$(CONFIG_MESON_TRUSTZONE) += secure_monitor/
+ obj-y += spi/
++obj-y += yuvplayer/
+--- /dev/null
++++ b/drivers/amlogic/yuvplayer/ion_priv.h
+@@ -0,0 +1,271 @@
++/*
++ * drivers/gpu/ion/ion_priv.h
++ *
++ * Copyright (C) 2011 Google, Inc.
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#ifndef _ION_PRIV_H
++#define _ION_PRIV_H
++
++#include <linux/ion.h>
++#include <linux/kref.h>
++#include <linux/mm_types.h>
++#include <linux/mutex.h>
++#include <linux/rbtree.h>
++#include <linux/sched.h>
++#include <linux/shrinker.h>
++#include <linux/types.h>
++
++struct ion_buffer *ion_handle_buffer(struct ion_handle *handle);
++
++/**
++ * struct ion_buffer - metadata for a particular buffer
++ * @ref:		refernce count
++ * @node:		node in the ion_device buffers tree
++ * @dev:		back pointer to the ion_device
++ * @heap:		back pointer to the heap the buffer came from
++ * @flags:		buffer specific flags
++ * @size:		size of the buffer
++ * @priv_virt:		private data to the buffer representable as
++ *			a void *
++ * @priv_phys:		private data to the buffer representable as
++ *			an ion_phys_addr_t (and someday a phys_addr_t)
++ * @lock:		protects the buffers cnt fields
++ * @kmap_cnt:		number of times the buffer is mapped to the kernel
++ * @vaddr:		the kenrel mapping if kmap_cnt is not zero
++ * @dmap_cnt:		number of times the buffer is mapped for dma
++ * @sg_table:		the sg table for the buffer if dmap_cnt is not zero
++ * @dirty:		bitmask representing which pages of this buffer have
++ *			been dirtied by the cpu and need cache maintenance
++ *			before dma
++ * @vmas:		list of vma's mapping this buffer
++ * @handle_count:	count of handles referencing this buffer
++ * @task_comm:		taskcomm of last client to reference this buffer in a
++ *			handle, used for debugging
++ * @pid:		pid of last client to reference this buffer in a
++ *			handle, used for debugging
++*/
++struct ion_buffer {
++	struct kref ref;
++	struct rb_node node;
++	struct ion_device *dev;
++	struct ion_heap *heap;
++	unsigned long flags;
++	size_t size;
++	union {
++		void *priv_virt;
++		ion_phys_addr_t priv_phys;
++	};
++	struct mutex lock;
++	int kmap_cnt;
++	void *vaddr;
++	int dmap_cnt;
++	struct sg_table *sg_table;
++	unsigned long *dirty;
++	struct list_head vmas;
++	/* used to track orphaned buffers */
++	int handle_count;
++	char task_comm[TASK_COMM_LEN];
++	pid_t pid;
++};
++
++/**
++ * struct ion_heap_ops - ops to operate on a given heap
++ * @allocate:		allocate memory
++ * @free:		free memory
++ * @phys		get physical address of a buffer (only define on
++ *			physically contiguous heaps)
++ * @map_dma		map the memory for dma to a scatterlist
++ * @unmap_dma		unmap the memory for dma
++ * @map_kernel		map memory to the kernel
++ * @unmap_kernel	unmap memory to the kernel
++ * @map_user		map memory to userspace
++ */
++struct ion_heap_ops {
++	int (*allocate) (struct ion_heap *heap,
++			 struct ion_buffer *buffer, unsigned long len,
++			 unsigned long align, unsigned long flags);
++	void (*free) (struct ion_buffer *buffer);
++	int (*phys) (struct ion_heap *heap, struct ion_buffer *buffer,
++		     ion_phys_addr_t *addr, size_t *len);
++	struct sg_table *(*map_dma) (struct ion_heap *heap,
++					struct ion_buffer *buffer);
++	void (*unmap_dma) (struct ion_heap *heap, struct ion_buffer *buffer);
++	void * (*map_kernel) (struct ion_heap *heap, struct ion_buffer *buffer);
++	void (*unmap_kernel) (struct ion_heap *heap, struct ion_buffer *buffer);
++	int (*map_user) (struct ion_heap *mapper, struct ion_buffer *buffer,
++			 struct vm_area_struct *vma);
++};
++
++/**
++ * struct ion_heap - represents a heap in the system
++ * @node:		rb node to put the heap on the device's tree of heaps
++ * @dev:		back pointer to the ion_device
++ * @type:		type of heap
++ * @ops:		ops struct as above
++ * @id:			id of heap, also indicates priority of this heap when
++ *			allocating.  These are specified by platform data and
++ *			MUST be unique
++ * @name:		used for debugging
++ * @debug_show:		called when heap debug file is read to add any
++ *			heap specific debug info to output
++ *
++ * Represents a pool of memory from which buffers can be made.  In some
++ * systems the only heap is regular system memory allocated via vmalloc.
++ * On others, some blocks might require large physically contiguous buffers
++ * that are allocated from a specially reserved heap.
++ */
++struct ion_heap {
++	struct plist_node node;
++	struct ion_device *dev;
++	enum ion_heap_type type;
++	struct ion_heap_ops *ops;
++	unsigned int id;
++	const char *name;
++	int (*debug_show)(struct ion_heap *heap, struct seq_file *, void *);
++};
++
++/**
++ * ion_buffer_cached - this ion buffer is cached
++ * @buffer:		buffer
++ *
++ * indicates whether this ion buffer is cached
++ */
++bool ion_buffer_cached(struct ion_buffer *buffer);
++
++/**
++ * ion_buffer_fault_user_mappings - fault in user mappings of this buffer
++ * @buffer:		buffer
++ *
++ * indicates whether userspace mappings of this buffer will be faulted
++ * in, this can affect how buffers are allocated from the heap.
++ */
++bool ion_buffer_fault_user_mappings(struct ion_buffer *buffer);
++
++/**
++ * ion_device_create - allocates and returns an ion device
++ * @custom_ioctl:	arch specific ioctl function if applicable
++ *
++ * returns a valid device or -PTR_ERR
++ */
++struct ion_device *ion_device_create(long (*custom_ioctl)
++				     (struct ion_client *client,
++				      unsigned int cmd,
++				      unsigned long arg));
++
++/**
++ * ion_device_destroy - free and device and it's resource
++ * @dev:		the device
++ */
++void ion_device_destroy(struct ion_device *dev);
++
++/**
++ * ion_device_add_heap - adds a heap to the ion device
++ * @dev:		the device
++ * @heap:		the heap to add
++ */
++void ion_device_add_heap(struct ion_device *dev, struct ion_heap *heap);
++
++/**
++ * some helpers for common operations on buffers using the sg_table
++ * and vaddr fields
++ */
++void *ion_heap_map_kernel(struct ion_heap *, struct ion_buffer *);
++void ion_heap_unmap_kernel(struct ion_heap *, struct ion_buffer *);
++int ion_heap_map_user(struct ion_heap *, struct ion_buffer *,
++			struct vm_area_struct *);
++int ion_heap_buffer_zero(struct ion_buffer *buffer);
++
++
++/**
++ * functions for creating and destroying the built in ion heaps.
++ * architectures can add their own custom architecture specific
++ * heaps as appropriate.
++ */
++
++struct ion_heap *ion_heap_create(struct ion_platform_heap *);
++void ion_heap_destroy(struct ion_heap *);
++struct ion_heap *ion_system_heap_create(struct ion_platform_heap *);
++void ion_system_heap_destroy(struct ion_heap *);
++
++struct ion_heap *ion_system_contig_heap_create(struct ion_platform_heap *);
++void ion_system_contig_heap_destroy(struct ion_heap *);
++
++struct ion_heap *ion_carveout_heap_create(struct ion_platform_heap *);
++void ion_carveout_heap_destroy(struct ion_heap *);
++
++struct ion_heap *ion_chunk_heap_create(struct ion_platform_heap *);
++void ion_chunk_heap_destroy(struct ion_heap *);
++/**
++ * kernel api to allocate/free from carveout -- used when carveout is
++ * used to back an architecture specific custom heap
++ */
++ion_phys_addr_t ion_carveout_allocate(struct ion_heap *heap, unsigned long size,
++				      unsigned long align);
++void ion_carveout_free(struct ion_heap *heap, ion_phys_addr_t addr,
++		       unsigned long size);
++/**
++ * The carveout heap returns physical addresses, since 0 may be a valid
++ * physical address, this is used to indicate allocation failed
++ */
++#define ION_CARVEOUT_ALLOCATE_FAIL -1
++
++/**
++ * functions for creating and destroying a heap pool -- allows you
++ * to keep a pool of pre allocated memory to use from your heap.  Keeping
++ * a pool of memory that is ready for dma, ie any cached mapping have been
++ * invalidated from the cache, provides a significant peformance benefit on
++ * many systems */
++
++/**
++ * struct ion_page_pool - pagepool struct
++ * @high_count:		number of highmem items in the pool
++ * @low_count:		number of lowmem items in the pool
++ * @high_items:		list of highmem items
++ * @low_items:		list of lowmem items
++ * @shrinker:		a shrinker for the items
++ * @mutex:		lock protecting this struct and especially the count
++ *			item list
++ * @alloc:		function to be used to allocate pageory when the pool
++ *			is empty
++ * @free:		function to be used to free pageory back to the system
++ *			when the shrinker fires
++ * @gfp_mask:		gfp_mask to use from alloc
++ * @order:		order of pages in the pool
++ * @list:		plist node for list of pools
++ *
++ * Allows you to keep a pool of pre allocated pages to use from your heap.
++ * Keeping a pool of pages that is ready for dma, ie any cached mapping have
++ * been invalidated from the cache, provides a significant peformance benefit
++ * on many systems
++ */
++struct ion_page_pool {
++	int high_count;
++	int low_count;
++	struct list_head high_items;
++	struct list_head low_items;
++	struct mutex mutex;
++	void *(*alloc)(struct ion_page_pool *pool);
++	void (*free)(struct ion_page_pool *pool, struct page *page);
++	gfp_t gfp_mask;
++	unsigned int order;
++	struct plist_node list;
++};
++
++struct ion_page_pool *ion_page_pool_create(gfp_t gfp_mask, unsigned int order);
++void ion_page_pool_destroy(struct ion_page_pool *);
++void *ion_page_pool_alloc(struct ion_page_pool *);
++void ion_page_pool_free(struct ion_page_pool *, struct page *);
++
++#endif /* _ION_PRIV_H */
++
+--- /dev/null
++++ b/drivers/amlogic/yuvplayer/ppmgr2.c
+@@ -0,0 +1,402 @@
++/*
++ * GE2D PROCESS --- For video scale and colorspace transform.
++ *
++ * input is vframes, output is physic buffers.
++ *
++ */
++
++#include "yuvplayer.h"
++
++static int v4l_to_ge2d_format(int v4l2_format) {
++    int format = GE2D_FORMAT_M24_NV21;
++
++    switch (v4l2_format) {
++    case V4L2_PIX_FMT_RGB32:
++        format = GE2D_FORMAT_S32_ABGR;
++        break;
++    case V4L2_PIX_FMT_RGB565:
++        format = GE2D_FORMAT_S16_RGB_565;
++        break;
++    case V4L2_PIX_FMT_BGR24:
++        format = GE2D_FORMAT_S24_RGB;
++        break;
++    case V4L2_PIX_FMT_RGB24:
++        format = GE2D_FORMAT_S24_BGR;
++        break;
++    case V4L2_PIX_FMT_NV12:
++        format = GE2D_FORMAT_M24_NV12;
++        break;
++    case V4L2_PIX_FMT_NV21:
++        format = GE2D_FORMAT_M24_NV21;
++        break;
++    case V4L2_PIX_FMT_YUV420:
++    case V4L2_PIX_FMT_YVU420:
++        format = GE2D_FORMAT_S8_Y;
++        break;
++    default:
++        break;
++    }
++    return format;
++}
++
++static inline void paint_mode_convert(int paint_mode, int* src_position, int* dst_paint_position, int* dst_plane_position) {
++
++    if (paint_mode == 0) { //stretch full
++        dst_paint_position[0] = dst_plane_position[0];
++        dst_paint_position[1] = dst_plane_position[1];
++        dst_paint_position[2] = dst_plane_position[2];
++        dst_paint_position[3] = dst_plane_position[3];
++    } else if (paint_mode == 1) { //keep size
++        dst_paint_position[0] = (dst_plane_position[2] - src_position[2]) >> 1;
++        dst_paint_position[1] = (dst_plane_position[3] - src_position[3]) >> 1;
++        dst_paint_position[2] = src_position[2];
++        dst_paint_position[3] = src_position[3];
++    } else if (paint_mode == 2) {
++        int dw = 0, dh = 0;
++        if (src_position[2] * dst_plane_position[3] >= dst_plane_position[2] * src_position[3]) { //crop full
++            dh = dst_plane_position[3];
++            dw = dh * src_position[2] / src_position[3];
++        } else {
++            dw = dst_plane_position[2];
++            dh = dw * src_position[3] / src_position[2];
++        }
++        dst_paint_position[0] = (dst_plane_position[2] - dw) >> 1;
++        dst_paint_position[1] = (dst_plane_position[3] - dh) >> 1;
++        dst_paint_position[2] = dw;
++        dst_paint_position[3] = dh;
++    } else if (paint_mode == 3) { //keep ration black
++        int dw = 0, dh = 0;
++        if (src_position[2] * dst_plane_position[3] >= dst_plane_position[2] * src_position[3]) {
++            dw = dst_plane_position[2];
++            dh = dw * src_position[3] / src_position[2];
++        } else {
++            dh = dst_plane_position[3];
++            dw = dh * src_position[2] / src_position[3];
++        }
++        dst_paint_position[0] = (dst_plane_position[2] - dw) >> 1;
++        dst_paint_position[1] = (dst_plane_position[3] - dh) >> 1;
++        dst_paint_position[2] = dw;
++        dst_paint_position[3] = dh;
++    } else if (paint_mode == 4) {
++
++    }
++}
++
++static int get_input_format(struct vframe_s* vf) {
++    int format = GE2D_FORMAT_M24_NV21;
++
++    if (vf->type & VIDTYPE_VIU_422) {
++        if (vf->type & VIDTYPE_VIU_FIELD) {
++            format = GE2D_FORMAT_S16_YUV422;
++        } else if ((vf->type & 3) == VIDTYPE_INTERLACE_BOTTOM) {
++            format = GE2D_FORMAT_S16_YUV422 | (GE2D_FORMAT_S16_YUV422B & (3 << 3));
++        } else if ((vf->type & 3) == VIDTYPE_INTERLACE_TOP) {
++            format = GE2D_FORMAT_S16_YUV422 | (GE2D_FORMAT_S16_YUV422T & (3 << 3));
++        } else {
++            format = GE2D_FORMAT_S16_YUV422;
++        }
++    } else if (vf->type & VIDTYPE_VIU_NV21) {
++        if (vf->type & VIDTYPE_VIU_FIELD) {
++            format = GE2D_FORMAT_M24_NV21;
++        } else if ((vf->type & 3) == VIDTYPE_INTERLACE_BOTTOM) {
++            format = GE2D_FORMAT_M24_NV21 | (GE2D_FORMAT_M24_NV21B & (3 << 3));
++        } else if ((vf->type & 3) == VIDTYPE_INTERLACE_TOP) {
++            format = GE2D_FORMAT_M24_NV21 | (GE2D_FORMAT_M24_NV21T & (3 << 3));
++        } else {
++            format = GE2D_FORMAT_M24_NV21;
++        }
++    } else {
++        if (vf->type & VIDTYPE_VIU_FIELD) {
++            format = GE2D_FORMAT_M24_YUV420;
++        } else if ((vf->type & 3) == VIDTYPE_INTERLACE_BOTTOM) {
++            format = GE2D_FORMAT_M24_YUV420 | (GE2D_FMT_M24_YUV420B & (3 << 3));
++        } else if ((vf->type & 3) == VIDTYPE_INTERLACE_TOP) {
++            format = GE2D_FORMAT_M24_YUV420 | (GE2D_FORMAT_M24_YUV420T & (3 << 3));
++        } else {
++            format = GE2D_FORMAT_M24_YUV420;
++        }
++    }
++    return format;
++}
++
++static inline void ge2d_src_config(struct vframe_s* vf, config_para_ex_t* ge2d_config) {
++    canvas_t src_cs0, src_cs1, src_cs2;
++    struct vframe_s* src_vf = vf;
++
++    /* data operating. */
++    ge2d_config->alu_const_color = 0; //0x000000ff;
++    ge2d_config->bitmask_en = 0;
++    ge2d_config->src1_gb_alpha = 0; //0xff;
++
++    canvas_read(src_vf->canvas0Addr & 0xff, &src_cs0);
++    canvas_read(src_vf->canvas0Addr >> 8 & 0xff, &src_cs1);
++    canvas_read(src_vf->canvas0Addr >> 16 & 0xff, &src_cs2);
++    ge2d_config->src_planes[0].addr = src_cs0.addr;
++    ge2d_config->src_planes[0].w = src_cs0.width;
++    ge2d_config->src_planes[0].h = src_cs0.height;
++    ge2d_config->src_planes[1].addr = src_cs1.addr;
++    ge2d_config->src_planes[1].w = src_cs1.width;
++    ge2d_config->src_planes[1].h = src_cs1.height;
++    ge2d_config->src_planes[2].addr = src_cs2.addr;
++    ge2d_config->src_planes[2].w = src_cs2.width;
++    ge2d_config->src_planes[2].h = src_cs2.height;
++
++    ge2d_config->src_key.key_enable = 0;
++    ge2d_config->src_key.key_mask = 0;
++    ge2d_config->src_key.key_mode = 0;
++    ge2d_config->src_para.canvas_index = src_vf->canvas0Addr;
++    ge2d_config->src_para.mem_type = CANVAS_TYPE_INVALID;
++    ge2d_config->src_para.format = get_input_format(src_vf);
++    ge2d_config->src_para.fill_color_en = 0;
++    ge2d_config->src_para.fill_mode = 0;
++    ge2d_config->src_para.x_rev = 0;
++    ge2d_config->src_para.y_rev = 0;
++    ge2d_config->src_para.color = 0xffffffff;
++    ge2d_config->src_para.top = 0;
++    ge2d_config->src_para.left = 0;
++    ge2d_config->src_para.width = src_vf->width;
++    if (vf->type & VIDTYPE_INTERLACE) {
++        ge2d_config->src_para.height = src_vf->height >> 1;
++    } else {
++        ge2d_config->src_para.height = src_vf->height;
++    }
++    ge2d_config->src2_para.mem_type = CANVAS_TYPE_INVALID;
++    ppmgr2_printk(2, "vf_width is %d , vf_height is %d type:%p\n", vf->width, vf->height, (void *)vf->type);
++}
++
++static int ge2d_paint_dst(ge2d_context_t *context, config_para_ex_t* ge2d_config, int dst_canvas_id, int dst_pixel_format, int* src_position, int* dst_paint_position, int* dst_plane_position) {
++    canvas_t dst_cd;
++
++    ge2d_config->dst_para.mem_type = CANVAS_TYPE_INVALID;
++    ge2d_config->dst_para.fill_color_en = 0;
++    ge2d_config->dst_para.fill_mode = 0;
++    ge2d_config->dst_para.color = 0;
++    ge2d_config->dst_para.top = dst_plane_position[0];
++    ge2d_config->dst_para.left = dst_plane_position[1];
++    ge2d_config->dst_para.width = dst_plane_position[2];
++    ge2d_config->dst_para.height = dst_plane_position[3];
++
++    if (dst_pixel_format == GE2D_FORMAT_S8_Y) {
++        canvas_read(dst_canvas_id & 0xff, &dst_cd);
++        ge2d_config->dst_planes[0].addr = dst_cd.addr;
++        ge2d_config->dst_planes[0].w = dst_cd.width;
++        ge2d_config->dst_planes[0].h = dst_cd.height;
++        ge2d_config->dst_para.canvas_index = dst_canvas_id & 0xff;
++        ge2d_config->dst_para.format = dst_pixel_format | GE2D_LITTLE_ENDIAN;
++
++        if (ge2d_context_config_ex(context, ge2d_config) < 0) {
++            ppmgr2_printk(1, "Ge2d configing error.\n");
++            return -1;
++        }
++        stretchblt_noalpha(context, src_position[0], src_position[1], src_position[2], src_position[3], dst_paint_position[0], dst_paint_position[1], dst_paint_position[2], dst_paint_position[3]);
++        canvas_read(dst_canvas_id >> 8 & 0xff, &dst_cd);
++        ge2d_config->dst_planes[0].addr = dst_cd.addr;
++        ge2d_config->dst_planes[0].w = dst_cd.width;
++        ge2d_config->dst_planes[0].h = dst_cd.height;
++        ge2d_config->dst_para.canvas_index = dst_canvas_id >> 8 & 0xff;
++        ge2d_config->dst_para.format = GE2D_FORMAT_S8_CB | GE2D_LITTLE_ENDIAN;
++        ge2d_config->dst_para.width = dst_paint_position[2] >> 1;
++        ge2d_config->dst_para.height = dst_paint_position[3] >> 1;
++
++        if (ge2d_context_config_ex(context, ge2d_config) < 0) {
++            ppmgr2_printk(1, "Ge2d configing error.\n");
++            return -1;
++        }
++        stretchblt_noalpha(context, src_position[0], src_position[1], src_position[2], src_position[3], dst_paint_position[0], dst_paint_position[1], dst_paint_position[2], dst_paint_position[3]);
++
++        canvas_read(dst_canvas_id >> 16 & 0xff, &dst_cd);
++        ge2d_config->dst_planes[0].addr = dst_cd.addr;
++        ge2d_config->dst_planes[0].w = dst_cd.width;
++        ge2d_config->dst_planes[0].h = dst_cd.height;
++        ge2d_config->dst_para.canvas_index = dst_canvas_id >> 16 & 0xff;
++        ge2d_config->dst_para.format = GE2D_FORMAT_S8_CR | GE2D_LITTLE_ENDIAN;
++
++        if (ge2d_context_config_ex(context, ge2d_config) < 0) {
++            ppmgr2_printk(1, "Ge2d configing error.\n");
++            return -1;
++        }
++        stretchblt_noalpha(context, src_position[0], src_position[1], src_position[2], src_position[3], dst_paint_position[0], dst_paint_position[1], dst_paint_position[2], dst_paint_position[3]);
++    } else {
++        canvas_read(dst_canvas_id & 0xff, &dst_cd);
++        ge2d_config->dst_planes[0].addr = dst_cd.addr;
++        ge2d_config->dst_planes[0].w = dst_cd.width;
++        ge2d_config->dst_planes[0].h = dst_cd.height;
++        ge2d_config->dst_para.format = dst_pixel_format | GE2D_LITTLE_ENDIAN;
++        ge2d_config->dst_para.canvas_index = dst_canvas_id;
++
++        if (ge2d_context_config_ex(context, ge2d_config) < 0) {
++            ppmgr2_printk(1, "Ge2d configing error.\n");
++            return -1;
++        }
++        stretchblt_noalpha(context, src_position[0], src_position[1], src_position[2], src_position[3], dst_paint_position[0], dst_paint_position[1], dst_paint_position[2], dst_paint_position[3]);
++    }
++    ppmgr2_printk(2, "dst addr:%p w:%d h:%d canvas_id:%p format:%p\n", (void *)dst_cd.addr, dst_cd.width, dst_cd.height, (void *)dst_canvas_id, (void *)ge2d_config->dst_para.format);
++    ppmgr2_printk(2, "dst plane w:%d h:%d paint w:%d h:%d\n", dst_plane_position[2], dst_plane_position[3], dst_paint_position[2], dst_paint_position[3]);
++
++    return 0;
++}
++
++static inline void ge2d_mirror_config(int dst_mirror, config_para_ex_t* ge2d_config) {
++    if (dst_mirror == 1) {
++        ge2d_config->dst_para.x_rev = 1;
++        ge2d_config->dst_para.y_rev = 0;
++    } else if (dst_mirror == 2) {
++        ge2d_config->dst_para.x_rev = 0;
++        ge2d_config->dst_para.y_rev = 1;
++    } else {
++        ge2d_config->dst_para.x_rev = 0;
++        ge2d_config->dst_para.y_rev = 0;
++    }
++}
++
++static inline void ge2d_angle_config(int dst_angle, config_para_ex_t* ge2d_config) {
++    if (dst_angle == 1) {
++        ge2d_config->dst_xy_swap = 1;
++        ge2d_config->dst_para.x_rev ^= 1;
++    } else if (dst_angle == 2) {
++        ge2d_config->dst_para.x_rev ^= 1;
++        ge2d_config->dst_para.y_rev ^= 1;
++    } else if (dst_angle == 3) {
++        ge2d_config->dst_xy_swap = 1;
++        ge2d_config->dst_para.y_rev ^= 1;
++    } else {
++        ge2d_config->dst_xy_swap = 0;
++    }
++}
++
++/*
++ * use ppmgr2 need to init ge2d_context_t, pixel_format, canvas_width, canvas_height,
++ * phy_addr, buffer_size, canvas_number.
++ */
++int ppmgr3_init(struct ppmgr2_device *ppd) {
++    int i = 0;
++    switch_mod_gate_by_name("ge2d", 1);
++    ppd->context = create_ge2d_work_queue();
++    if (!ppd->context) {
++        ppmgr2_printk(1, "create ge2d work queue error!\n");
++        return -1;
++    }
++    ppmgr2_printk(2, "ppmgr2_init!\n");
++    ppd->paint_mode = 0;
++    ppd->angle = 0;
++    ppd->mirror = 0;
++    ppd->ge2d_fmt = 0;
++    ppd->dst_width = 0;
++    ppd->dst_height = 0;
++    for (i = 0; i < PPMGR2_MAX_CANVAS; i++) {
++        ppd->phy_addr[i] = NULL;
++        ppd->canvas_id[i] = -1;
++    }
++    return 0;
++}
++
++int ppmgr3_canvas_config(struct ppmgr2_device *ppd, int dst_width, int dst_height, int dst_fmt, void* phy_addr, int index) {
++    int canvas_width = ALIGN(dst_width, 32);
++    int canvas_height = dst_height;
++
++    if (!ppd->phy_addr) {
++        ppmgr2_printk(1, "NULL physical address!\n");
++        return -1;
++    }
++    if (index >= PPMGR2_MAX_CANVAS) {
++        ppmgr2_printk(0, "canvas index too large! %d>=%d\n", index, PPMGR2_MAX_CANVAS);
++        return -1;
++    }
++    ppd->ge2d_fmt = v4l_to_ge2d_format(dst_fmt);
++    ppd->dst_width = dst_width;
++    ppd->dst_height = dst_height;
++    ppd->phy_addr[index] = phy_addr;
++
++    if (ppd->ge2d_fmt == GE2D_FORMAT_M24_NV21 || ppd->ge2d_fmt == GE2D_FORMAT_M24_NV12) {
++        canvas_config(PPMGR2_CANVAS_INDEX + index * 2, (ulong) phy_addr, canvas_width, canvas_height, CANVAS_ADDR_NOWRAP, CANVAS_BLKMODE_LINEAR);
++        canvas_config(PPMGR2_CANVAS_INDEX + index * 2 + 1, (ulong)(phy_addr + (canvas_width * canvas_height)), canvas_width, canvas_height >> 1, CANVAS_ADDR_NOWRAP, CANVAS_BLKMODE_LINEAR);
++        ppd->canvas_id[index] = (PPMGR2_CANVAS_INDEX + index * 2) | ((PPMGR2_CANVAS_INDEX + index * 2 + 1) << 8);
++    } else if (ppd->ge2d_fmt == GE2D_FORMAT_S8_Y) {
++        canvas_config(PPMGR2_CANVAS_INDEX + index * 3, (ulong) phy_addr, canvas_width, canvas_height, CANVAS_ADDR_NOWRAP, CANVAS_BLKMODE_LINEAR);
++        canvas_config(PPMGR2_CANVAS_INDEX + index * 3 + 1, (ulong)(phy_addr + canvas_width * canvas_height), canvas_width >> 1, canvas_height >> 1, CANVAS_ADDR_NOWRAP, CANVAS_BLKMODE_LINEAR);
++        canvas_config(PPMGR2_CANVAS_INDEX + index * 3 + 2, (ulong)(phy_addr + (canvas_width * canvas_height * 5 >> 2)), canvas_width >> 1, canvas_height >> 1, CANVAS_ADDR_NOWRAP, CANVAS_BLKMODE_LINEAR);
++        ppd->canvas_id[index] = (PPMGR2_CANVAS_INDEX + index * 3) | ((PPMGR2_CANVAS_INDEX + index * 3 + 1) << 8) | ((PPMGR2_CANVAS_INDEX + index * 3 + 2) << 16);
++    } else {
++        int bpp = 0;
++        if (ppd->ge2d_fmt == GE2D_FORMAT_S32_ABGR) {
++            bpp = 4;
++        } else if (ppd->ge2d_fmt == GE2D_FORMAT_S24_BGR || ppd->ge2d_fmt == GE2D_FORMAT_S24_RGB) {
++            bpp = 3;
++        } else if (ppd->ge2d_fmt == GE2D_FORMAT_S16_RGB_565) {
++            bpp = 2;
++        } else {
++            ppmgr2_printk(1, "Not support format!\n");
++            return -1;
++        }
++        canvas_config(PPMGR2_CANVAS_INDEX + index, (ulong)phy_addr, canvas_width * bpp, canvas_height, CANVAS_ADDR_NOWRAP, CANVAS_BLKMODE_LINEAR);
++        ppd->canvas_id[index] = PPMGR2_CANVAS_INDEX + index;
++
++    }
++    ppmgr2_printk(2, "canvas[%d] phy_addr:%p width:%d height:%d\n", index, phy_addr, canvas_width, canvas_height);
++
++    return 0;
++}
++
++void ppmgr3_set_angle(struct ppmgr2_device *ppd, int angle) {
++    ppd->angle = angle;
++}
++
++void ppmgr3_set_mirror(struct ppmgr2_device *ppd, int mirror) {
++    ppd->mirror = mirror;
++}
++
++void ppmgr3_set_paint_mode(struct ppmgr2_device *ppd, int paint_mode) {
++    ppd->paint_mode = paint_mode;
++}
++
++int ppmgr3_process(struct vframe_s* vf, struct ppmgr2_device *ppd, int index) {
++    int ret = 0;
++    struct vframe_s* src_vf = vf;
++    int src_position[4] = {0};
++    int dst_paint_position[4] = {0}, dst_plane_position[4] = {0};
++    int dst_canvas_id = ppd->canvas_id[index];
++    int dst_pixel_format = ppd->ge2d_fmt;
++    ge2d_context_t *context = ppd->context;
++    config_para_ex_t* ge2d_config = &(ppd->ge2d_config);
++    int angle = (ppd->angle + src_vf->orientation) % 4;
++    if (src_vf->type & VIDTYPE_INTERLACE) {
++        if ((ppd->bottom_first && src_vf->type & 0x2) || (ppd->bottom_first == 0 && (src_vf->type & 0x2) == 0)) {
++            return -EAGAIN;
++        }
++    }
++
++    src_position[0] = 0;
++    src_position[1] = 0;
++    src_position[2] = src_vf->width;
++    src_position[3] = src_vf->height;
++    if (src_position[2] == 0 || src_position[3] == 0) {
++        ppmgr2_printk(1, "Source frame error!\n");
++        return -1;
++    }
++    dst_plane_position[0] = 0;
++    dst_plane_position[1] = 0;
++    dst_plane_position[2] = ppd->dst_width;
++    dst_plane_position[3] = ppd->dst_height;
++
++    ge2d_src_config(src_vf, ge2d_config);
++
++    ge2d_mirror_config(ppd->mirror, ge2d_config);
++    ge2d_angle_config(angle, ge2d_config);
++    paint_mode_convert(ppd->paint_mode, src_position, dst_paint_position, dst_plane_position);
++
++    if (src_vf->type & VIDTYPE_INTERLACE) {
++        src_position[3] = src_vf->height >> 1;
++    }
++    ret = ge2d_paint_dst(context, ge2d_config, dst_canvas_id, dst_pixel_format, src_position, dst_paint_position, dst_plane_position);
++    return ret;
++}
++
++void ppmgr3_release(struct ppmgr2_device *ppd) {
++    if (ppd->context) {
++        destroy_ge2d_work_queue(ppd->context);
++    }
++    switch_mod_gate_by_name("ge2d", 0);
++    ppmgr2_printk(2, "ppmgr2_release!\n");
++}
++
++

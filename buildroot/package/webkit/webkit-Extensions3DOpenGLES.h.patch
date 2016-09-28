@@ -1,0 +1,11 @@
+--- webkit-1.11.5/Source/WebCore/platform/graphics/opengl/Extensions3DOpenGLES.h.orig	2014-03-31 19:12:58.162163026 +0800
++++ webkit-1.11.5/Source/WebCore/platform/graphics/opengl/Extensions3DOpenGLES.h	2014-03-31 19:13:23.038163491 +0800
+@@ -37,7 +37,7 @@
+ #include <GLES2/gl2ext.h>
+ #endif
+ 
+-#if OS(QNX) || PLATFORM(QT)
++#if OS(QNX) || PLATFORM(QT) || PLATFORM(GTK)
+ // See https://bugs.webkit.org/show_bug.cgi?id=91030.
+ // Newer Khorons headers do define these with a PROC suffix, but older headers don't.
+ #define PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMGPROC

@@ -1,0 +1,28 @@
+Index: qtimageformats-opensource-src-5.5.0/src/3rdparty/libwebp.pri
+===================================================================
+--- qtimageformats-opensource-src-5.5.0.orig/src/3rdparty/libwebp.pri	2015-06-30 04:10:29.000000000 +0800
++++ qtimageformats-opensource-src-5.5.0/src/3rdparty/libwebp.pri	2015-09-07 18:08:21.875794096 +0800
+@@ -82,7 +82,11 @@
+     INCLUDEPATH += $$NDK_ROOT/sources/android/cpufeatures
+ }
+ 
+-equals(QT_ARCH, arm) {
++equals(QT_ARCH, arm)
++	ARCH_HAS_NEON = y
++equals(QT_ARCH, aarch64)
++	ARCH_HAS_NEON = y
++equals(ARCH_HAS_NEON, y) {
+     SOURCES_FOR_NEON += \
+         $$PWD/libwebp/src/dsp/dec_neon.c \
+         $$PWD/libwebp/src/dsp/enc_neon.c \
+@@ -94,7 +98,9 @@
+         SOURCES += $$SOURCES_FOR_NEON
+     } else {
+         neon_comp.commands = $$QMAKE_CC -c $(CFLAGS)
+-        neon_comp.commands += $$QMAKE_CFLAGS_NEON
++        equals(QT_ARCH, arm) {
++                neon_comp.commands += $$QMAKE_CFLAGS_NEON
++        }
+         neon_comp.commands += $(INCPATH) ${QMAKE_FILE_IN}
+         msvc: neon_comp.commands += -Fo${QMAKE_FILE_OUT}
+         else: neon_comp.commands += -o ${QMAKE_FILE_OUT}

@@ -1,0 +1,11 @@
+config BR2_PACKAGE_WIFIDISPLAY
+        bool "wifidisplay"
+        help
+          amlogic wifidisplay library.
+
+config BR2_PACKAGE_WIFIDISPLAY_DEMO
+		bool "wifidisplay_demo"
+	    depends on BR2_PACKAGE_WIFIDISPLAY
+		default y
+		help
+		  amlogic wifidisplay demo

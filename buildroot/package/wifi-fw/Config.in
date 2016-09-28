@@ -1,0 +1,24 @@
+config BR2_PACKAGE_WIFI_FW
+	bool "wifi-fw"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  WIFI-FW contains all the firmware for the wifi modules that amlogic supports.
+
+config BR2_PACKAGE_WIFI_CUSTOM_GIT_VERSION
+	string "wifi fw branch"
+	depends on BR2_PACKAGE_WIFI_FW
+	help
+		Branch for Wifi FW	
+
+config BR2_PACKAGE_WIFI_FW_CUSTOM_GIT_REPO_URL
+	string "wifi fw git"
+	depends on BR2_PACKAGE_WIFI_FW
+	help
+		Wifi fw git
+
+config BR2_PACKAGE_WIFI_FW_WIFI_MODULE
+    string "wifi module"
+	depends on BR2_PACKAGE_WIFI_FW
+	help
+		Wifi module 
+

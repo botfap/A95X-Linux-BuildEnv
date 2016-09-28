@@ -1,0 +1,28 @@
+Index: gpu-r5p1/ump/Kbuild
+===================================================================
+--- gpu-r5p1.orig/ump/Kbuild	2015-05-08 16:55:21.000000000 +0800
++++ gpu-r5p1/ump/Kbuild	2015-07-31 12:09:34.393248291 +0800
+@@ -55,10 +55,11 @@
+ ccflags-y += -DSVN_REV=$(SVN_REV)
+ ccflags-y += -DSVN_REV_STRING=\"$(DRIVER_REV)\"
+ 
+-ccflags-y += -I$(src) -I$(src)/common -I$(src)/linux -I$(src)/../mali/common -I$(src)/../mali/linux -I$(src)/../../ump/include/ump
++ccflags-y += -I$(src) -I$(src)/common -I$(src)/linux -I$(src)/../mali/common -I$(src)/../mali/linux -I$(src)/../ump/include/ump
+ ccflags-y += -DMALI_STATE_TRACKING=0
+ ccflags-y += -DMALI_ENABLE_CPU_CYCLES=0
+ ccflags-$(CONFIG_UMP_DEBUG) += -DDEBUG
++ccflags-$(CONFIG_MALI400_DEBUG) += -DDEBUG
+ 
+ # For customer releases the Linux Device Drivers will be provided as ARM proprietary and GPL releases:
+ # The ARM proprietary product will only include the license/proprietary directory
+@@ -86,10 +87,6 @@
+ 	linux/ump_osk_low_level_mem.o \
+ 	linux/ump_osk_misc.o \
+ 	linux/ump_kernel_random_mapping.o \
+-
+-
+-
+-
+ 	$(UDD_FILE_PREFIX)linux/mali_osk_atomics.o \
+ 	$(UDD_FILE_PREFIX)linux/mali_osk_locks.o \
+ 	$(UDD_FILE_PREFIX)linux/mali_osk_memory.o \

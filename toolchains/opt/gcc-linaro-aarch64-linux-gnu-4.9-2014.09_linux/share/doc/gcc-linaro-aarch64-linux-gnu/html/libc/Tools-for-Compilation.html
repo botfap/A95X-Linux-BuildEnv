@@ -1,0 +1,132 @@
+<html lang="en">
+<head>
+<title>Tools for Compilation - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Installation.html#Installation" title="Installation">
+<link rel="prev" href="Running-make-install.html#Running-make-install" title="Running make install">
+<link rel="next" href="Linux.html#Linux" title="Linux">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Tools-for-Compilation"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Linux.html#Linux">Linux</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Running-make-install.html#Running-make-install">Running make install</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Installation.html#Installation">Installation</a>
+<hr>
+</div>
+
+<h3 class="appendixsec">C.3 Recommended Tools for Compilation</h3>
+
+<p><a name="index-installation-tools-3912"></a><a name="index-tools_002c-for-installing-library-3913"></a>
+We recommend installing the following GNU tools before attempting to
+build the GNU C Library:
+
+     <ul>
+<li>GNU <code>make</code> 3.79 or newer
+
+     <p>You need the latest version of GNU <code>make</code>.  Modifying the GNU C Library
+to work with other <code>make</code> programs would be so difficult that
+we recommend you port GNU <code>make</code> instead.  <strong>Really.</strong>  We
+recommend GNU <code>make</code> version 3.79.  All earlier versions have severe
+bugs or lack features.
+
+     <li>GCC 4.4 or newer, GCC 4.6 recommended
+
+     <p>GCC 4.4 or higher is required; as of this writing, GCC 4.6 is the
+compiler we advise to use to build the GNU C Library.
+
+     <p>You can use whatever compiler you like to compile programs that use
+the GNU C Library.
+
+     <p>Check the FAQ for any special compiler issues on particular platforms.
+
+     <li>GNU <code>binutils</code> 2.20 or later
+
+     <p>You must use GNU <code>binutils</code> (as and ld) to build the GNU C Library. 
+No other assembler or linker has the necessary functionality at the
+moment.
+
+     <li>GNU <code>texinfo</code> 4.5 or later
+
+     <p>To correctly translate and install the Texinfo documentation you need
+this version of the <code>texinfo</code> package.  Earlier versions do not
+understand all the tags used in the document, and the installation
+mechanism for the info files is not present or works differently.
+
+     <li>GNU <code>awk</code> 3.1.2, or higher
+
+     <p><code>awk</code> is used in several places to generate files. 
+Some <code>gawk</code> extensions are used, including the <code>asorti</code>
+function, which was introduced in version 3.1.2 of <code>gawk</code>.
+
+     <li>Perl 5
+
+     <p>Perl is not required, but it is used if present to test the
+installation.  We may decide to use it elsewhere in the future.
+
+     <li>GNU <code>sed</code> 3.02 or newer
+
+     <p><code>Sed</code> is used in several places to generate files.  Most scripts work
+with any version of <code>sed</code>.  The known exception is the script
+<code>po2test.sed</code> in the <code>intl</code> subdirectory which is used to
+generate <code>msgs.h</code> for the test suite.  This script works correctly
+only with GNU <code>sed</code> 3.02.  If you like to run the test suite, you
+should definitely upgrade <code>sed</code>.
+
+   </ul>
+
+<p class="noindent">If you change any of the <samp><span class="file">configure.ac</span></samp> files you will also need
+
+     <ul>
+<li>GNU <code>autoconf</code> 2.53 or higher
+</ul>
+
+<p class="noindent">and if you change any of the message translation files you will need
+
+     <ul>
+<li>GNU <code>gettext</code> 0.10.36 or later
+</ul>
+
+<p class="noindent">You may also need these packages if you upgrade your source tree using
+patches, although we try to avoid this.
+
+   </body></html>
+

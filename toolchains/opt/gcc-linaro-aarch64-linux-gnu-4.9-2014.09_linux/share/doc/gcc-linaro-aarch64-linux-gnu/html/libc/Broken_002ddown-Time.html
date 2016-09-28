@@ -1,0 +1,422 @@
+<html lang="en">
+<head>
+<title>Broken-down Time - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Calendar-Time.html#Calendar-Time" title="Calendar Time">
+<link rel="prev" href="High_002dResolution-Calendar.html#High_002dResolution-Calendar" title="High-Resolution Calendar">
+<link rel="next" href="High-Accuracy-Clock.html#High-Accuracy-Clock" title="High Accuracy Clock">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Broken-down-Time"></a>
+<a name="Broken_002ddown-Time"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="High-Accuracy-Clock.html#High-Accuracy-Clock">High Accuracy Clock</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="High_002dResolution-Calendar.html#High_002dResolution-Calendar">High-Resolution Calendar</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Calendar-Time.html#Calendar-Time">Calendar Time</a>
+<hr>
+</div>
+
+<h4 class="subsection">21.4.3 Broken-down Time</h4>
+
+<p><a name="index-broken_002ddown-time-2676"></a><a name="index-calendar-time-and-broken_002ddown-time-2677"></a>
+Calendar time is represented by the usual GNU C Library functions as an
+elapsed time since a fixed base calendar time.  This is convenient for
+computation, but has no relation to the way people normally think of
+calendar time.  By contrast, <dfn>broken-down time</dfn> is a binary
+representation of calendar time separated into year, month, day, and so
+on.  Broken-down time values are not useful for calculations, but they
+are useful for printing human readable time information.
+
+   <p>A broken-down time value is always relative to a choice of time
+zone, and it also indicates which time zone that is.
+
+   <p>The symbols in this section are declared in the header file <samp><span class="file">time.h</span></samp>.
+
+<!-- time.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Data Type: <b>struct tm</b><var><a name="index-struct-tm-2678"></a></var><br>
+<blockquote><p>This is the data type used to represent a broken-down time.  The structure
+contains at least the following members, which can appear in any order.
+
+          <dl>
+<dt><code>int tm_sec</code><dd>This is the number of full seconds since the top of the minute (normally
+in the range <code>0</code> through <code>59</code>, but the actual upper limit is
+<code>60</code>, to allow for leap seconds if leap second support is
+available). 
+<a name="index-leap-second-2679"></a>
+<br><dt><code>int tm_min</code><dd>This is the number of full minutes since the top of the hour (in the
+range <code>0</code> through <code>59</code>).
+
+          <br><dt><code>int tm_hour</code><dd>This is the number of full hours past midnight (in the range <code>0</code> through
+<code>23</code>).
+
+          <br><dt><code>int tm_mday</code><dd>This is the ordinal day of the month (in the range <code>1</code> through <code>31</code>). 
+Watch out for this one!  As the only ordinal number in the structure, it is
+inconsistent with the rest of the structure.
+
+          <br><dt><code>int tm_mon</code><dd>This is the number of full calendar months since the beginning of the
+year (in the range <code>0</code> through <code>11</code>).  Watch out for this one! 
+People usually use ordinal numbers for month-of-year (where January = 1).
+
+          <br><dt><code>int tm_year</code><dd>This is the number of full calendar years since 1900.
+
+          <br><dt><code>int tm_wday</code><dd>This is the number of full days since Sunday (in the range <code>0</code> through
+<code>6</code>).
+
+          <br><dt><code>int tm_yday</code><dd>This is the number of full days since the beginning of the year (in the
+range <code>0</code> through <code>365</code>).
+
+          <br><dt><code>int tm_isdst</code><dd><a name="index-Daylight-Saving-Time-2680"></a><a name="index-summer-time-2681"></a>This is a flag that indicates whether Daylight Saving Time is (or was, or
+will be) in effect at the time described.  The value is positive if
+Daylight Saving Time is in effect, zero if it is not, and negative if the
+information is not available.
+
+          <br><dt><code>long int tm_gmtoff</code><dd>This field describes the time zone that was used to compute this
+broken-down time value, including any adjustment for daylight saving; it
+is the number of seconds that you must add to UTC to get local time. 
+You can also think of this as the number of seconds east of UTC.  For
+example, for U.S. Eastern Standard Time, the value is <code>-5*60*60</code>. 
+The <code>tm_gmtoff</code> field is derived from BSD and is a GNU library
+extension; it is not visible in a strict ISO&nbsp;C<!-- /@w --> environment.
+
+          <br><dt><code>const char *tm_zone</code><dd>This field is the name for the time zone that was used to compute this
+broken-down time value.  Like <code>tm_gmtoff</code>, this field is a BSD and
+GNU extension, and is not visible in a strict ISO&nbsp;C<!-- /@w --> environment. 
+</dl>
+        </p></blockquote></div>
+
+<!-- time.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Function: struct tm * <b>localtime</b> (<var>const time_t *time</var>)<var><a name="index-localtime-2682"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:tmbuf env locale
+| AS-Unsafe heap lock
+| AC-Unsafe lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Calls tz_convert with a static buffer. -->
+     <!-- localtime @mtasurace:tmbuf @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- tz_convert dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+        <p>The <code>localtime</code> function converts the simple time pointed to by
+<var>time</var> to broken-down time representation, expressed relative to the
+user's specified time zone.
+
+        <p>The return value is a pointer to a static broken-down time structure, which
+might be overwritten by subsequent calls to <code>ctime</code>, <code>gmtime</code>,
+or <code>localtime</code>.  (But no other library function overwrites the contents
+of this object.)
+
+        <p>The return value is the null pointer if <var>time</var> cannot be represented
+as a broken-down time; typically this is because the year cannot fit into
+an <code>int</code>.
+
+        <p>Calling <code>localtime</code> also sets the current time zone as if
+<code>tzset</code> were called.  See <a href="Time-Zone-Functions.html#Time-Zone-Functions">Time Zone Functions</a>. 
+</p></blockquote></div>
+
+   <p>Using the <code>localtime</code> function is a big problem in multi-threaded
+programs.  The result is returned in a static buffer and this is used in
+all threads.  POSIX.1c introduced a variant of this function.
+
+<!-- time.h -->
+<!-- POSIX.1c -->
+<div class="defun">
+&mdash; Function: struct tm * <b>localtime_r</b> (<var>const time_t *time, struct tm *resultp</var>)<var><a name="index-localtime_005fr-2683"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe env locale
+| AS-Unsafe heap lock
+| AC-Unsafe lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- localtime_r @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- tz_convert(use_localtime) @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- tzset_internal @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- always called with tzset_lock held -->
+     <!-- sets static is_initialized before initialization; -->
+     <!-- reads and sets old_tz; sets tz_rules. -->
+     <!-- some of the issues only apply on the first call. -->
+     <!-- subsequent calls only trigger these when called by localtime; -->
+     <!-- otherwise, they're ok. -->
+     <!-- getenv dup @mtsenv -->
+     <!-- strcmp dup ok -->
+     <!-- strdup @ascuheap -->
+     <!-- tzfile_read @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- memcmp dup ok -->
+     <!-- strstr dup ok -->
+     <!-- getenv dup @mtsenv -->
+     <!-- asprintf dup @mtslocale @ascuheap @acsmem -->
+     <!-- stat64 dup ok -->
+     <!-- fopen dup @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- fileno dup ok -->
+     <!-- fstat64 dup ok -->
+     <!-- fclose dup @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- fsetlocking dup ok [no @mtasurace:stream @asulock, exclusive] -->
+     <!-- fread_unlocked dup ok [no @mtasurace:stream @asucorrupt @acucorrupt] -->
+     <!-- memcpy dup ok -->
+     <!-- decode ok -->
+     <!-- bswap_32 dup ok -->
+     <!-- fseek dup ok [no @mtasurace:stream @asucorrupt @acucorrupt] -->
+     <!-- ftello dup ok [no @mtasurace:stream @asucorrupt @acucorrupt] -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- decode64 ok -->
+     <!-- bswap_64 dup ok -->
+     <!-- getc_unlocked ok [no @mtasurace:stream @asucorrupt @acucorrupt] -->
+     <!-- tzstring dup @ascuheap @acsmem -->
+     <!-- compute_tzname_max dup ok [guarded by tzset_lock] -->
+     <!-- memset dup ok -->
+     <!-- update_vars ok [guarded by tzset_lock] -->
+     <!-- sets daylight, timezone, tzname and tzname_cur_max; -->
+     <!-- called only with tzset_lock held, unless tzset_parse_tz -->
+     <!-- (internal, but not static) gets called by users; given the its -->
+     <!-- double-underscore-prefixed name, this interface violation could -->
+     <!-- be regarded as undefined behavior. -->
+     <!-- strlen ok -->
+     <!-- tzset_parse_tz @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- sscanf dup @mtslocale @ascuheap @acsmem -->
+     <!-- isalnum dup @mtsenv -->
+     <!-- tzstring @ascuheap @acsmem -->
+     <!-- reads and changes tzstring_list without synchronization, but -->
+     <!-- only called with tzset_lock held (save for interface violations) -->
+     <!-- strlen dup ok -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- strcpy dup ok -->
+     <!-- isdigit dup @mtslocale -->
+     <!-- compute_offset ok -->
+     <!-- tzfile_default @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- sets tzname, timezone, types, zone_names, rule_*off, etc; no guards -->
+     <!-- strlen dup ok -->
+     <!-- tzfile_read dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- mempcpy dup ok -->
+     <!-- compute_tzname_max ok [if guarded by tzset_lock] -->
+     <!-- iterates over zone_names; no guards -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- strtoul dup @mtslocale -->
+     <!-- update_vars dup ok -->
+     <!-- tzfile_compute(use_localtime) @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- sets tzname; no guards.  with !use_localtime, as in gmtime, it's ok -->
+     <!-- tzstring dup @acsuheap @acsmem -->
+     <!-- tzset_parse_tz dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- offtime dup ok -->
+     <!-- tz_compute dup ok -->
+     <!-- strcmp dup ok -->
+     <!-- offtime ok -->
+     <!-- isleap dup ok -->
+     <!-- tz_compute ok -->
+     <!-- compute_change ok -->
+     <!-- isleap ok -->
+     <!-- libc_lock_unlock dup @aculock -->
+        <p>The <code>localtime_r</code> function works just like the <code>localtime</code>
+function.  It takes a pointer to a variable containing a simple time
+and converts it to the broken-down time format.
+
+        <p>But the result is not placed in a static buffer.  Instead it is placed
+in the object of type <code>struct tm</code> to which the parameter
+<var>resultp</var> points.
+
+        <p>If the conversion is successful the function returns a pointer to the
+object the result was written into, i.e., it returns <var>resultp</var>. 
+</p></blockquote></div>
+
+<!-- time.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Function: struct tm * <b>gmtime</b> (<var>const time_t *time</var>)<var><a name="index-gmtime-2684"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:tmbuf env locale
+| AS-Unsafe heap lock
+| AC-Unsafe lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- gmtime @mtasurace:tmbuf @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- tz_convert dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+        <p>This function is similar to <code>localtime</code>, except that the broken-down
+time is expressed as Coordinated Universal Time (UTC) (formerly called
+Greenwich Mean Time (GMT)) rather than relative to a local time zone.
+
+        </blockquote></div>
+
+   <p>As for the <code>localtime</code> function we have the problem that the result
+is placed in a static variable.  POSIX.1c also provides a replacement for
+<code>gmtime</code>.
+
+<!-- time.h -->
+<!-- POSIX.1c -->
+<div class="defun">
+&mdash; Function: struct tm * <b>gmtime_r</b> (<var>const time_t *time, struct tm *resultp</var>)<var><a name="index-gmtime_005fr-2685"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe env locale
+| AS-Unsafe heap lock
+| AC-Unsafe lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- You'd think tz_convert could avoid some safety issues with -->
+     <!-- !use_localtime, but no such luck: tzset_internal will always bring -->
+     <!-- about all possible AS and AC problems when it's first called. -->
+     <!-- Calling any of localtime,gmtime_r once would run the initialization -->
+     <!-- and avoid the heap, mem and fd issues in gmtime* in subsequent calls, -->
+     <!-- but the unsafe locking would remain. -->
+     <!-- gmtime_r @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- tz_convert(gmtime_r) dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+        <p>This function is similar to <code>localtime_r</code>, except that it converts
+just like <code>gmtime</code> the given time as Coordinated Universal Time.
+
+        <p>If the conversion is successful the function returns a pointer to the
+object the result was written into, i.e., it returns <var>resultp</var>. 
+</p></blockquote></div>
+
+<!-- time.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Function: time_t <b>mktime</b> (<var>struct tm *brokentime</var>)<var><a name="index-mktime-2686"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe env locale
+| AS-Unsafe heap lock
+| AC-Unsafe lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- mktime @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- passes a static localtime_offset to mktime_internal; it is read -->
+     <!-- once, used as an initial guess, and updated at the end, but not -->
+     <!-- used except as a guess for subsequent calls, so it should be safe. -->
+     <!-- Even though a compiler might delay the load and perform it multiple -->
+     <!-- times (bug 16346), there are at least two unconditional uses of the -->
+     <!-- auto variable in which the first load is stored, separated by a -->
+     <!-- call to an external function, and a conditional change of the -->
+     <!-- variable before the external call, so refraining from allocating a -->
+     <!-- local variable at the first load would be a very bad optimization. -->
+     <!-- tzset dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- mktime_internal(localtime_r) @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- ydhms_diff ok -->
+     <!-- ranged_convert(localtime_r) @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- *convert = localtime_r dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- time_t_avg dup ok -->
+     <!-- guess_time_tm dup ok -->
+     <!-- ydhms_diff dup ok -->
+     <!-- time_t_add_ok ok -->
+     <!-- time_t_avg ok -->
+     <!-- isdst_differ ok -->
+     <!-- time_t_int_add_ok ok -->
+        <p>The <code>mktime</code> function converts a broken-down time structure to a
+simple time representation.  It also normalizes the contents of the
+broken-down time structure, and fills in some components based on the
+values of the others.
+
+        <p>The <code>mktime</code> function ignores the specified contents of the
+<code>tm_wday</code>, <code>tm_yday</code>, <code>tm_gmtoff</code>, and <code>tm_zone</code>
+members of the broken-down time
+structure.  It uses the values of the other components to determine the
+calendar time; it's permissible for these components to have
+unnormalized values outside their normal ranges.  The last thing that
+<code>mktime</code> does is adjust the components of the <var>brokentime</var>
+structure, including the members that were initially ignored.
+
+        <p>If the specified broken-down time cannot be represented as a simple time,
+<code>mktime</code> returns a value of <code>(time_t)(-1)</code> and does not modify
+the contents of <var>brokentime</var>.
+
+        <p>Calling <code>mktime</code> also sets the current time zone as if
+<code>tzset</code> were called; <code>mktime</code> uses this information instead
+of <var>brokentime</var>'s initial <code>tm_gmtoff</code> and <code>tm_zone</code>
+members.  See <a href="Time-Zone-Functions.html#Time-Zone-Functions">Time Zone Functions</a>. 
+</p></blockquote></div>
+
+<!-- time.h -->
+<!-- ??? -->
+<div class="defun">
+&mdash; Function: time_t <b>timelocal</b> (<var>struct tm *brokentime</var>)<var><a name="index-timelocal-2687"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe env locale
+| AS-Unsafe heap lock
+| AC-Unsafe lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Alias to mktime. -->
+        <p><code>timelocal</code> is functionally identical to <code>mktime</code>, but more
+mnemonically named.  Note that it is the inverse of the <code>localtime</code>
+function.
+
+        <p><strong>Portability note:</strong>  <code>mktime</code> is essentially universally
+available.  <code>timelocal</code> is rather rare.
+
+        </blockquote></div>
+
+<!-- time.h -->
+<!-- ??? -->
+<div class="defun">
+&mdash; Function: time_t <b>timegm</b> (<var>struct tm *brokentime</var>)<var><a name="index-timegm-2688"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe env locale
+| AS-Unsafe heap lock
+| AC-Unsafe lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- timegm @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- gmtime_offset triggers the same caveats as localtime_offset in mktime. -->
+     <!-- although gmtime_r, as called by mktime, might save some issues, -->
+     <!-- tzset calls tzset_internal with always, which forces -->
+     <!-- reinitialization, so all issues may arise. -->
+     <!-- tzset dup @mtsenv @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- mktime_internal(gmtime_r) @asulock @aculock -->
+     <!-- ..gmtime_r @asulock @aculock -->
+     <!-- ... dup ok -->
+     <!-- tz_convert(!use_localtime) @asulock @aculock -->
+     <!-- ... dup @asulock @aculock -->
+     <!-- tzfile_compute(!use_localtime) ok -->
+        <p><code>timegm</code> is functionally identical to <code>mktime</code> except it
+always takes the input values to be Coordinated Universal Time (UTC)
+regardless of any local time zone setting.
+
+        <p>Note that <code>timegm</code> is the inverse of <code>gmtime</code>.
+
+        <p><strong>Portability note:</strong>  <code>mktime</code> is essentially universally
+available.  <code>timegm</code> is rather rare.  For the most portable
+conversion from a UTC broken-down time to a simple time, set
+the <code>TZ</code> environment variable to UTC, call <code>mktime</code>, then set
+<code>TZ</code> back.
+
+        </blockquote></div>
+
+   </body></html>
+

@@ -1,0 +1,363 @@
+<html lang="en">
+<head>
+<title>Matching POSIX Regexps - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Regular-Expressions.html#Regular-Expressions" title="Regular Expressions">
+<link rel="prev" href="Flags-for-POSIX-Regexps.html#Flags-for-POSIX-Regexps" title="Flags for POSIX Regexps">
+<link rel="next" href="Regexp-Subexpressions.html#Regexp-Subexpressions" title="Regexp Subexpressions">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Matching-POSIX-Regexps"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Regexp-Subexpressions.html#Regexp-Subexpressions">Regexp Subexpressions</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Flags-for-POSIX-Regexps.html#Flags-for-POSIX-Regexps">Flags for POSIX Regexps</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Regular-Expressions.html#Regular-Expressions">Regular Expressions</a>
+<hr>
+</div>
+
+<h4 class="subsection">10.3.3 Matching a Compiled POSIX Regular Expression</h4>
+
+<p>Once you have compiled a regular expression, as described in <a href="POSIX-Regexp-Compilation.html#POSIX-Regexp-Compilation">POSIX Regexp Compilation</a>, you can match it against strings using
+<code>regexec</code>.  A match anywhere inside the string counts as success,
+unless the regular expression contains anchor characters (&lsquo;<samp><span class="samp">^</span></samp>&rsquo; or
+&lsquo;<samp><span class="samp">$</span></samp>&rsquo;).
+
+<!-- regex.h -->
+<!-- POSIX.2 -->
+<div class="defun">
+&mdash; Function: int <b>regexec</b> (<var>const regex_t *restrict compiled, const char *restrict string, size_t nmatch, regmatch_t matchptr</var>[<var>restrict</var>]<var>, int eflags</var>)<var><a name="index-regexec-919"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe corrupt heap lock dlopen
+| AC-Unsafe corrupt lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- libc_lock_lock @asulock @aculock -->
+     <!-- re_search_internal @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- re_string_allocate @ascuheap @acsmem -->
+     <!-- re_string_construct_common dup ok -->
+     <!-- re_string_realloc_buffers dup @ascuheap @acsmem -->
+     <!-- match_ctx_init @ascuheap @acsmem -->
+     <!-- (re_)malloc dup @ascuheap @acsmem -->
+     <!-- re_string_byte_at ok -->
+     <!-- re_string_first_byte dup ok -->
+     <!-- check_matching @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- re_string_cur_idx dup ok -->
+     <!-- acquire_init_state_context dup @ascuheap @acsmem -->
+     <!-- re_string_context_at ok -->
+     <!-- re_string_byte_at dup ok -->
+     <!-- bitset_contain ok -->
+     <!-- re_acquire_state_context dup @ascuheap @acsmem -->
+     <!-- check_subexp_matching_top @ascuheap @acsmem -->
+     <!-- match_ctx_add_subtop @ascuheap @acsmem -->
+     <!-- (re_)realloc dup @ascuheap @acsmem -->
+     <!-- calloc dup @ascuheap @acsmem -->
+     <!-- transit_state_bkref @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- re_string_cur_idx dup ok -->
+     <!-- re_string_context_at dup ok -->
+     <!-- NOT_SATISFY_NEXT_CONSTRAINT ok -->
+     <!-- get_subexp @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- re_string_get_buffer ok -->
+     <!-- search_cur_bkref_entry ok -->
+     <!-- clean_state_log_if_needed @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- extend_buffers @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- re_string_realloc_buffers dup @ascuheap @acsmem -->
+     <!-- (re_)realloc dup @ascuheap @acsmem -->
+     <!-- build_wcs_upper_buffer dup @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- build_upper_buffer dup ok (@mtslocale but optimized) -->
+     <!-- build_wcs_buffer dup @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- re_string_translate_buffer dup ok -->
+     <!-- get_subexp_sub @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- check_arrival @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- (re_)realloc dup @ascuheap @acsmem -->
+     <!-- re_string_context_at dup ok -->
+     <!-- re_node_set_init_1 dup @ascuheap @acsmem -->
+     <!-- check_arrival_expand_ecl @ascuheap @acsmem -->
+     <!-- re_node_set_alloc dup @ascuheap @acsmem -->
+     <!-- find_subexp_node ok -->
+     <!-- re_node_set_merge dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- check_arrival_expand_ecl_sub @ascuheap @acsmem -->
+     <!-- re_node_set_contains dup ok -->
+     <!-- re_node_set_insert dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- re_node_set_init_copy dup @ascuheap @acsmem -->
+     <!-- re_node_set_init_empty dup ok -->
+     <!-- expand_bkref_cache @ascuheap @acsmem -->
+     <!-- search_cur_bkref_entry dup ok -->
+     <!-- re_node_set_contains dup ok -->
+     <!-- re_node_set_init_1 dup @ascuheap @acsmem -->
+     <!-- check_arrival_expand_ecl dup @ascuheap @acsmem -->
+     <!-- re_node_set_merge dup @ascuheap @acsmem -->
+     <!-- re_node_set_init_copy dup @ascuheap @acsmem -->
+     <!-- re_node_set_insert dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- re_acquire_state @ascuheap @acsmem -->
+     <!-- calc_state_hash dup ok -->
+     <!-- re_node_set_compare dup ok -->
+     <!-- create_ci_newstate @ascuheap @acsmem -->
+     <!-- calloc dup @ascuheap @acsmem -->
+     <!-- re_node_set_init_copy dup @ascuheap @acsmem -->
+     <!-- (re_)free dup @ascuheap @acsmem -->
+     <!-- register_state dup @ascuheap @acsmem -->
+     <!-- free_state dup @ascuheap @acsmem -->
+     <!-- re_acquire_state_context dup @ascuheap @acsmem -->
+     <!-- re_node_set_merge dup @ascuheap @acsmem -->
+     <!-- check_arrival_add_next_nodes @mtslocale @ascuheap @acsmem -->
+     <!-- re_node_set_init_empty dup ok -->
+     <!-- check_node_accept_bytes @mtslocale @ascuheap @acsmem -->
+     <!-- re_string_byte_at dup ok -->
+     <!-- re_string_char_size_at dup ok -->
+     <!-- re_string_elem_size_at @mtslocale -->
+     <!-- _NL_CURRENT_WORD dup ok -->
+     <!-- _NL_CURRENT dup ok -->
+     <!-- auto findidx dup ok -->
+     <!-- _NL_CURRENT_WORD dup ok -->
+     <!-- _NL_CURRENT dup ok -->
+     <!-- collseq_table_lookup dup ok -->
+     <!-- find_collation_sequence_value @mtslocale -->
+     <!-- _NL_CURRENT_WORD dup ok -->
+     <!-- _NL_CURRENT dup ok -->
+     <!-- auto findidx dup ok -->
+     <!-- wcscoll @mtslocale @ascuheap @acsmem -->
+     <!-- re_node_set_empty dup ok -->
+     <!-- re_node_set_merge dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- re_node_set_insert dup @ascuheap @acsmem -->
+     <!-- re_acquire_state dup @ascuheap @acsmem -->
+     <!-- check_node_accept ok -->
+     <!-- re_string_byte_at dup ok -->
+     <!-- bitset_contain dup ok -->
+     <!-- re_string_context_at dup ok -->
+     <!-- NOT_SATISFY_NEXT_CONSTRAINT dup ok -->
+     <!-- match_ctx_add_entry @ascuheap @acsmem -->
+     <!-- (re_)realloc dup @ascuheap @acsmem -->
+     <!-- (re_)free dup @ascuheap @acsmem -->
+     <!-- clean_state_log_if_needed dup @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- extend_buffers dup @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- find_subexp_node dup ok -->
+     <!-- calloc dup @ascuheap @acsmem -->
+     <!-- check_arrival dup *** -->
+     <!-- match_ctx_add_sublast @ascuheap @acsmem -->
+     <!-- (re_)realloc dup @ascuheap @acsmem -->
+     <!-- re_acquire_state_context dup @ascuheap @acsmem -->
+     <!-- re_node_set_init_union @ascuheap @acsmem -->
+     <!-- (re_)malloc dup @ascuheap @acsmem -->
+     <!-- re_node_set_init_copy dup @ascuheap @acsmem -->
+     <!-- re_node_set_init_empty dup ok -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- check_subexp_matching_top dup @ascuheap @acsmem -->
+     <!-- check_halt_state_context ok -->
+     <!-- re_string_context_at dup ok -->
+     <!-- check_halt_node_context ok -->
+     <!-- NOT_SATISFY_NEXT_CONSTRAINT dup ok -->
+     <!-- re_string_eoi dup ok -->
+     <!-- extend_buffers dup @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- transit_state @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- transit_state_mb @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- re_string_context_at dup ok -->
+     <!-- NOT_SATISFY_NEXT_CONSTRAINT dup ok -->
+     <!-- check_node_accept_bytes dup @mtslocale @ascuheap @acsmem -->
+     <!-- re_string_cur_idx dup ok -->
+     <!-- clean_state_log_if_needed @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- re_node_set_init_union dup @ascuheap @acsmem -->
+     <!-- re_acquire_state_context dup @ascuheap @acsmem -->
+     <!-- re_string_fetch_byte dup ok -->
+     <!-- re_string_context_at dup ok -->
+     <!-- build_trtable @ascuheap @acsmem -->
+     <!-- (re_)malloc dup @ascuheap @acsmem -->
+     <!-- group_nodes_into_DFAstates @ascuheap @acsmem -->
+     <!-- bitset_empty dup ok -->
+     <!-- bitset_set dup ok -->
+     <!-- bitset_merge dup ok -->
+     <!-- bitset_set_all ok -->
+     <!-- bitset_clear ok -->
+     <!-- bitset_contain dup ok -->
+     <!-- bitset_copy ok -->
+     <!-- re_node_set_init_copy dup @ascuheap @acsmem -->
+     <!-- re_node_set_insert dup @ascuheap @acsmem -->
+     <!-- re_node_set_init_1 dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- re_node_set_alloc dup @ascuheap @acsmem -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- bitset_empty ok -->
+     <!-- re_node_set_empty dup ok -->
+     <!-- re_node_set_merge dup @ascuheap @acsmem -->
+     <!-- re_acquire_state_context dup @ascuheap @acsmem -->
+     <!-- bitset_merge ok -->
+     <!-- calloc dup @ascuheap @acsmem -->
+     <!-- bitset_contain dup ok -->
+     <!-- merge_state_with_log @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- re_string_cur_idx dup ok -->
+     <!-- re_node_set_init_union dup @ascuheap @acsmem -->
+     <!-- re_string_context_at dup ok -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- check_subexp_matching_top @ascuheap @acsmem -->
+     <!-- match_ctx_add_subtop dup @ascuheap @acsmem -->
+     <!-- transit_state_bkref dup @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- find_recover_state -->
+     <!-- re_string_cur_idx dup ok -->
+     <!-- re_string_skip_bytes dup ok -->
+     <!-- merge_state_with_log dup @mtslocale @asucorrupt @ascuheap @asulock @ascudlopen @acucorrupt @aculock @acsmem @acsfd -->
+     <!-- check_halt_state_context dup ok -->
+     <!-- prune_impossible_nodes @mtslocale @ascuheap @acsmem -->
+     <!-- (re_)malloc dup @ascuheap @acsmem -->
+     <!-- sift_ctx_init ok -->
+     <!-- re_node_set_init_empty dup ok -->
+     <!-- sift_states_backward @mtslocale @ascuheap @acsmem -->
+     <!-- re_node_set_init_1 dup @ascuheap @acsmem -->
+     <!-- update_cur_sifted_state @mtslocale @ascuheap @acsmem -->
+     <!-- add_epsilon_src_nodes @ascuheap @acsmem -->
+     <!-- re_acquire_state dup @ascuheap @acsmem -->
+     <!-- re_node_set_alloc dup @ascuheap @acsmem -->
+     <!-- re_node_set_merge dup @ascuheap @acsmem -->
+     <!-- re_node_set_add_intersect @ascuheap @acsmem -->
+     <!-- (re_)realloc dup @ascuheap @acsmem -->
+     <!-- check_subexp_limits @ascuheap @acsmem -->
+     <!-- sub_epsilon_src_nodes @ascuheap @acsmem -->
+     <!-- re_node_set_init_empty dup ok -->
+     <!-- re_node_set_contains dup ok -->
+     <!-- re_node_set_add_intersect dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- re_node_set_remove_at dup ok -->
+     <!-- re_node_set_contains dup ok -->
+     <!-- re_acquire_state dup @ascuheap @acsmem -->
+     <!-- sift_states_bkref @mtslocale @ascuheap @acsmem -->
+     <!-- search_cur_bkref_entry dup ok -->
+     <!-- check_dst_limits ok -->
+     <!-- search_cur_bkref_entry dup ok -->
+     <!-- check_dst_limits_calc_pos ok -->
+     <!-- check_dst_limits_calc_pos_1 ok -->
+     <!-- re_node_set_init_copy dup @ascuheap @acsmem -->
+     <!-- re_node_set_insert dup @ascuheap @acsmem -->
+     <!-- sift_states_backward dup @mtslocale @ascuheap @acsmem -->
+     <!-- merge_state_array dup @ascuheap @acsmem -->
+     <!-- re_node_set_remove ok -->
+     <!-- re_node_set_contains dup ok -->
+     <!-- re_node_set_remove_at dup ok -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- re_node_set_empty dup ok -->
+     <!-- build_sifted_states @mtslocale @ascuheap @acsmem -->
+     <!-- sift_states_iter_mb @mtslocale @ascuheap @acsmem -->
+     <!-- check_node_accept_bytes dup @mtslocale @ascuheap @acsmem -->
+     <!-- check_node_accept dup ok -->
+     <!-- check_dst_limits dup ok -->
+     <!-- re_node_set_insert dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- check_halt_state_context dup ok -->
+     <!-- merge_state_array @ascuheap @acsmem -->
+     <!-- re_node_set_init_union dup @ascuheap @acsmem -->
+     <!-- re_acquire_state dup @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- (re_)free dup @ascuheap @acsmem -->
+     <!-- set_regs @ascuheap @acsmem -->
+     <!-- (re_)malloc dup @ascuheap @acsmem -->
+     <!-- re_node_set_init_empty dup ok -->
+     <!-- free_fail_stack_return @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- (re_)free dup @ascuheap @acsmem -->
+     <!-- update_regs ok -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- pop_fail_stack @ascuheap @acsmem -->
+     <!-- re_node_set_free dup @ascuheap @acsmem -->
+     <!-- (re_)free dup @ascuheap @acsmem -->
+     <!-- (re_)free dup @ascuheap @acsmem -->
+     <!-- (re_)free dup @ascuheap @acsmem -->
+     <!-- match_ctx_free @ascuheap @acsmem -->
+     <!-- match_ctx_clean @ascuheap @acsmem -->
+     <!-- (re_)free dup @ascuheap @acsmem -->
+     <!-- (re_)free dup @ascuheap @acsmem -->
+     <!-- re_string_destruct dup @ascuheap @acsmem -->
+     <!-- libc_lock_unlock @aculock -->
+        <p>This function tries to match the compiled regular expression
+<code>*</code><var>compiled</var> against <var>string</var>.
+
+        <p><code>regexec</code> returns <code>0</code> if the regular expression matches;
+otherwise, it returns a nonzero value.  See the table below for
+what nonzero values mean.  You can use <code>regerror</code> to produce an
+error message string describing the reason for a nonzero value;
+see <a href="Regexp-Cleanup.html#Regexp-Cleanup">Regexp Cleanup</a>.
+
+        <p>The argument <var>eflags</var> is a word of bit flags that enable various
+options.
+
+        <p>If you want to get information about what part of <var>string</var> actually
+matched the regular expression or its subexpressions, use the arguments
+<var>matchptr</var> and <var>nmatch</var>.  Otherwise, pass <code>0</code> for
+<var>nmatch</var>, and <code>NULL</code> for <var>matchptr</var>.  See <a href="Regexp-Subexpressions.html#Regexp-Subexpressions">Regexp Subexpressions</a>. 
+</p></blockquote></div>
+
+   <p>You must match the regular expression with the same set of current
+locales that were in effect when you compiled the regular expression.
+
+   <p>The function <code>regexec</code> accepts the following flags in the
+<var>eflags</var> argument:
+
+     <dl>
+<!-- regex.h -->
+<!-- POSIX.2 -->
+<dt><code>REG_NOTBOL</code><dd>Do not regard the beginning of the specified string as the beginning of
+a line; more generally, don't make any assumptions about what text might
+precede it.
+
+     <!-- regex.h -->
+     <!-- POSIX.2 -->
+     <br><dt><code>REG_NOTEOL</code><dd>Do not regard the end of the specified string as the end of a line; more
+generally, don't make any assumptions about what text might follow it. 
+</dl>
+
+   <p>Here are the possible nonzero values that <code>regexec</code> can return:
+
+     <dl>
+<!-- regex.h -->
+<!-- POSIX.2 -->
+<dt><code>REG_NOMATCH</code><dd>The pattern didn't match the string.  This isn't really an error.
+
+     <!-- regex.h -->
+     <!-- POSIX.2 -->
+     <br><dt><code>REG_ESPACE</code><dd><code>regexec</code> ran out of memory. 
+</dl>
+
+   </body></html>
+

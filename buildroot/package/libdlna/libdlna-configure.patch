@@ -1,0 +1,79 @@
+Index: libdlna-0.2.4/configure
+===================================================================
+--- libdlna-0.2.4.orig/configure	2012-02-27 03:34:00.000000000 +0800
++++ libdlna-0.2.4/configure	2014-09-30 15:29:21.070577515 +0800
+@@ -35,7 +35,8 @@
+ "
+   echo "  --enable-shared             build shared libraries [default=yes]"
+   echo "  --disable-shared            do not build shared libraries [default=no]"
+-  echo "  --with-ffmpeg-dir=DIR       check for ffmpeg installed in DIR"
++  echo "  --with-ffmpeg-includedir=DIR   check for ffmpeg headers installed in DIR"
++  echo "  --with-ffmpeg-libdir=DIR       check for ffmpeg libraries installed in DIR"
+   echo ""
+   echo "Advanced options (experts only):"
+   echo "  --enable-developer          enable developer options"
+@@ -322,6 +323,7 @@
+ ranlib="ranlib"
+ make="make"
+ strip="strip"
++ld="ld"
+ cpu=`uname -m`
+ optimize="yes"
+ developer="no"
+@@ -432,7 +434,9 @@
+   ;;
+   --cross-compile) cross_compile="yes"
+   ;;
+-  --with-ffmpeg-dir=*) ffmpegdir="$optval";
++  --with-ffmpeg-includedir=*) ffmpegincludedir="$optval";
++  ;;
++  --with-ffmpeg-libdir=*) ffmpeglibdir="$optval";
+   ;;
+   --help) show_help
+   ;;
+@@ -458,11 +462,13 @@
+   ar="${cross_prefix}${ar}"
+   ranlib="${cross_prefix}${ranlib}"
+   strip="${cross_prefix}${strip}"
++  ld="${cross_prefix}${ld}"
+ else
+   [ -n "$CC" ] && cc="$CC"
+   [ -n "$AR" ] && ar="$AR"
+   [ -n "$RANLIB" ] && ranlib="$RANLIB"
+   [ -n "$STRIP" ] && strip="$STRIP"
++  [ -n "$LD" ] && ld="$LD"
+ fi
+ [ -n "$MAKE" ] && make="$MAKE"
+ 
+@@ -636,15 +642,17 @@
+ #################################################
+ #   check for ffmpeg libavformat/libavcodec
+ #################################################
+-if [ -n "$ffmpegdir" ]; then
+-  check_cflags -I$ffmpegdir
+-  check_ldflags -L$ffmpegdir
++if [ -n "$ffmpegincludedir" ]; then
++  check_cflags -I$ffmpegincludedir
++fi
++if [ -n "$ffmpeglibdir" ]; then
++  check_ldflags -L$ffmpeglibdir
+ fi
+ 
+ echolog "Checking for libavformat ..."
+-check_lib libavformat/avformat.h av_register_all -lavformat || die "Error, can't find libavformat !"
++check_lib libavformat/avformat.h av_register_all -lavformat -lavcodec -lamavutils -lavutil || die "Error, can't find libavformat !"
+ echolog "Checking for libavcodec ..."
+-check_lib libavcodec/avcodec.h avcodec_register_all -lavcodec || die "Error, can't find libavcodec !"
++check_lib libavcodec/avcodec.h avcodec_register_all -lavcodec -lamavutils -lavutil || die "Error, can't find libavcodec !"
+ 
+ #################################################
+ #   version
+@@ -659,7 +667,7 @@
+   return 0;
+ }
+ EOF
+-VERSION=`$TMPE`
++VERSION=0.2.4
+ restore_flags
+ 
+ 

@@ -1,0 +1,168 @@
+<html lang="en">
+<head>
+<title>POSIX Safety Concepts - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="POSIX.html#POSIX" title="POSIX">
+<link rel="next" href="Unsafe-Features.html#Unsafe-Features" title="Unsafe Features">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="POSIX-Safety-Concepts"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Unsafe-Features.html#Unsafe-Features">Unsafe Features</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="POSIX.html#POSIX">POSIX</a>
+<hr>
+</div>
+
+<h5 class="subsubsection">1.2.2.1 POSIX Safety Concepts</h5>
+
+<p><a name="index-POSIX-Safety-Concepts-12"></a>
+This manual documents various safety properties of GNU C Library
+functions, in lines that follow their prototypes and look like:
+
+<p class="noindent">Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+|
+
+   <p>The properties are assessed according to the criteria set forth in the
+POSIX standard for such safety contexts as Thread-, Async-Signal- and
+Async-Cancel- -Safety.  Intuitive definitions of these properties,
+attempting to capture the meaning of the standard definitions, follow.
+
+     <ul>
+<li><a name="index-MT_002dSafe-13"></a><a name="index-Thread_002dSafe-14"></a><code>MT-Safe</code> or Thread-Safe functions are safe to call in the presence
+of other threads.  MT, in MT-Safe, stands for Multi Thread.
+
+     <p>Being MT-Safe does not imply a function is atomic, nor that it uses any
+of the memory synchronization mechanisms POSIX exposes to users.  It is
+even possible that calling MT-Safe functions in sequence does not yield
+an MT-Safe combination.  For example, having a thread call two MT-Safe
+functions one right after the other does not guarantee behavior
+equivalent to atomic execution of a combination of both functions, since
+concurrent calls in other threads may interfere in a destructive way.
+
+     <p>Whole-program optimizations that could inline functions across library
+interfaces may expose unsafe reordering, and so performing inlining
+across the GNU C Library interface is not recommended.  The documented
+MT-Safety status is not guaranteed under whole-program optimization. 
+However, functions defined in user-visible headers are designed to be
+safe for inlining.
+
+     <li><a name="index-AS_002dSafe-15"></a><a name="index-Async_002dSignal_002dSafe-16"></a><code>AS-Safe</code> or Async-Signal-Safe functions are safe to call from
+asynchronous signal handlers.  AS, in AS-Safe, stands for Asynchronous
+Signal.
+
+     <p>Many functions that are AS-Safe may set <code>errno</code>, or modify the
+floating-point environment, because their doing so does not make them
+unsuitable for use in signal handlers.  However, programs could
+misbehave should asynchronous signal handlers modify this thread-local
+state, and the signal handling machinery cannot be counted on to
+preserve it.  Therefore, signal handlers that call functions that may
+set <code>errno</code> or modify the floating-point environment <em>must</em>
+save their original values, and restore them before returning.
+
+     <li><a name="index-AC_002dSafe-17"></a><a name="index-Async_002dCancel_002dSafe-18"></a><code>AC-Safe</code> or Async-Cancel-Safe functions are safe to call when
+asynchronous cancellation is enabled.  AC in AC-Safe stands for
+Asynchronous Cancellation.
+
+     <p>The POSIX standard defines only three functions to be AC-Safe, namely
+<code>pthread_cancel</code>, <code>pthread_setcancelstate</code>, and
+<code>pthread_setcanceltype</code>.  At present the GNU C Library provides no
+guarantees beyond these three functions, but does document which
+functions are presently AC-Safe.  This documentation is provided for use
+by the GNU C Library developers.
+
+     <p>Just like signal handlers, cancellation cleanup routines must configure
+the floating point environment they require.  The routines cannot assume
+a floating point environment, particularly when asynchronous
+cancellation is enabled.  If the configuration of the floating point
+environment cannot be performed atomically then it is also possible that
+the environment encountered is internally inconsistent.
+
+     <li><a name="index-MT_002dUnsafe-19"></a><a name="index-Thread_002dUnsafe-20"></a><a name="index-AS_002dUnsafe-21"></a><a name="index-Async_002dSignal_002dUnsafe-22"></a><a name="index-AC_002dUnsafe-23"></a><a name="index-Async_002dCancel_002dUnsafe-24"></a><code>MT-Unsafe</code>, <code>AS-Unsafe</code>, <code>AC-Unsafe</code> functions are not
+safe to call within the safety contexts described above.  Calling them
+within such contexts invokes undefined behavior.
+
+     <p>Functions not explicitly documented as safe in a safety context should
+be regarded as Unsafe.
+
+     <li><a name="index-Preliminary-25"></a><code>Preliminary</code> safety properties are documented, indicating these
+properties may <em>not</em> be counted on in future releases of
+the GNU C Library.
+
+     <p>Such preliminary properties are the result of an assessment of the
+properties of our current implementation, rather than of what is
+mandated and permitted by current and future standards.
+
+     <p>Although we strive to abide by the standards, in some cases our
+implementation is safe even when the standard does not demand safety,
+and in other cases our implementation does not meet the standard safety
+requirements.  The latter are most likely bugs; the former, when marked
+as <code>Preliminary</code>, should not be counted on: future standards may
+require changes that are not compatible with the additional safety
+properties afforded by the current implementation.
+
+     <p>Furthermore, the POSIX standard does not offer a detailed definition of
+safety.  We assume that, by &ldquo;safe to call&rdquo;, POSIX means that, as long
+as the program does not invoke undefined behavior, the &ldquo;safe to call&rdquo;
+function behaves as specified, and does not cause other functions to
+deviate from their specified behavior.  We have chosen to use its loose
+definitions of safety, not because they are the best definitions to use,
+but because choosing them harmonizes this manual with POSIX.
+
+     <p>Please keep in mind that these are preliminary definitions and
+annotations, and certain aspects of the definitions are still under
+discussion and might be subject to clarification or change.
+
+     <p>Over time, we envision evolving the preliminary safety notes into stable
+commitments, as stable as those of our interfaces.  As we do, we will
+remove the <code>Preliminary</code> keyword from safety notes.  As long as the
+keyword remains, however, they are not to be regarded as a promise of
+future behavior.
+
+   </ul>
+
+   <p>Other keywords that appear in safety notes are defined in subsequent
+sections.
+
+   </body></html>
+

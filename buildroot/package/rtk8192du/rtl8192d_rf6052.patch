@@ -1,0 +1,49 @@
+Index: rtk8192du-8192du/rtl8xxx_DU/hal/rtl8192d/rtl8192d_rf6052.c
+===================================================================
+--- rtk8192du-8192du.orig/rtl8xxx_DU/hal/rtl8192d/rtl8192d_rf6052.c	2015-03-16 16:43:53.000000000 +0800
++++ rtk8192du-8192du/rtl8xxx_DU/hal/rtl8192d/rtl8192d_rf6052.c	2015-06-18 14:13:17.359688265 +0800
+@@ -1123,7 +1123,7 @@
+ 
+ 	for (eRFPath = 0; eRFPath < RF6052_MAX_PATH; eRFPath++)
+ 	{
+-		for (Offset = 0; Offset <= RF6052_MAX_REG; Offset++)
++		for (Offset = 0; Offset < RF6052_MAX_REG; Offset++)
+ 		{
+ 			PHY_RFShadowCompare(Adapter, (RF_RADIO_PATH_E)eRFPath, Offset);
+ 		}
+@@ -1142,7 +1142,7 @@
+ 
+ 	for (eRFPath = 0; eRFPath < RF6052_MAX_PATH; eRFPath++)
+ 	{
+-		for (Offset = 0; Offset <= RF6052_MAX_REG; Offset++)
++		for (Offset = 0; Offset < RF6052_MAX_REG; Offset++)
+ 		{
+ 			PHY_RFShadowRecorver(Adapter, (RF_RADIO_PATH_E)eRFPath, Offset);
+ 		}
+@@ -1195,7 +1195,7 @@
+ 
+ 	for (eRFPath = 0; eRFPath < RF6052_MAX_PATH; eRFPath++)
+ 	{
+-		for (Offset = 0; Offset <= RF6052_MAX_REG; Offset++)
++		for (Offset = 0; Offset < RF6052_MAX_REG; Offset++)
+ 		{
+ 			// 2008/11/20 MH For S3S4 test, we only check reg 26/27 now!!!!
+ 			if (Offset != 0x26 && Offset != 0x27)
+@@ -1218,7 +1218,7 @@
+ 
+ 	for (eRFPath = 0; eRFPath < RF6052_MAX_PATH; eRFPath++)
+ 	{
+-		for (Offset = 0; Offset <= RF6052_MAX_REG; Offset++)
++		for (Offset = 0; Offset < RF6052_MAX_REG; Offset++)
+ 		{
+ 			// 2008/11/20 MH For S3S4 test, we only check reg 26/27 now!!!!
+ 			if (Offset != 0x26 && Offset != 0x27)
+@@ -1241,7 +1241,7 @@
+ 
+ 	for (eRFPath = 0; eRFPath < RF6052_MAX_PATH; eRFPath++)
+ 	{
+-		for (Offset = 0; Offset <= RF6052_MAX_REG; Offset++)
++		for (Offset = 0; Offset < RF6052_MAX_REG; Offset++)
+ 		{
+ 			RF_Shadow[eRFPath][Offset].Value = 0;
+ 			RF_Shadow[eRFPath][Offset].Compare = _FALSE;

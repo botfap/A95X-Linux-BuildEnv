@@ -1,0 +1,13 @@
+Index: qtbase-opensource-src-5.5.0/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp
+===================================================================
+--- qtbase-opensource-src-5.5.0.orig/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp	2015-06-30 04:04:40.000000000 +0800
++++ qtbase-opensource-src-5.5.0/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp	2015-09-07 14:13:29.843529721 +0800
+@@ -82,7 +82,7 @@
+ {
+     QXcbWindow::create();
+ 
+-    m_surface = eglCreateWindowSurface(m_glIntegration->eglDisplay(), m_config, m_window, 0);
++    m_surface = eglCreateWindowSurface(m_glIntegration->eglDisplay(), m_config, reinterpret_cast<EGLNativeWindowType>(m_window), 0);
+ }
+ 
+ QT_END_NAMESPACE

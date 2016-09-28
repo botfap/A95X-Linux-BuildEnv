@@ -1,0 +1,375 @@
+<html lang="en">
+<head>
+<title>Lookup User - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="User-Database.html#User-Database" title="User Database">
+<link rel="prev" href="User-Data-Structure.html#User-Data-Structure" title="User Data Structure">
+<link rel="next" href="Scanning-All-Users.html#Scanning-All-Users" title="Scanning All Users">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Lookup-User"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Scanning-All-Users.html#Scanning-All-Users">Scanning All Users</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="User-Data-Structure.html#User-Data-Structure">User Data Structure</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="User-Database.html#User-Database">User Database</a>
+<hr>
+</div>
+
+<h4 class="subsection">29.13.2 Looking Up One User</h4>
+
+<p><a name="index-converting-user-ID-to-user-name-3434"></a><a name="index-converting-user-name-to-user-ID-3435"></a>
+You can search the system user database for information about a
+specific user using <code>getpwuid</code> or <code>getpwnam</code>.  These
+functions are declared in <samp><span class="file">pwd.h</span></samp>.
+
+<!-- pwd.h -->
+<!-- POSIX.1 -->
+<div class="defun">
+&mdash; Function: struct passwd * <b>getpwuid</b> (<var>uid_t uid</var>)<var><a name="index-getpwuid-3436"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:pwuid locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- getpwuid @mtasurace:pwuid @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- getpwuid_r dup @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- realloc dup @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- libc_lock_unlock dup @aculock -->
+        <p>This function returns a pointer to a statically-allocated structure
+containing information about the user whose user ID is <var>uid</var>.  This
+structure may be overwritten on subsequent calls to <code>getpwuid</code>.
+
+        <p>A null pointer value indicates there is no user in the data base with
+user ID <var>uid</var>. 
+</p></blockquote></div>
+
+<!-- pwd.h -->
+<!-- POSIX.1c -->
+<div class="defun">
+&mdash; Function: int <b>getpwuid_r</b> (<var>uid_t uid, struct passwd *result_buf, char *buffer, size_t buflen, struct passwd **result</var>)<var><a name="index-getpwuid_005fr-3437"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- getpwuid_r @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- nscd_getpwuid_r @ascuheap @acsfd @acsmem -->
+     <!-- itoa_word dup ok -->
+     <!-- nscd_getpw_r @ascuheap @acsfd @acsmem -->
+     <!-- nscd_get_map_ref @ascuheap @acsfd @acsmem -->
+     <!-- nscd_acquire_maplock ok -->
+     <!-- nscd_get_mapping @ascuheap @acsfd @acsmem -->
+     <!-- open_socket dup @acsfd -->
+     <!-- memset dup ok -->
+     <!-- wait_on_socket dup ok -->
+     <!-- recvmsg dup ok -->
+     <!-- strcmp dup ok -->
+     <!-- fstat64 dup ok -->
+     <!-- mmap dup @acsmem -->
+     <!-- munmap dup @acsmem -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- close dup ok -->
+     <!-- nscd_unmap dup @ascuheap @acsmem -->
+     <!-- nscd_cache_search ok -->
+     <!-- nis_hash ok -->
+     <!-- memcmp dup ok -->
+     <!-- nscd_open_socket @acsfd -->
+     <!-- open_socket @acsfd -->
+     <!-- socket dup @acsfd -->
+     <!-- fcntl dup ok -->
+     <!-- strcpy dup ok -->
+     <!-- connect dup ok -->
+     <!-- send dup ok -->
+     <!-- gettimeofday dup ok -->
+     <!-- poll dup ok -->
+     <!-- close_not_cancel_no_status dup @acsfd -->
+     <!-- wait_on_socket dup ok -->
+     <!-- read dup ok -->
+     <!-- close_not_cancel_no_status dup @acsfd -->
+     <!-- readall ok -->
+     <!-- read dup ok -->
+     <!-- wait_on_socket ok -->
+     <!-- poll dup ok -->
+     <!-- gettimeofday dup ok -->
+     <!-- memcpy dup ok -->
+     <!-- close_not_cancel_no_status dup @acsfd -->
+     <!-- nscd_drop_map_ref @ascuheap @acsmem -->
+     <!-- nscd_unmap dup @ascuheap @acsmem -->
+     <!-- nscd_unmap @ascuheap @acsmem -->
+     <!-- munmap dup ok -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- nss_passwd_lookup2 @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- nss_database_lookup @mtslocale @ascuheap @asulock @acucorrupt @acsmem @acsfd @aculock -->
+     <!-- libc_lock_lock @asulock @aculock -->
+     <!-- libc_lock_unlock @aculock -->
+     <!-- nss_parse_file @mtslocale @ascuheap @asulock @acucorrupt @acsmem @acsfd @aculock -->
+     <!-- fopen dup @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- fsetlocking dup ok [no concurrent uses] -->
+     <!-- malloc dup @asulock @aculock @acsfd @acsmem -->
+     <!-- fclose dup @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- getline dup @ascuheap @aculock @acucorrupt @acsmem -->
+     <!-- strchrnul dup ok -->
+     <!-- nss_getline @mtslocale @ascuheap @acsmem -->
+     <!-- isspace @mtslocale^^ -->
+     <!-- strlen dup ok -->
+     <!-- malloc dup @asulock @aculock @acsfd @acsmem -->
+     <!-- memcpy dup ok -->
+     <!-- nss_parse_service_list dup @mtslocale^, @ascuheap @acsmem -->
+     <!-- feof_unlocked dup ok -->
+     <!-- free dup @asulock @aculock @acsfd @acsmem -->
+     <!-- strcmp dup ok -->
+     <!-- nss_parse_service_list @mtslocale^, @ascuheap @acsmem -->
+     <!-- isspace @mtslocale^^ -->
+     <!-- malloc dup @asulock @aculock @acsfd @acsmem -->
+     <!-- mempcpy dup ok -->
+     <!-- strncasecmp dup ok -->
+     <!-- free dup @asulock @aculock @acsfd @acsmem -->
+     <!-- malloc dup @asulock @aculock @acsfd @acsmem -->
+     <!-- nss_lookup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- nss_lookup_function @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_lock @asulock @aculock -->
+     <!-- tsearch @ascuheap @acucorrupt @acsmem [no @mtsrace or @asucorrupt due to locking] -->
+     <!-- known_compare ok -->
+     <!-- strcmp dup ok -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- tdelete @ascuheap @acucorrupt @acsmem [no @mtsrace or @asucorrupt due to locking] -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- nss_load_library @ascudlopen @ascuplugin @ascuheap @asulock @aculock @acsfd @acsmem -->
+     <!-- nss_new_service @ascuheap @acsmem -->
+     <!-- strcmp dup ok -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- strlen dup ok -->
+     <!-- stpcpy dup ok -->
+     <!-- libc_dlopen @ascudlopen @ascuheap @asulock @aculock @acsfd @acsmem -->
+     <!-- libc_dlsym dup @asulock @aculock @acsfd @acsmem -->
+     <!-- *ifct(*nscd_init_cb) @ascuplugin -->
+     <!-- stpcpy dup ok -->
+     <!-- libc_dlsym dup @asulock @aculock @acsfd @acsmem -->
+     <!-- libc_lock_unlock dup ok -->
+     <!-- nss_next_action ok -->
+     <!-- *fct.l -> _nss_*_getpwuid_r @ascuplugin -->
+     <!-- nss_next2 @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- nss_next_action dup ok -->
+     <!-- nss_lookup_function dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- _nss_files_getpwuid_r @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- internal_setent @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- fopen dup @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- fileno dup ok -->
+     <!-- fcntl dup ok -->
+     <!-- fclose dup @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- rewind dup @aculock [stream guarded by non-recursive pwent lock] -->
+     <!-- internal_getent @mtslocale^ -->
+     <!-- fgets_unlocked dup ok [stream guarded by non-recursive pwent lock] -->
+     <!-- isspace dup @mtslocale^^ -->
+     <!-- _nss_files_parse_pwent = parse_line ok -->
+     <!-- strpbrk dup ok -->
+     <!-- internal_endent @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- fclose dup @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- libc_lock_unlock dup @aculock -->
+     <!-- _nss_nis_getpwuid_r ... not fully reviewed (assumed) @asuinit @asulock @acucorrupt @aculock -->
+     <!-- yp_get_default_domain @asulock @aculock -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- getdomainname dup ok -->
+     <!-- strcmp dup ok -->
+     <!-- libc_lock_unlock dup @aculock -->
+     <!-- snprintf dup @ascuheap @acsmem -->
+     <!-- yp_match -->
+     <!-- do_ypcall_tr(xdr_ypreq_key,xdr_ypresp_val) -->
+     <!-- do_ypcall(xdr_ypreq_key,xdr_ypresp_val) -->
+     <!-- libc_lock_lock @asulock @aculock -->
+     <!-- strcmp -->
+     <!-- yp_bind -->
+     <!-- ypclnt_call -->
+     <!-- clnt_call -->
+     <!-- clnt_perror -->
+     <!-- libc_lock_unlock @aculock -->
+     <!-- yp_unbind_locked -->
+     <!-- yp_unbind -->
+     <!-- strcmp dup ok -->
+     <!-- calloc dup @asulock @aculock @acsfd @acsmem -->
+     <!-- yp_bind_file -->
+     <!-- strlen dup ok -->
+     <!-- snprintf dup @ascuheap @acsmem -->
+     <!-- open dup @acsfd [cancelpt] -->
+     <!-- pread dup [cancelpt] -->
+     <!-- yp_bind_client_create -->
+     <!-- close dup @acsfd [cancelpt] -->
+     <!-- yp_bind_ypbindprog -->
+     <!-- clnttcp_create -->
+     <!-- clnt_destroy -->
+     <!-- clnt_call(xdr_domainname,xdr_ypbind_resp) -->
+     <!-- memset dup ok -->
+     <!-- yp_bind_client_create -->
+     <!-- free dup @asulock @aculock @acsfd @acsmem -->
+     <!-- calloc dup @asulock @aculock @acsfd @acsmem -->
+     <!-- free dup @asulock @aculock @acsfd @acsmem -->
+     <!-- ypprot_err -->
+     <!-- memcpy dup ok -->
+     <!-- xdr_free(xdr_ypresp_val) -->
+     <!-- xdr_ypresp_val -->
+     <!-- xdr_ypstat -->
+     <!-- xdr_enum -->
+     <!-- XDR_PUTLONG -->
+     <!-- *x_putlong -->
+     <!-- XDR_GETLONG -->
+     <!-- *x_getlong -->
+     <!-- xdr_long -->
+     <!-- XDR_PUTLONG dup -->
+     <!-- XDR_GETLONG dup -->
+     <!-- xdr_short -->
+     <!-- XDR_PUTLONG dup -->
+     <!-- XDR_GETLONG dup -->
+     <!-- xdr_valdat -->
+     <!-- xdr_bytes -->
+     <!-- xdr_u_int -->
+     <!-- XDR_PUTLONG dup -->
+     <!-- XDR_GETLONG dup -->
+     <!-- mem_alloc @ascuheap @acsmem -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- xdr_opaque -->
+     <!-- XDR_GETBYTES -->
+     <!-- *x_getbytes -->
+     <!-- XDR_PUTBYTES -->
+     <!-- *x_putbytes -->
+     <!-- mem_free @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- yperr2nss ok -->
+     <!-- strchr dup ok -->
+     <!-- _nls_default_nss @asuinit @ascuheap @asulock @acucorrupt @acsmem @acsfd @aculock -->
+     <!-- init @asuinit^, @ascuheap @asulock @acucorrupt @acsmem @acsfd @aculock -->
+     <!-- fopen dup @ascuheap @asulock @acsmem @acsfd @aculock -->
+     <!-- fsetlocking ok [no concurrent uses] -->
+     <!-- feof_unlocked dup ok -->
+     <!-- getline dup @ascuheap @aculock @acucorrupt @acsmem -->
+     <!-- isspace dup @mtslocale^^ -->
+     <!-- strncmp dup ok -->
+     <!-- free dup @asulock @acsmem @acsfd @aculock -->
+     <!-- fclose dup @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- free dup @asulock @acsmem @acsfd @aculock -->
+     <!-- mempcpy dup ok -->
+     <!-- strncpy dup ok -->
+     <!-- isspace dup @mtslocale^^ -->
+     <!-- _nss_files_parse_pwent ok -->
+        <p>This function is similar to <code>getpwuid</code> in that it returns
+information about the user whose user ID is <var>uid</var>.  However, it
+fills the user supplied structure pointed to by <var>result_buf</var> with
+the information instead of using a static buffer.  The first
+<var>buflen</var> bytes of the additional buffer pointed to by <var>buffer</var>
+are used to contain additional information, normally strings which are
+pointed to by the elements of the result structure.
+
+        <p>If a user with ID <var>uid</var> is found, the pointer returned in
+<var>result</var> points to the record which contains the wanted data (i.e.,
+<var>result</var> contains the value <var>result_buf</var>).  If no user is found
+or if an error occurred, the pointer returned in <var>result</var> is a null
+pointer.  The function returns zero or an error code.  If the buffer
+<var>buffer</var> is too small to contain all the needed information, the
+error code <code>ERANGE</code> is returned and <var>errno</var> is set to
+<code>ERANGE</code>. 
+</p></blockquote></div>
+
+<!-- pwd.h -->
+<!-- POSIX.1 -->
+<div class="defun">
+&mdash; Function: struct passwd * <b>getpwnam</b> (<var>const char *name</var>)<var><a name="index-getpwnam-3438"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:pwnam locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- getpwnam @mtasurace:pwnam @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- malloc dup @ascuheap @acsmem -->
+     <!-- getpwnam_r dup @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- realloc dup @ascuheap @acsmem -->
+     <!-- free dup @ascuheap @acsmem -->
+     <!-- libc_lock_unlock dup @aculock -->
+        <p>This function returns a pointer to a statically-allocated structure
+containing information about the user whose user name is <var>name</var>. 
+This structure may be overwritten on subsequent calls to
+<code>getpwnam</code>.
+
+        <p>A null pointer return indicates there is no user named <var>name</var>. 
+</p></blockquote></div>
+
+<!-- pwd.h -->
+<!-- POSIX.1c -->
+<div class="defun">
+&mdash; Function: int <b>getpwnam_r</b> (<var>const char *name, struct passwd *result_buf, char *buffer, size_t buflen, struct passwd **result</var>)<var><a name="index-getpwnam_005fr-3439"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe locale
+| AS-Unsafe dlopen plugin heap lock
+| AC-Unsafe corrupt lock fd mem
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- getpwnam_r @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- nscd_getpwnam_r @ascuheap @asulock @aculock @acsfd @acsmem -->
+     <!-- strlen dup ok -->
+     <!-- nscd_getpw_r dup @ascuheap @asulock @aculock @acsfd @acsmem -->
+     <!-- nss_passwd_lookup2 dup @mtslocale @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- *fct.l @ascuplugin -->
+     <!-- nss_next2 dup @ascudlopen @ascuplugin @ascuheap @asulock @acucorrupt @aculock @acsfd @acsmem -->
+     <!-- _nss_files_getpwnam_r @mtslocale @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- libc_lock_lock dup @asulock @aculock -->
+     <!-- internal_setent dup @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- internal_getent dup @mtslocale^ -->
+     <!-- strcmp dup ok -->
+     <!-- internal_endent dup @ascuheap @asulock @aculock @acsmem @acsfd -->
+     <!-- libc_lock_unlock dup @aculock -->
+     <!-- _nss_*_getpwnam_r (assumed) @asuinit @asulock @acucorrupt @aculock -->
+        <p>This function is similar to <code>getpwnam</code> in that is returns
+information about the user whose user name is <var>name</var>.  However, like
+<code>getpwuid_r</code>, it fills the user supplied buffers in
+<var>result_buf</var> and <var>buffer</var> with the information instead of using
+a static buffer.
+
+        <p>The return values are the same as for <code>getpwuid_r</code>. 
+</p></blockquote></div>
+
+   </body></html>
+

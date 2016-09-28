@@ -1,0 +1,18 @@
+config BR2_PACKAGE_AML_TVIN
+	bool "amltvin"
+	depends on BR2_LINUX_KERNEL	
+	help
+	  tvin driver
+
+config BR2_PACKAGE_AML_TVIN_GIT_VERSION
+	string "tvin branch"
+	depends on BR2_PACKAGE_AML_TVIN
+	help
+		Branch for tvin
+
+config BR2_PACKAGE_AML_TVIN_GIT_REPO_URL
+	string "tvin git"
+	depends on BR2_PACKAGE_AML_TVIN
+	help
+		tvin git
+

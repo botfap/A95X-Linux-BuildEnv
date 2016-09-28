@@ -1,0 +1,11 @@
+Index: aml_touch-2014-08-12-3b21e93e66/Makefile
+===================================================================
+--- aml_touch-2014-08-12-3b21e93e66.orig/Makefile	2014-04-10 10:59:25.000000000 +0800
++++ aml_touch-2014-08-12-3b21e93e66/Makefile	2014-08-12 19:15:58.240542104 +0800
+@@ -16,5 +16,5 @@
+ ifeq ($(MAKE_FOR_LIB), y)
+ gsl_point_id-objs += gsl_point_id_z.o 
+ else 
+-gsl_point_id-objs += ../../../../../../../../hardware/amlogic/touch/gsl_point_id_z.z 
++gsl_point_id-objs += gsl_point_id_z.z 
+ endif

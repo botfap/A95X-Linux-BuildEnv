@@ -1,0 +1,247 @@
+<html lang="en">
+<head>
+<title>Working Directory - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="File-System-Interface.html#File-System-Interface" title="File System Interface">
+<link rel="next" href="Accessing-Directories.html#Accessing-Directories" title="Accessing Directories">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Working-Directory"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Accessing-Directories.html#Accessing-Directories">Accessing Directories</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="File-System-Interface.html#File-System-Interface">File System Interface</a>
+<hr>
+</div>
+
+<h3 class="section">14.1 Working Directory</h3>
+
+<p><a name="index-current-working-directory-1425"></a><a name="index-working-directory-1426"></a><a name="index-change-working-directory-1427"></a>Each process has associated with it a directory, called its <dfn>current
+working directory</dfn> or simply <dfn>working directory</dfn>, that is used in
+the resolution of relative file names (see <a href="File-Name-Resolution.html#File-Name-Resolution">File Name Resolution</a>).
+
+   <p>When you log in and begin a new session, your working directory is
+initially set to the home directory associated with your login account
+in the system user database.  You can find any user's home directory
+using the <code>getpwuid</code> or <code>getpwnam</code> functions; see <a href="User-Database.html#User-Database">User Database</a>.
+
+   <p>Users can change the working directory using shell commands like
+<code>cd</code>.  The functions described in this section are the primitives
+used by those commands and by other programs for examining and changing
+the working directory. 
+<a name="index-cd-1428"></a>
+Prototypes for these functions are declared in the header file
+<samp><span class="file">unistd.h</span></samp>. 
+<a name="index-unistd_002eh-1429"></a>
+<!-- unistd.h -->
+<!-- POSIX.1 -->
+
+<div class="defun">
+&mdash; Function: char * <b>getcwd</b> (<var>char *buffer, size_t size</var>)<var><a name="index-getcwd-1430"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe heap
+| AC-Unsafe mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- If buffer is NULL, this function calls malloc and realloc, and, in -->
+     <!-- case of error, free.  Linux offers a getcwd syscall that we use on -->
+     <!-- GNU/Linux systems, but it may fail if the pathname is too long.  As a -->
+     <!-- fallback, and on other systems, the generic implementation opens each -->
+     <!-- parent directory with opendir, which allocates memory for the -->
+     <!-- directory stream with malloc.  If a fstatat64 syscall is not -->
+     <!-- available, very deep directory trees may also have to malloc to build -->
+     <!-- longer sequences of ../../../... than those supported by a global -->
+     <!-- const read-only string. -->
+     <!-- linux/__getcwd -->
+     <!-- posix/__getcwd -->
+     <!-- malloc/realloc/free if buffer is NULL, or if dir is too deep -->
+     <!-- lstat64 -> see its own entry -->
+     <!-- fstatat64 -->
+     <!-- direct syscall if possible, alloca+snprintf+*stat64 otherwise -->
+     <!-- openat64_not_cancel_3, close_not_cancel_no_status -->
+     <!-- __fdopendir, __opendir, __readdir, rewinddir -->
+        <p>The <code>getcwd</code> function returns an absolute file name representing
+the current working directory, storing it in the character array
+<var>buffer</var> that you provide.  The <var>size</var> argument is how you tell
+the system the allocation size of <var>buffer</var>.
+
+        <p>The GNU C Library version of this function also permits you to specify a
+null pointer for the <var>buffer</var> argument.  Then <code>getcwd</code>
+allocates a buffer automatically, as with <code>malloc</code>
+(see <a href="Unconstrained-Allocation.html#Unconstrained-Allocation">Unconstrained Allocation</a>).  If the <var>size</var> is greater than
+zero, then the buffer is that large; otherwise, the buffer is as large
+as necessary to hold the result.
+
+        <p>The return value is <var>buffer</var> on success and a null pointer on failure. 
+The following <code>errno</code> error conditions are defined for this function:
+
+          <dl>
+<dt><code>EINVAL</code><dd>The <var>size</var> argument is zero and <var>buffer</var> is not a null pointer.
+
+          <br><dt><code>ERANGE</code><dd>The <var>size</var> argument is less than the length of the working directory
+name.  You need to allocate a bigger array and try again.
+
+          <br><dt><code>EACCES</code><dd>Permission to read or search a component of the file name was denied. 
+</dl>
+        </p></blockquote></div>
+
+   <p>You could implement the behavior of GNU's <code>getcwd&nbsp;(NULL,&nbsp;0)</code><!-- /@w -->
+using only the standard behavior of <code>getcwd</code>:
+
+<pre class="smallexample">     char *
+     gnu_getcwd ()
+     {
+       size_t size = 100;
+     
+       while (1)
+         {
+           char *buffer = (char *) xmalloc (size);
+           if (getcwd (buffer, size) == buffer)
+             return buffer;
+           free (buffer);
+           if (errno != ERANGE)
+             return 0;
+           size *= 2;
+         }
+     }
+</pre>
+   <p class="noindent">See <a href="Malloc-Examples.html#Malloc-Examples">Malloc Examples</a>, for information about <code>xmalloc</code>, which is
+not a library function but is a customary name used in most GNU
+software.
+
+<!-- unistd.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Deprecated Function: char * <b>getwd</b> (<var>char *buffer</var>)<var><a name="index-getwd-1431"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe heap i18n
+| AC-Unsafe mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Besides the getcwd safety issues, it calls strerror_r on error, which -->
+     <!-- brings in all of the i18n issues. -->
+        <p>This is similar to <code>getcwd</code>, but has no way to specify the size of
+the buffer.  The GNU C Library provides <code>getwd</code> only
+for backwards compatibility with BSD.
+
+        <p>The <var>buffer</var> argument should be a pointer to an array at least
+<code>PATH_MAX</code> bytes long (see <a href="Limits-for-Files.html#Limits-for-Files">Limits for Files</a>).  On GNU/Hurd systems
+there is no limit to the size of a file name, so this is not
+necessarily enough space to contain the directory name.  That is why
+this function is deprecated. 
+</p></blockquote></div>
+
+<!-- unistd.h -->
+<!-- GNU -->
+<div class="defun">
+&mdash; Function: char * <b>get_current_dir_name</b> (<var>void</var>)<var><a name="index-get_005fcurrent_005fdir_005fname-1432"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe env
+| AS-Unsafe heap
+| AC-Unsafe mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Besides getcwd, which this function calls as a fallback, it calls -->
+     <!-- getenv, with the potential thread-safety issues that brings about. -->
+        <p><a name="index-PWD-1433"></a>This <code>get_current_dir_name</code> function is basically equivalent to
+<code>getcwd&nbsp;(NULL,&nbsp;0)</code><!-- /@w -->.  The only difference is that the value of
+the <code>PWD</code> variable is returned if this value is correct.  This is a
+subtle difference which is visible if the path described by the
+<code>PWD</code> value is using one or more symbol links in which case the
+value returned by <code>getcwd</code> can resolve the symbol links and
+therefore yield a different result.
+
+        <p>This function is a GNU extension. 
+</p></blockquote></div>
+
+<!-- unistd.h -->
+<!-- POSIX.1 -->
+<div class="defun">
+&mdash; Function: int <b>chdir</b> (<var>const char *filename</var>)<var><a name="index-chdir-1434"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>This function is used to set the process's working directory to
+<var>filename</var>.
+
+        <p>The normal, successful return value from <code>chdir</code> is <code>0</code>.  A
+value of <code>-1</code> is returned to indicate an error.  The <code>errno</code>
+error conditions defined for this function are the usual file name
+syntax errors (see <a href="File-Name-Errors.html#File-Name-Errors">File Name Errors</a>), plus <code>ENOTDIR</code> if the
+file <var>filename</var> is not a directory. 
+</p></blockquote></div>
+
+<!-- unistd.h -->
+<!-- XPG -->
+<div class="defun">
+&mdash; Function: int <b>fchdir</b> (<var>int filedes</var>)<var><a name="index-fchdir-1435"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+        <p>This function is used to set the process's working directory to
+directory associated with the file descriptor <var>filedes</var>.
+
+        <p>The normal, successful return value from <code>fchdir</code> is <code>0</code>.  A
+value of <code>-1</code> is returned to indicate an error.  The following
+<code>errno</code> error conditions are defined for this function:
+
+          <dl>
+<dt><code>EACCES</code><dd>Read permission is denied for the directory named by <code>dirname</code>.
+
+          <br><dt><code>EBADF</code><dd>The <var>filedes</var> argument is not a valid file descriptor.
+
+          <br><dt><code>ENOTDIR</code><dd>The file descriptor <var>filedes</var> is not associated with a directory.
+
+          <br><dt><code>EINTR</code><dd>The function call was interrupt by a signal.
+
+          <br><dt><code>EIO</code><dd>An I/O error occurred. 
+</dl>
+        </p></blockquote></div>
+
+   </body></html>
+

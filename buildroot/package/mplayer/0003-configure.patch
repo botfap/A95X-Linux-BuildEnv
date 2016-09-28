@@ -1,0 +1,25 @@
+Index: MPlayer-1.2/configure
+===================================================================
+--- MPlayer-1.2.orig/configure	2015-12-08 12:15:51.602222226 +0800
++++ MPlayer-1.2/configure	2015-12-08 12:18:16.670224820 +0800
+@@ -7809,6 +7809,12 @@
+ fi
+ echores "$_xmms"
+ 
++if test $arch = 'aarch64' ; then
++  def_armv8='#define HAVE_ARMV8 1'
++else
++  def_armv8='#undef HAVE_ARMV8'
++fi
++
+ 
+ # --------------- GUI specific tests begin -------------------
+ echocheck "GUI"
+@@ -8850,6 +8856,7 @@
+ $def_restrict_keyword
+ $def_rtc
+ $def_unrar_exec
++$def_armv8
+ 
+ 
+ /* configurable options */

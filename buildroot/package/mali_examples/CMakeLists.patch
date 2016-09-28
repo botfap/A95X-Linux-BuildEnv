@@ -1,0 +1,35 @@
+Index: Mali_OpenGL_ES_SDK_v2.4.4/CMakeLists.txt
+===================================================================
+--- Mali_OpenGL_ES_SDK_v2.4.4.orig/CMakeLists.txt	2014-12-12 18:20:47.000000000 +0800
++++ Mali_OpenGL_ES_SDK_v2.4.4/CMakeLists.txt	2015-08-03 12:05:28.094106599 +0800
+@@ -27,11 +27,11 @@
+ if(${TARGET} STREQUAL "arm")
+     # If the TOOLCHAIN_ROOT environment variable is set, use it, otherwise
+     # try to find the compiler on the path.
+-    if (DEFINED ENV{TOOLCHAIN_ROOT})
++    if (TOOLCHAIN_ROOT)
+         message ("Using the environment variable TOOLCHAIN_ROOT")
+         message ("as a path to search to for your toolchain.")
+         message ("If you don't want to use the environment variable you must clear it.")
+-        set (TOOLCHAIN_ROOT $ENV{TOOLCHAIN_ROOT})
++	#set (TOOLCHAIN_ROOT $ENV{TOOLCHAIN_ROOT)
+     else()
+         message ("The environment variable TOOLCHAIN_ROOT is not set.")
+         message ("If you set TOOLCHAIN_ROOT we will use it as a path to search to for your toolchain.")
+@@ -61,7 +61,7 @@
+ include_directories(simple_framework/inc/models)
+ 
+ # Set the install prefix per target.
+-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin_${TARGET})
++# set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin_${TARGET})
+ 
+ if(${TARGET} STREQUAL "emulator")
+     if (WIN32)
+@@ -91,6 +91,7 @@
+     # Linux on ARM
+     set (GLES_LIB "libGLESv2.so")
+     set (EGL_LIB "libEGL.so")
++    add_definitions(-D__arm__)
+ 
+     set(DUMMY_MALI_LIBRARIES GLESv2 EGL)
+     add_subdirectory(lib/arm)

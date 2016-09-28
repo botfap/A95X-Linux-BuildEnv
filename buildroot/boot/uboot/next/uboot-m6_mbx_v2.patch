@@ -1,0 +1,52 @@
+Index: uboot-next/board/amlogic/configs/m6_mbx_v2.h
+===================================================================
+--- uboot-next.orig/board/amlogic/configs/m6_mbx_v2.h	2015-03-19 10:18:57.000000000 +0800
++++ uboot-next/board/amlogic/configs/m6_mbx_v2.h	2015-03-19 17:07:49.177746152 +0800
+@@ -202,7 +202,7 @@
+ 	"display_color_bg=0\0" \
+ 	"fb_addr=0x88100000\0" \
+ 	"sleep_threshold=20\0" \
+-	"upgrade_step=0\0" \
++	"upgrade_step=2\0" \
+ 	"batlow_threshold=10\0" \
+ 	"batfull_threshold=98\0" \
+ 	"outputmode=1080p\0" \
+@@ -231,18 +231,36 @@
+ 	"prepare= "\
+ 		"logo size ${outputmode};video dev open ${outputmode};video open; video clear;store read logo 0x83000000 0 800000;unpackimg 0x83000000;bmp scale ${bootup_offset} ${loadaddr};bmp display ${loadaddr}\0"\
+ 	"nandargs= "\
+-            "setenv bootargs root=/dev/cardblksd2 rw rootfstype=ext3 rootwait init=/init console=ttyS0,115200n8 logo=osd1,loaded,${fb_addr},${outputmode},full androidboot.resolution=${outputmode} hdmimode=${hdmimode} cvbsmode=${cvbsmode} hlt mem=512m a9_clk_max=1512000000 vdachwswitch=${vdacswitchmode} hdmitx=${cecconfig}\0"\
++            "setenv bootargs root=/dev/system rw rootfstype=ext4 rootwait init=/sbin/init console=ttyS0,115200n8 logo=osd1,loaded,${fb_addr},${outputmode},full androidboot.resolution=${outputmode} hdmimode=${hdmimode} cvbsmode=${cvbsmode} hlt vmalloc=256m mem=1024m a9_clk_max=1512000000 vdachwswitch=${vdacswitchmode} hdmitx=${hdmimode}\0"\
+ 	"switch_bootmode="\
+         "if test ${reboot_mode} = factory_reset; then run recovery; fi;"\
+         "if test ${reboot_mode} = usb_burning; then run usb_burning; fi; "\
+         "if test ${reboot_mode} = update; then run update; fi\0" \
++    "bootsdargs=setenv bootargs root=/dev/mmcblk0p1 rw rootfstype=ext2 rootwait init=/sbin/init console=ttyS0,115200n8 logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} hlt vmalloc=256m mem=1024m a9_clk_max=1512000000 vdachwswitch=${vdacswitchmode} hdmitx=${hdmimode}\0"\
++    "bootupdateargs=setenv bootargs root=/dev/mmcblk0p1 rw rootfstype=vfat rootwait init=/sbin/init console=ttyS0,115200n8 logo=osd1,loaded,${fb_addr},${outputmode},full hdmimode=${hdmimode} cvbsmode=${cvbsmode} hlt vmalloc=256m mem=1024m a9_clk_max=1512000000 vdachwswitch=${vdacswitchmode} hdmitx=${hdmimode} firmware=rootfs.tar.gz\0"\
+ 	"nandboot="\
+         "echo Booting ...;"\
+         "run nandargs;"\
+         "setenv bootargs ${bootargs} androidboot.firstboot=${firstboot} ;"\
+         "imgread kernel boot ${loadaddr};"\
+         "hdcp prefetch nand;"\
+-        "bootm;run recovery\0" \
++        "bootm\0" \
++    "bootsdcard="\
++         "echo Booting ...;"\
++         "run nandargs;"\
++         "run bootsdargs; "\
++         "mmcinfo;"\
++         "ext2load mmc 0 ${loadaddr} boot.img;"\
++         "hdcp prefetch nand;"\
++         "bootm\0" \
++    "bootupdate="\
++         "echo Booting ...;"\
++         "run nandargs;"\
++         "run bootupdateargs; "\
++         "mmcinfo;"\
++         "fatload mmc 0 ${loadaddr} boot.img;"\
++         "hdcp prefetch nand;"\
++         "bootm\0" \
+ 	"recovery="\
+         "echo enter recovery;"\
+         "run nandargs;"\

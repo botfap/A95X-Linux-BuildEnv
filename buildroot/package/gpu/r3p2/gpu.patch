@@ -1,0 +1,13 @@
+diff -Naur gpu-r3p2.org/mali/Kconfig gpu-r3p2/mali/Kconfig
+--- gpu-r3p2.org/mali/Kconfig	2013-11-14 21:05:32.533570335 -0800
++++ gpu-r3p2/mali/Kconfig	2013-11-14 21:06:35.485571661 -0800
+@@ -2,8 +2,7 @@
+ config MALI400
+ 	tristate "Mali-300/400/450 support"
+ 	depends on ARM
+-	depends on m
+-	default m
++	default y
+ 	select DMA_SHARED_BUFFER
+ 	---help---
+ 	  This enables support for the ARM Mali-300, Mali-400, and Mali-450

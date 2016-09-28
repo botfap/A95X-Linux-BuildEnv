@@ -1,0 +1,11 @@
+--- autotest-autotest-7812b73/client/harness_standalone.py.orig	2014-05-19 16:58:57.990729304 +0800
++++ autotest-autotest-7812b73/client/harness_standalone.py	2014-05-19 16:59:16.834729657 +0800
+@@ -88,7 +88,7 @@ class harness_standalone(harness.harness
+         if vendor == 'SUSE':
+             service_link = '/etc/init.d/rc%s.d/S99autotest' % initdefault
+         else:
+-            service_link = '/etc/rc%s.d/S99autotest' % initdefault
++            service_link = '/etc/init.d/S99autotest'
+         try:
+             if os.path.islink(service):
+                 os.remove(service)

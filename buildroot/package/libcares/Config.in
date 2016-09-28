@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBCARES
+	bool "libcares"
+	help
+	  a C library for asynchronous DNS requests (including name resolves)
+
+	  http://c-ares.haxx.se/

@@ -1,0 +1,36 @@
+--- webkit-1.11.5/Source/WebCore/platform/gtk/RedirectedXCompositeWindow.cpp.orig	2014-03-31 18:47:55.086134828 +0800
++++ webkit-1.11.5/Source/WebCore/platform/gtk/RedirectedXCompositeWindow.cpp	2014-03-31 18:48:34.074135559 +0800
+@@ -27,7 +27,7 @@
+ #include "config.h"
+ #include "RedirectedXCompositeWindow.h"
+ 
+-#if USE(GLX)
++#if USE(OPENGL) && PLATFORM(X11)
+ 
+ #include <X11/extensions/Xcomposite.h>
+ #include <X11/extensions/Xdamage.h>
+@@ -267,4 +267,4 @@ void RedirectedXCompositeWindow::callDam
+ 
+ } // namespace WebCore
+ 
+-#endif // USE(GLX)
++#endif // USE(OPENGL) && PLATFORM(X11) 
+--- webkit-1.11.5/Source/WebCore/platform/gtk/RedirectedXCompositeWindow.h.orig	2014-03-31 18:48:52.170135899 +0800
++++ webkit-1.11.5/Source/WebCore/platform/gtk/RedirectedXCompositeWindow.h	2014-03-31 18:49:16.062136347 +0800
+@@ -27,7 +27,7 @@
+ #ifndef  RedirectedXCompositeWindow_h
+ #define  RedirectedXCompositeWindow_h
+ 
+-#if USE(GLX)
++#if USE(OPENGL) && PLATFORM(X11) 
+ 
+ #include "GLContext.h"
+ #include "IntSize.h"
+@@ -80,6 +80,6 @@ private:
+ 
+ } // namespace WebCore
+ 
+-#endif // USE(GLX)
++#endif // USE(OPENGL) && PLATFORM(X11) 
+ 
+ #endif // RedirectedXCompositeWindow_h

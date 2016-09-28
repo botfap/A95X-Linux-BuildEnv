@@ -1,0 +1,240 @@
+<html lang="en">
+<head>
+<title>Other Safety Remarks - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="POSIX.html#POSIX" title="POSIX">
+<link rel="prev" href="Conditionally-Safe-Features.html#Conditionally-Safe-Features" title="Conditionally Safe Features">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Other-Safety-Remarks"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Conditionally-Safe-Features.html#Conditionally-Safe-Features">Conditionally Safe Features</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="POSIX.html#POSIX">POSIX</a>
+<hr>
+</div>
+
+<h5 class="subsubsection">1.2.2.4 Other Safety Remarks</h5>
+
+<p><a name="index-Other-Safety-Remarks-42"></a>
+Additional keywords may be attached to functions, indicating features
+that do not make a function unsafe to call, but that may need to be
+taken into account in certain classes of programs:
+
+     <ul>
+<li><code>locale</code>
+<a name="index-locale-43"></a>
+Functions annotated with <code>locale</code> as an MT-Safety issue read from
+the locale object without any form of synchronization.  Functions
+annotated with <code>locale</code> called concurrently with locale changes may
+behave in ways that do not correspond to any of the locales active
+during their execution, but an unpredictable mix thereof.
+
+     <p>We do not mark these functions as MT- or AS-Unsafe, however, because
+functions that modify the locale object are marked with
+<code>const:locale</code> and regarded as unsafe.  Being unsafe, the latter
+are not to be called when multiple threads are running or asynchronous
+signals are enabled, and so the locale can be considered effectively
+constant in these contexts, which makes the former safe.
+
+     <!-- Should the locking strategy suggested under @code{const} be used, -->
+     <!-- failure to guard locale uses is not as fatal as data races in -->
+     <!-- general: unguarded uses will @emph{not} follow dangling pointers or -->
+     <!-- access uninitialized, unmapped or recycled memory.  Each access will -->
+     <!-- read from a consistent locale object that is or was active at some -->
+     <!-- point during its execution.  Without synchronization, however, it -->
+     <!-- cannot even be assumed that, after a change in locale, earlier -->
+     <!-- locales will no longer be used, even after the newly-chosen one is -->
+     <!-- used in the thread.  Nevertheless, even though unguarded reads from -->
+     <!-- the locale will not violate type safety, functions that access the -->
+     <!-- locale multiple times may invoke all sorts of undefined behavior -->
+     <!-- because of the unexpected locale changes. -->
+     <li><code>env</code>
+<a name="index-env-44"></a>
+Functions marked with <code>env</code> as an MT-Safety issue access the
+environment with <code>getenv</code> or similar, without any guards to ensure
+safety in the presence of concurrent modifications.
+
+     <p>We do not mark these functions as MT- or AS-Unsafe, however, because
+functions that modify the environment are all marked with
+<code>const:env</code> and regarded as unsafe.  Being unsafe, the latter are
+not to be called when multiple threads are running or asynchronous
+signals are enabled, and so the environment can be considered
+effectively constant in these contexts, which makes the former safe.
+
+     <li><code>hostid</code>
+<a name="index-hostid-45"></a>
+The function marked with <code>hostid</code> as an MT-Safety issue reads from
+the system-wide data structures that hold the &ldquo;host ID&rdquo; of the
+machine.  These data structures cannot generally be modified atomically. 
+Since it is expected that the &ldquo;host ID&rdquo; will not normally change, the
+function that reads from it (<code>gethostid</code>) is regarded as safe,
+whereas the function that modifies it (<code>sethostid</code>) is marked with
+<code>const:hostid</code>, indicating it may require special
+care if it is to be called.  In this specific case, the special care
+amounts to system-wide (not merely intra-process) coordination.
+
+     <li><code>sigintr</code>
+<a name="index-sigintr-46"></a>
+Functions marked with <code>sigintr</code> as an MT-Safety issue access the
+<code>_sigintr</code> internal data structure without any guards to ensure
+safety in the presence of concurrent modifications.
+
+     <p>We do not mark these functions as MT- or AS-Unsafe, however, because
+functions that modify the this data structure are all marked with
+<code>const:sigintr</code> and regarded as unsafe.  Being unsafe, the latter
+are not to be called when multiple threads are running or asynchronous
+signals are enabled, and so the data structure can be considered
+effectively constant in these contexts, which makes the former safe.
+
+     <li><code>fd</code>
+<a name="index-fd-47"></a>
+Functions annotated with <code>fd</code> as an AC-Safety issue may leak file
+descriptors if asynchronous thread cancellation interrupts their
+execution.
+
+     <p>Functions that allocate or deallocate file descriptors will generally be
+marked as such.  Even if they attempted to protect the file descriptor
+allocation and deallocation with cleanup regions, allocating a new
+descriptor and storing its number where the cleanup region could release
+it cannot be performed as a single atomic operation.  Similarly,
+releasing the descriptor and taking it out of the data structure
+normally responsible for releasing it cannot be performed atomically. 
+There will always be a window in which the descriptor cannot be released
+because it was not stored in the cleanup handler argument yet, or it was
+already taken out before releasing it.  It cannot be taken out after
+release: an open descriptor could mean either that the descriptor still
+has to be closed, or that it already did so but the descriptor was
+reallocated by another thread or signal handler.
+
+     <p>Such leaks could be internally avoided, with some performance penalty,
+by temporarily disabling asynchronous thread cancellation.  However,
+since callers of allocation or deallocation functions would have to do
+this themselves, to avoid the same sort of leak in their own layer, it
+makes more sense for the library to assume they are taking care of it
+than to impose a performance penalty that is redundant when the problem
+is solved in upper layers, and insufficient when it is not.
+
+     <p>This remark by itself does not cause a function to be regarded as
+AC-Unsafe.  However, cumulative effects of such leaks may pose a
+problem for some programs.  If this is the case, suspending asynchronous
+cancellation for the duration of calls to such functions is recommended.
+
+     <li><code>mem</code>
+<a name="index-mem-48"></a>
+Functions annotated with <code>mem</code> as an AC-Safety issue may leak
+memory if asynchronous thread cancellation interrupts their execution.
+
+     <p>The problem is similar to that of file descriptors: there is no atomic
+interface to allocate memory and store its address in the argument to a
+cleanup handler, or to release it and remove its address from that
+argument, without at least temporarily disabling asynchronous
+cancellation, which these functions do not do.
+
+     <p>This remark does not by itself cause a function to be regarded as
+generally AC-Unsafe.  However, cumulative effects of such leaks may be
+severe enough for some programs that disabling asynchronous cancellation
+for the duration of calls to such functions may be required.
+
+     <li><code>cwd</code>
+<a name="index-cwd-49"></a>
+Functions marked with <code>cwd</code> as an MT-Safety issue may temporarily
+change the current working directory during their execution, which may
+cause relative pathnames to be resolved in unexpected ways in other
+threads or within asynchronous signal or cancellation handlers.
+
+     <p>This is not enough of a reason to mark so-marked functions as MT- or
+AS-Unsafe, but when this behavior is optional (e.g., <code>nftw</code> with
+<code>FTW_CHDIR</code>), avoiding the option may be a good alternative to
+using full pathnames or file descriptor-relative (e.g. <code>openat</code>)
+system calls.
+
+     <li><code>!posix</code>
+<a name="index-g_t_0021posix-50"></a>
+This remark, as an MT-, AS- or AC-Safety note to a function, indicates
+the safety status of the function is known to differ from the specified
+status in the POSIX standard.  For example, POSIX does not require a
+function to be Safe, but our implementation is, or vice-versa.
+
+     <p>For the time being, the absence of this remark does not imply the safety
+properties we documented are identical to those mandated by POSIX for
+the corresponding functions.
+
+     <li><code>:identifier</code>
+<a name="index-g_t_003aidentifier-51"></a>
+Annotations may sometimes be followed by identifiers, intended to group
+several functions that e.g. access the data structures in an unsafe way,
+as in <code>race</code> and <code>const</code>, or to provide more specific
+information, such as naming a signal in a function marked with
+<code>sig</code>.  It is envisioned that it may be applied to <code>lock</code> and
+<code>corrupt</code> as well in the future.
+
+     <p>In most cases, the identifier will name a set of functions, but it may
+name global objects or function arguments, or identifiable properties or
+logical components associated with them, with a notation such as
+e.g. <code>:buf(arg)</code> to denote a buffer associated with the argument
+<var>arg</var>, or <code>:tcattr(fd)</code> to denote the terminal attributes of a
+file descriptor <var>fd</var>.
+
+     <p>The most common use for identifiers is to provide logical groups of
+functions and arguments that need to be protected by the same
+synchronization primitive in order to ensure safe operation in a given
+context.
+
+     <li><code>/condition</code>
+<a name="index-g_t_002fcondition-52"></a>
+Some safety annotations may be conditional, in that they only apply if a
+boolean expression involving arguments, global variables or even the
+underlying kernel evaluates evaluates to true.  Such conditions as
+<code>/hurd</code> or <code>/!linux!bsd</code> indicate the preceding marker only
+applies when the underlying kernel is the HURD, or when it is neither
+Linux nor a BSD kernel, respectively.  <code>/!ps</code> and
+<code>/one_per_line</code> indicate the preceding marker only applies when
+argument <var>ps</var> is NULL, or global variable <var>one_per_line</var> is
+nonzero.
+
+     <p>When all marks that render a function unsafe are adorned with such
+conditions, and none of the named conditions hold, then the function can
+be regarded as safe.
+
+   </ul>
+
+   </body></html>
+

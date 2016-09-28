@@ -1,0 +1,153 @@
+<html lang="en">
+<head>
+<title>BSD Handler - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="BSD-Signal-Handling.html#BSD-Signal-Handling" title="BSD Signal Handling">
+<link rel="next" href="Blocking-in-BSD.html#Blocking-in-BSD" title="Blocking in BSD">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="BSD-Handler"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Blocking-in-BSD.html#Blocking-in-BSD">Blocking in BSD</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="BSD-Signal-Handling.html#BSD-Signal-Handling">BSD Signal Handling</a>
+<hr>
+</div>
+
+<h4 class="subsection">24.10.1 BSD Function to Establish a Handler</h4>
+
+<!-- signal.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Data Type: <b>struct sigvec</b><var><a name="index-struct-sigvec-3034"></a></var><br>
+<blockquote><p>This data type is the BSD equivalent of <code>struct sigaction</code>
+(see <a href="Advanced-Signal-Handling.html#Advanced-Signal-Handling">Advanced Signal Handling</a>); it is used to specify signal actions
+to the <code>sigvec</code> function.  It contains the following members:
+
+          <dl>
+<dt><code>sighandler_t sv_handler</code><dd>This is the handler function.
+
+          <br><dt><code>int sv_mask</code><dd>This is the mask of additional signals to be blocked while the handler
+function is being called.
+
+          <br><dt><code>int sv_flags</code><dd>This is a bit mask used to specify various flags which affect the
+behavior of the signal.  You can also refer to this field as
+<code>sv_onstack</code>. 
+</dl>
+        </p></blockquote></div>
+
+   <p>These symbolic constants can be used to provide values for the
+<code>sv_flags</code> field of a <code>sigvec</code> structure.  This field is a bit
+mask value, so you bitwise-OR the flags of interest to you together.
+
+<!-- signal.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Macro: int <b>SV_ONSTACK</b><var><a name="index-SV_005fONSTACK-3035"></a></var><br>
+<blockquote><p>If this bit is set in the <code>sv_flags</code> field of a <code>sigvec</code>
+structure, it means to use the signal stack when delivering the signal. 
+</p></blockquote></div>
+
+<!-- signal.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Macro: int <b>SV_INTERRUPT</b><var><a name="index-SV_005fINTERRUPT-3036"></a></var><br>
+<blockquote><p>If this bit is set in the <code>sv_flags</code> field of a <code>sigvec</code>
+structure, it means that system calls interrupted by this kind of signal
+should not be restarted if the handler returns; instead, the system
+calls should return with a <code>EINTR</code> error status.  See <a href="Interrupted-Primitives.html#Interrupted-Primitives">Interrupted Primitives</a>. 
+</p></blockquote></div>
+
+<!-- signal.h -->
+<!-- Sun -->
+<div class="defun">
+&mdash; Macro: int <b>SV_RESETHAND</b><var><a name="index-SV_005fRESETHAND-3037"></a></var><br>
+<blockquote><p>If this bit is set in the <code>sv_flags</code> field of a <code>sigvec</code>
+structure, it means to reset the action for the signal back to
+<code>SIG_DFL</code> when the signal is received. 
+</p></blockquote></div>
+
+<!-- signal.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: int <b>sigvec</b> (<var>int signum, const struct sigvec *action, struct sigvec *old-action</var>)<var><a name="index-sigvec-3038"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Safe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- This is mostly a safe wrapper for sigaction.  The exception are -->
+     <!-- systems that lack SA_RESETHAND, in which a signal handler wrapper is -->
+     <!-- used that calls sigaction to reset the handler before calling the -->
+     <!-- user-supplied handler; it's unlikely that this emulation is used -->
+     <!-- anywhere, for user-supplied flags and mask don't seem to be used -->
+     <!-- the way one would expect. -->
+        <p>This function is the equivalent of <code>sigaction</code> (see <a href="Advanced-Signal-Handling.html#Advanced-Signal-Handling">Advanced Signal Handling</a>); it installs the action <var>action</var> for the signal <var>signum</var>,
+returning information about the previous action in effect for that signal
+in <var>old-action</var>. 
+</p></blockquote></div>
+
+<!-- signal.h -->
+<!-- BSD -->
+<div class="defun">
+&mdash; Function: int <b>siginterrupt</b> (<var>int signum, int failflag</var>)<var><a name="index-siginterrupt-3039"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe const:sigintr
+| AS-Unsafe
+| AC-Unsafe corrupt
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- This calls sigaction twice, once to get the current sigaction for the -->
+     <!-- specified signal, another to apply the flags change.  This could -->
+     <!-- override the effects of a concurrent sigaction call.  It also -->
+     <!-- modifies without any guards the global _sigintr variable, that -->
+     <!-- bsd_signal reads from, and it may leave _sigintr modified without -->
+     <!-- overriding the active handler if cancelled between the two -->
+     <!-- operations. -->
+        <p>This function specifies which approach to use when certain primitives
+are interrupted by handling signal <var>signum</var>.  If <var>failflag</var> is
+false, signal <var>signum</var> restarts primitives.  If <var>failflag</var> is
+true, handling <var>signum</var> causes these primitives to fail with error
+code <code>EINTR</code>.  See <a href="Interrupted-Primitives.html#Interrupted-Primitives">Interrupted Primitives</a>. 
+</p></blockquote></div>
+
+   </body></html>
+

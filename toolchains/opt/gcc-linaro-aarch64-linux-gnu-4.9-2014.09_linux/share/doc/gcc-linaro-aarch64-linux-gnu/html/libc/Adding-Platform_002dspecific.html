@@ -1,0 +1,116 @@
+<html lang="en">
+<head>
+<title>Adding Platform-specific - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Source-Layout.html#Source-Layout" title="Source Layout">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Adding-Platform-specific"></a>
+<a name="Adding-Platform_002dspecific"></a>
+<p>
+Up:&nbsp;<a rel="up" accesskey="u" href="Source-Layout.html#Source-Layout">Source Layout</a>
+<hr>
+</div>
+
+<h4 class="appendixsubsec">D.1.1 Platform-specific types, macros and functions</h4>
+
+<p>It's sometimes necessary to provide nonstandard, platform-specific
+features to developers.  The C library is traditionally the
+lowest library layer, so it makes sense for it to provide these
+low-level features.  However, including these features in the C
+library may be a disadvantage if another package provides them
+as well as there will be two conflicting versions of them.  Also,
+the features won't be available to projects that do not use
+the GNU C Library but use other GNU tools, like GCC.
+
+   <p>The current guidelines are:
+     <ul>
+<li>If the header file provides features that only make sense on a particular
+machine architecture and have nothing to do with an operating system, then
+the features should ultimately be provided as GCC built-in functions.  Until
+then, the GNU C Library may provide them in the header file.  When the GCC built-in
+functions become available, those provided in the header file should be made
+conditionally available prior to the GCC version in which the built-in
+function was made available.
+
+     <li>If the header file provides features that are specific to an operating system,
+both GCC and the GNU C Library could provide it, but the GNU C Library is preferred
+as it already has a lot of information about the operating system.
+
+     <li>If the header file provides features that are specific to an operating system
+but used by the GNU C Library, then the GNU C Library should provide them. 
+</ul>
+
+   <p>The general solution for providing low-level features is to export them as
+follows:
+
+     <ul>
+<li>A nonstandard, low-level header file that defines macros and inline
+functions should be called <samp><span class="file">sys/platform/</span><var>name</var><span class="file">.h</span></samp>.
+
+     <li>Each header file's name should include the platform name, to avoid
+users thinking there is anything in common between different the
+header files for different platforms.  For example, a
+<samp><span class="file">sys/platform/</span><var>arch</var><span class="file">.h</span></samp> name such as
+<samp><span class="file">sys/platform/ppc.h</span></samp> is better than <samp><span class="file">sys/platform.h</span></samp>.
+
+     <li>A platform-specific header file provided by the GNU C Library should coordinate
+with GCC such that compiler built-in versions of the functions and macros are
+preferred if available.  This means that user programs will only ever need to
+include <samp><span class="file">sys/platform/</span><var>arch</var><span class="file">.h</span></samp>, keeping the same names of types,
+macros, and functions for convenience and portability.
+
+     <li>Each included symbol must have the prefix <code>__</code><var>arch</var><code>_</code>, such as
+<code>__ppc_get_timebase</code>. 
+</ul>
+
+   <p>The easiest way to provide a header file is to add it to the
+<code>sysdep_headers</code> variable.  For example, the combination of
+Linux-specific header files on PowerPC could be provided like this:
+
+<pre class="smallexample">     sysdep_headers += sys/platform/ppc.h
+</pre>
+   <p>Then ensure that you have added a <samp><span class="file">sys/platform/ppc.h</span></samp>
+header file in the machine-specific directory, e.g.,
+<samp><span class="file">sysdeps/powerpc/sys/platform/ppc.h</span></samp>.
+
+   </body></html>
+

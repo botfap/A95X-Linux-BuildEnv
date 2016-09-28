@@ -1,0 +1,12 @@
+Index: libXext-1.3.3/include/X11/extensions/extutil.h
+===================================================================
+--- libXext-1.3.3.orig/include/X11/extensions/extutil.h	2015-11-05 16:55:57.991608794 +0800
++++ libXext-1.3.3/include/X11/extensions/extutil.h	2015-11-05 16:59:00.539612063 +0800
+@@ -166,6 +166,7 @@
+ #define XEXT_GENERATE_CLOSE_DISPLAY(proc,extinfo) \
+ int proc (Display *dpy, XExtCodes *codes) \
+ { \
++    codes = codes; \
+     return XextRemoveDisplay (extinfo, dpy); \
+ }
+ 

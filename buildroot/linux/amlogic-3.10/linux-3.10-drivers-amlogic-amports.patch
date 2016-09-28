@@ -1,0 +1,24 @@
+diff -ruN linux-amlogic-3.10-bringup.orig/drivers/amlogic/amports/video.c drivers/amlogic/amports/video.c
+--- linux-amlogic-3.10-bringup.orig/drivers/amlogic/amports/video.c	2015-01-13 10:04:47.000000000 +0800
++++ linux-amlogic-3.10-bringup/drivers/amlogic/amports/video.c	2016-05-10 11:16:44.943483804 +0800
+@@ -1938,6 +1938,9 @@
+         r |= VDIF_CHROMA_HZ_AVG | VDIF_LUMA_HZ_AVG;
+     }
+ 
++    if(vf->type & VIDTYPE_LITTLE_ENDIAN)
++        r |= VDIF_LITTLE_ENDIAN;
++
+     VSYNC_WR_MPEG_REG(VD1_IF0_GEN_REG + cur_dev->viu_off, r);
+     VSYNC_WR_MPEG_REG(VD2_IF0_GEN_REG, r);
+ 
+diff -ruN drivers.orig/amlogic/amports/video.h drivers/amlogic/amports/video.h
+--- linux-amlogic-3.10-bringup.orig/drivers/amlogic/amports/video.h	2015-01-13 10:04:47.000000000 +0800
++++ linux-amlogic-3.10-bringup/drivers/amlogic/amports/video.h	2016-05-10 11:16:17.182151927 +0800
+@@ -124,6 +124,7 @@
+ #define VDIF_BURSTSIZE_Y_BIT         8
+ #define VDIF_MANULE_START_FRAME      (1<<7)
+ #define VDIF_CHRO_RPT_LAST           (1<<6)
++#define VDIF_LITTLE_ENDIAN           (1<<4)
+ #define VDIF_CHROMA_HZ_AVG           (1<<3)
+ #define VDIF_LUMA_HZ_AVG             (1<<2)
+ #define VDIF_SEPARATE_EN             (1<<1)

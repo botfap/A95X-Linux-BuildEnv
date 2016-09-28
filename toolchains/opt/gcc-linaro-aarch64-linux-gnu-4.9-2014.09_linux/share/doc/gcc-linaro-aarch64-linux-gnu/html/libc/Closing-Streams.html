@@ -1,0 +1,144 @@
+<html lang="en">
+<head>
+<title>Closing Streams - The GNU C Library</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The GNU C Library">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="I_002fO-on-Streams.html#I_002fO-on-Streams" title="I/O on Streams">
+<link rel="prev" href="Opening-Streams.html#Opening-Streams" title="Opening Streams">
+<link rel="next" href="Streams-and-Threads.html#Streams-and-Threads" title="Streams and Threads">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This file documents the GNU C Library.
+
+This is
+`The GNU C Library Reference Manual', for version
+2.19-2014.08 (crosstool-NG linaro-1.13.1-4.9-2014.09 - Linaro GCC 4.9-2014.09).
+
+Copyright (C) 1993--2014 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version
+1.3 or any later version published by the Free
+Software Foundation; with the Invariant Sections being ``Free Software
+Needs Free Documentation'' and ``GNU Lesser General Public License'',
+the Front-Cover texts being ``A GNU Manual'', and with the Back-Cover
+Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Closing-Streams"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Streams-and-Threads.html#Streams-and-Threads">Streams and Threads</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Opening-Streams.html#Opening-Streams">Opening Streams</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="I_002fO-on-Streams.html#I_002fO-on-Streams">I/O on Streams</a>
+<hr>
+</div>
+
+<h3 class="section">12.4 Closing Streams</h3>
+
+<p><a name="index-closing-a-stream-980"></a>When a stream is closed with <code>fclose</code>, the connection between the
+stream and the file is canceled.  After you have closed a stream, you
+cannot perform any additional operations on it.
+
+<!-- stdio.h -->
+<!-- ISO -->
+<div class="defun">
+&mdash; Function: int <b>fclose</b> (<var>FILE *stream</var>)<var><a name="index-fclose-981"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Safe
+| AS-Unsafe heap lock
+| AC-Unsafe lock mem fd
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- After fclose, it is undefined behavior to use the stream it points -->
+     <!-- to.  Therefore, one must only call fclose when the stream is -->
+     <!-- otherwise unused.  Concurrent uses started before will complete -->
+     <!-- successfully because of the lock, which makes it MT-Safe.  Calling it -->
+     <!-- from a signal handler is perfectly safe if the stream is known to be -->
+     <!-- no longer used, which is a precondition for fclose to be safe in the -->
+     <!-- first place; since this is no further requirement, fclose is safe for -->
+     <!-- use in async signals too.  After calling fclose, you can no longer -->
+     <!-- use the stream, not even to fclose it again, so its memory and file -->
+     <!-- descriptor may leak if fclose is canceled before @c releasing them. -->
+     <!-- That the stream must be unused and it becomes unused after the call -->
+     <!-- is what would enable fclose to be AS- and AC-Safe while freopen -->
+     <!-- isn't.  However, because of the possibility of leaving __gconv_lock -->
+     <!-- taken upon cancellation, AC-Safety is lost. -->
+        <p>This function causes <var>stream</var> to be closed and the connection to
+the corresponding file to be broken.  Any buffered output is written
+and any buffered input is discarded.  The <code>fclose</code> function returns
+a value of <code>0</code> if the file was closed successfully, and <code>EOF</code>
+if an error was detected.
+
+        <p>It is important to check for errors when you call <code>fclose</code> to close
+an output stream, because real, everyday errors can be detected at this
+time.  For example, when <code>fclose</code> writes the remaining buffered
+output, it might get an error because the disk is full.  Even if you
+know the buffer is empty, errors can still occur when closing a file if
+you are using NFS.
+
+        <p>The function <code>fclose</code> is declared in <samp><span class="file">stdio.h</span></samp>. 
+</p></blockquote></div>
+
+   <p>To close all streams currently available the GNU C Library provides
+another function.
+
+<!-- stdio.h -->
+<!-- GNU -->
+<div class="defun">
+&mdash; Function: int <b>fcloseall</b> (<var>void</var>)<var><a name="index-fcloseall-982"></a></var><br>
+<blockquote><p>Preliminary:
+| MT-Unsafe race:streams
+| AS-Unsafe
+| AC-Safe
+| See <a href="POSIX-Safety-Concepts.html#POSIX-Safety-Concepts">POSIX Safety Concepts</a>.
+
+     <!-- Like fclose, using any previously-opened streams after fcloseall is -->
+     <!-- undefined.  However, the implementation of fcloseall isn't equivalent -->
+     <!-- to calling fclose for all streams: it just flushes and unbuffers all -->
+     <!-- streams, without any locking.  It's the flushing without locking that -->
+     <!-- makes it unsafe. -->
+        <p>This function causes all open streams of the process to be closed and
+the connection to corresponding files to be broken.  All buffered data
+is written and any buffered input is discarded.  The <code>fcloseall</code>
+function returns a value of <code>0</code> if all the files were closed
+successfully, and <code>EOF</code> if an error was detected.
+
+        <p>This function should be used only in special situations, e.g., when an
+error occurred and the program must be aborted.  Normally each single
+stream should be closed separately so that problems with individual
+streams can be identified.  It is also problematic since the standard
+streams (see <a href="Standard-Streams.html#Standard-Streams">Standard Streams</a>) will also be closed.
+
+        <p>The function <code>fcloseall</code> is declared in <samp><span class="file">stdio.h</span></samp>. 
+</p></blockquote></div>
+
+   <p>If the <code>main</code> function to your program returns, or if you call the
+<code>exit</code> function (see <a href="Normal-Termination.html#Normal-Termination">Normal Termination</a>), all open streams are
+automatically closed properly.  If your program terminates in any other
+manner, such as by calling the <code>abort</code> function (see <a href="Aborting-a-Program.html#Aborting-a-Program">Aborting a Program</a>) or from a fatal signal (see <a href="Signal-Handling.html#Signal-Handling">Signal Handling</a>), open streams
+might not be closed properly.  Buffered output might not be flushed and
+files may be incomplete.  For more information on buffering of streams,
+see <a href="Stream-Buffering.html#Stream-Buffering">Stream Buffering</a>.
+
+   </body></html>
+

@@ -1,0 +1,1 @@
+config:arm::generic:linux:gcc 4.3.2 (Sourcery G++ Lite 2008q3-72):--disable-yasm --enable-debug --disable-ffplay --cross-prefix=arm-none-linux-gnueabi- --enable-cross-compile --target-os=linux --arch=arm --disable-librtmp --disable-static --enable-shared --disable-ffplay --disable-ffserver --disable-doc
