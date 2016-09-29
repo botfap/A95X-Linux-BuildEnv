@@ -52,3 +52,7 @@ We will create a TWRP flashable image of your system. Note that TWRP sees the 2G
 
 	5) Complete. Reboot to your previous install
 
+
+# Recover stock bootloader
+
+	1) dd if=stock-mmcblk0-uboot.bin of=/dev/mmcblk0 bs=1M
