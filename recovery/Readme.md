@@ -6,15 +6,15 @@ Before you can even think about recovering that lovely little device you just br
 
 We will be using TWRP 3.0.2 for both backup and recovery as it can be booted from USB, uSD and eMMC and makes backup and restore easy.
 
-# TWRP Recovery for S905X only
+# TWRP 3.0.2 Recovery for S905X only
 ** Do not use this for S905 based devices, you will set them on fire! **
 
 
 	1) Format a uSD or USB flash with a FAT32 file system
 
-	2) Copy "twrp-s905x.img" to the root of your freshly formatted flash device
+	2) Copy "twrp-s905x.img-v3.0.2" to the root of your freshly formatted flash device
 
-	3) Rename "twrp-s905x.img" to "recovery.img"
+	3) Rename "twrp-s905x.img-3.0.2" to "recovery.img"
 
 	4) Boot A95X while holding in the reset/recovery button hidden inside the AV port
 
