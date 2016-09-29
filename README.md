@@ -109,6 +109,9 @@ Important output will be in output/images
 # Install to eMMC - Generic dev s905x
 Warning! 	This will fuckup whatever is on the device, literally set that little bad boy on fire. DO NOT DO THIS
 
+** Before going any further go into the recovery folder and read the Readme.md **
+
+
 1. Create an SD card with one partition in vfat format
 
 2. copy boot.img and root file system to SD card
@@ -147,3 +150,17 @@ Insert SD card into your platform and reboot into uboot. Replace original uboot 
 
 6. System will boot up with kernel and root filesystem on EMMC/NAND.
 
+
+
+# Supported devices in current master
+
+S905:
+	Not Yet
+
+S905X:
+	s905x_a95x_1g_defconfig - Nexbox A95X rev2 1GB/8GB
+	s905x_a95x_2g_defconfig - Nexbox A95X rev2 2GB/16GB
+	mesongxl_p212_release_defconfig - Generix S905X build
+
+S912:
+	Not Yet

@@ -1,9 +1,0 @@
-S905:
-	Not Yet
-
-S905X:
-	Nexbox A95X rev2 1GB/8GB
-	Nexbox A95X rev2 2GB/16GB
-
-S912:
-	Not Yet
