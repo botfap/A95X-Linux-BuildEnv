@@ -11,14 +11,14 @@ A95X (S905X Variant) Source code, toolchains and build system to build:
 	Uboot for SD boot - u-boot.bin.sd.bin
 
 # Install Toolchains
-	sudo mv -Rv toolchains/opt/* /opt/
+	No longer needed
 
 # Setup build
 Change into the buildroot folder
 
 Setup build env vars
 
-	source TOOLSENV.sh
+	source setup-build-env.sh
 
 
 Generate config for your device
