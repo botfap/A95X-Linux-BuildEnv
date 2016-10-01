@@ -10,8 +10,15 @@ A95X (S905X Variant) Source code, toolchains and build system to build:
 	Uboot for eMMC boot - u-boot.bin
 	Uboot for SD boot - u-boot.bin.sd.bin
 
-# Install Toolchains
-	See Readme in toolchains folder
+# Compatability
+Ive only tested onn Ubuntu LTS 14 & 16. If you can give me feedback on other distros I can make changes to make it work with yours normally. Only real requirements are for x64 host with i386 libs available.
+
+# Install  Packages & Toolchains
+	See Readme in toolchains folder for toolchains
+	
+	OR
+	
+	Run the setup.sh script to configure your build environment
 
 # Setup build
 Change into the buildroot folder
