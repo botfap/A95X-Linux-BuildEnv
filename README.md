@@ -13,7 +13,7 @@ A95X (S905X Variant) Source code, toolchains and build system to build:
 # Compatability
 Ive only tested onn Ubuntu LTS 14 & 16. If you can give me feedback on other distros I can make changes to make it work with yours normally. Only real requirements are for x64 host with i386 libs available.
 
-# Install  Packages & Toolchains
+# Install Packages & Toolchains
 	See Readme in toolchains folder for toolchains
 	
 	OR
@@ -85,33 +85,49 @@ Important output will be in output/images
 
 2. Copy boot.img, rootfs.tar.gz to this partition
 
-	sudo cp output/images/boot.img /media/sdcard
+        sudo cp output/images/boot.img /media/sdcard
 
-	sudo cp output/images/rootfs.tar.gz /media/sdcard
+        sudo cp output/images/rootfs.tar.gz /media/sdcard
 
-	sudo sync
-
+        sudo sync
+	
 3. Extract rootfs.tar.gz on SD card
 
-	cd /media/sdcard
+        cd /media/sdcard
 	
-	sudo tar zxvf rootfs.tar.gz
+        sudo tar zxvf rootfs.tar.gz
 	
-	sync
+        sync
 
 4. Write uboot to SD card
 
-	sudo dd if=output/images/u-boot.bin.sd.bin of=/dev/mmcblkX bs=1 count=442
+        sudo dd if=output/images/u-boot.bin.sd.bin of=/dev/mmcblkX bs=1 count=442
 
-	sudo dd if=output/images/u-boot.bin.sd.bin of=/dev/mmcblkX bs=512 skip=1 seek=1
+        sudo dd if=output/images/u-boot.bin.sd.bin of=/dev/mmcblkX bs=512 skip=1 seek=1
 
-	sudo sync
+        sudo sync
 
-5. When running into uboot, execute Òun bootsdcardÓunder the prompt:
+5. Access UBoot
+You'll need to access the serial console and enter into the UBoot prompt.
+On the Nexbox A95x S905x, there are 4 exposed test points next to the USB ports. The "top" pin (in reference to the text on the case and marked by the arrow on the board) is ground, below that is RX, followed by TX. The console runs at 115200 baud and you have to hold down enter while it's booting to enter the UBoot console. 
 
-	env default -a
-	env save
-	run bootsdcard
+6. When running into uboot, execute `run bootsdcard` under the prompt:
+
+        env default -a
+	
+        env save
+
+        run bootsdcard
+
+7. (optional) To make this the default behavior (be careful, especially if you're changing the EMMC bootloader!), you can run the following commands at UBoot instead:
+
+        env default -a
+	
+        setenv bootcmd "run bootsdcard"
+	
+        env save
+	
+        run bootsdcard
 
 # Install to eMMC - Generic dev s905x
 Warning! 	This will fuckup whatever is on the device, literally set that little bad boy on fire. DO NOT DO THIS
@@ -123,11 +139,11 @@ Warning! 	This will fuckup whatever is on the device, literally set that little 
 
 2. copy boot.img and root file system to SD card
 
-	cp output/images/u-boot.bin /media/mySD
+        cp output/images/u-boot.bin /media/mySD
 
-	cp output/images/boot.img /media/mySD
+        cp output/images/boot.img /media/mySD
 
-	cp output/images/rootfs.tar.gz /media/mySD 
+        cp output/images/rootfs.tar.gz /media/mySD 
 
 Insert SD card into your platform and reboot into uboot. Replace original uboot with the new one under uboot prompt:
 
@@ -143,13 +159,13 @@ Insert SD card into your platform and reboot into uboot. Replace original uboot 
 
 	reset
 
-3. With new uboot burned on your platform, enter uboot prompt again and execute Òun bootupdateÓ
+3. With new uboot burned on your platform, enter uboot prompt again and execute `run bootupdate`
 
-	env default -a
+        env default -a
 
-	env save
+        env save
 
-	run bootupdate
+        run bootupdate
 
 4. System will automatically write kernel to boot partition and extract rootfs.tar.gz to system partition.
 
